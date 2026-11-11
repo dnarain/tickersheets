@@ -1,9 +1,10 @@
 ## This fork
 
-This fork first tests the existing providers from Google Sheets and Apps Script.
+This fork tests and repairs selected providers from Google Sheets and Apps Script.
 It does not require a hosted server or add SMF functions.
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
 The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
+The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDER-FIXES.md) include Google price/yield repairs, Yahoo yield repairs and Globe ticker checks.
 
 Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
 Reload the spreadsheet after installing the script.

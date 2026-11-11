@@ -1,6 +1,6 @@
 # Test providers from Google Sheets
 
-This fork first tests the existing CacheFinance providers from Google Apps Script.
+This fork tests and repairs selected CacheFinance providers from Google Apps Script.
 It does not add SMF functions or require a hosted server.
 Each user runs the script in their own Google account.
 
@@ -130,3 +130,4 @@ The [November 11 Google Apps Script results](test-results/2026-11-11-google-apps
 The report includes direct provider cases and separate worksheet checks.
 The [keyed-provider follow-up](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) includes the remaining four providers and an Alpha Vantage recheck.
 The [API-key settings checks](test-results/2026-11-11-google-apps-script/API-KEY-SETTINGS.md) record local passes and the user's successful display and blank-save checks.
+The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDER-FIXES.md) record the repaired Google, Yahoo and Globe cases and the remaining missing data.
