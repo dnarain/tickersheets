@@ -129,4 +129,4 @@ Do not replace failed Google results with successful requests from a local compu
 The [November 11 Google Apps Script results](test-results/2026-11-11-google-apps-script/README.md) contain the first live run.
 The report includes direct provider cases and separate worksheet checks.
 The [keyed-provider follow-up](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) includes the remaining four providers and an Alpha Vantage recheck.
-The [API-key settings checks](test-results/2026-11-11-google-apps-script/API-KEY-SETTINGS.md) record local passes, the user's successful display check and the remaining live save check.
+The [API-key settings checks](test-results/2026-11-11-google-apps-script/API-KEY-SETTINGS.md) record local passes and the user's successful display and blank-save checks.

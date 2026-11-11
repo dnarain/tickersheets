@@ -42,11 +42,14 @@ The browser has multiple signed-in Google accounts.
 Google documents [Apps Script problems with multiple signed-in accounts](https://developers.google.com/apps-script/guides/support/troubleshooting#issues_with_multiple_google_accounts).
 That is a possible cause.
 
-## User display check
+## User display and blank-save checks
 
 The user reported that the form appears after being asked to open the spreadsheet in a single-account browser session.
 This confirms the display check through the user's report.
 The browser session available to automation still opens a blank sidebar, so automation has not independently verified that display.
 
-Remaining live checks: confirm configured flags with empty password fields, save all fields blank, and confirm the existing flags remain.
+The user then left every key field blank and every removal box unchecked, clicked **Save keys**, and reported a successful save with all four providers still marked **Saved**.
+The live display, configured-status and blank-save checks therefore passed through the user's reports.
+Automation did not independently observe the save in the working browser session.
+
 Real-key replacement and removal remain deliberately untested in the private project; local tests cover those operations with synthetic values.
