@@ -27,7 +27,7 @@ They also check that requests and parsed values remain unchanged.
 - Reloaded the spreadsheet and confirmed both **CacheFinance** and **CacheFinance tests** menus.
 - Selected **CacheFinance → API keys…** and confirmed that the sidebar container opened.
 
-## Incomplete live check
+## Initial sidebar display problem
 
 The sidebar content remained blank. Its iframe contained no rendered body elements.
 A temporary sidebar containing only one paragraph also remained blank.
@@ -40,7 +40,13 @@ No live save was attempted, and no provider tests were rerun.
 
 The browser has multiple signed-in Google accounts.
 Google documents [Apps Script problems with multiple signed-in accounts](https://developers.google.com/apps-script/guides/support/troubleshooting#issues_with_multiple_google_accounts).
-That is a possible cause; a single-account check is still required.
+That is a possible cause.
 
-Remaining live checks: render the form, confirm configured flags with empty password fields, save all fields blank, and confirm the existing flags remain.
+## User display check
+
+The user reported that the form appears after being asked to open the spreadsheet in a single-account browser session.
+This confirms the display check through the user's report.
+The browser session available to automation still opens a blank sidebar, so automation has not independently verified that display.
+
+Remaining live checks: confirm configured flags with empty password fields, save all fields blank, and confirm the existing flags remain.
 Real-key replacement and removal remain deliberately untested in the private project; local tests cover those operations with synthetic values.
