@@ -37,8 +37,8 @@ It reads dividend yield only inside the requested ticker's overview widget.
 It rejects conflicting desktop and mobile yield values.
 URLs now request English labels with `hl=en`.
 
-Google's fetched XIC page omits dividend yield.
-The adapter leaves that field missing so another provider can supply it.
+The captured public XIC page omits dividend yield, and the Apps Script lookup still reports that field as missing.
+The adapter leaves the missing value available for another provider to supply.
 It does not invent a zero or classify the ticker as permanently unsupported.
 
 ### Yahoo Finance website

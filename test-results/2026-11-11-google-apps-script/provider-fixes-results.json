@@ -165,7 +165,7 @@
   "limitations": [
     "Provider-specific reruns reuse the report run ID; Retrieved UTC identifies the new response times.",
     "PARSED establishes extraction, not independent financial accuracy or complete ticker coverage.",
-    "Google Finance website XIC yield remains missing because the fetched page omits it.",
+    "The captured public Google Finance XIC page omits yield; the native Apps Script lookup still reports MISSING_VALUE.",
     "Google and Yahoo HTML quote timestamps remain unknown. Globe raw tradeTime is a quote timestamp, not a yield publication date.",
     "Yahoo stock yields use Forward Dividend & Yield; Globe stock yields use dividendYieldTrailing. ETF/fund rows use provider yield or distribution fields.",
     "All source fixtures contain public excerpts; API keys and private Google project identifiers are excluded."
