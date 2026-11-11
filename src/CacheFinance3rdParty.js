@@ -90,7 +90,7 @@ class FinanceWebsiteSearch {
         while (missingStockData.length > 0 && (Date.now() - startTime) < MAX_TIME_FOR_FETCH_Ms) {
             const [URLs, batchUsedStockSites] = FinanceWebsiteSearch.getNextUrlBatch(missingStockData);
 
-            Logger.log(`Batch=${batch}. URLs. ${URLs}`);
+            Logger.log(`Batch=${batch}. Requests=${URLs.length}`);
             const responses = FinanceWebsiteSearch.bulkSiteFetch(URLs);
             Logger.log(`Batch=${batch}. Responses=${responses.length}. Total Elapsed=${Date.now() - startTime}`);
             batch++;

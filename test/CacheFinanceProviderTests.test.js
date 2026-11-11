@@ -267,7 +267,7 @@ describe("bound-sheet execution and report", () => {
         const source = sheets.get("CF Provider tests"); expect(source.getRange("B5").getValue()).toBe(name);
     });
     it("adds menu and keeps worksheet control results separate from direct provider evidence", () => {
-        runner.onOpen(); expect(menu.addToUi).toHaveBeenCalled(); runner.SetupProviderWorksheetTests();
+        runner.CFProviderTestMenu_(); expect(menu.addToUi).toHaveBeenCalled(); runner.SetupProviderWorksheetTests();
         const sheet = sheets.get("CF Worksheet tests"); expect(sheet.getRange("D9").getValue()).toBe('=CACHEFINANCE("CFTEST:CONTROL_A","PRICE",123.45)');
         [123, "Loading...", "#N/A", 1.4, 123.45, 123.45, 234.56].forEach((value, index) => sheet.getRange(5 + index, 4).setValue(value));
         const results = runner.CollectProviderWorksheetTests(); expect(results.map(item => item.status)).toEqual(["PASS", "WAITING", "FAILED", "PASS", "PASS", "PASS", "PASS"]);

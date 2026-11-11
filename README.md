@@ -5,6 +5,13 @@ It does not require a hosted server or add SMF functions.
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
 The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
 
+Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
+Reload the spreadsheet after installing the script.
+Enter keys in that sidebar and click **Save keys**.
+Blank fields keep existing keys; **Remove saved key** deletes the selected key when you save.
+The sidebar shows whether a key is saved and never displays its value.
+Each user should use a private copy. Other editors of the same script can access its Script Properties.
+
 The original CacheFinance documentation follows.
 
 ![Your Repository’s Stats](https://github-readme-stats.vercel.app/api?username=demmings&show_icons=true)
@@ -46,7 +53,7 @@ The original CacheFinance documentation follows.
 
 * Google's guide to adding custom functions: [Google Help](https://developers.google.com/apps-script/guides/sheets/functions#creating_a_custom_function)
 * The `./dist` folder contains the single file used by Google Sheets.
-    * [CacheFinance.js](https://github.com/demmings/cachefinance/blob/main/dist/CacheFinance.js)
+    * [CacheFinance.js](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/dist/CacheFinance.js)
       * Caches GOOGLEFINANCE results AND does 3rd party website lookups when all else fails.
       * This file is built automatically from the modules in the **`/src`** folder.
       * Do **not** copy individual files from `/src` into Apps Script.
@@ -54,7 +61,7 @@ The original CacheFinance documentation follows.
     * From your sheets Select **Extensions** and then **Apps Script**
     * Ensure that Editor is selected.  It is the **< >**
     * Click the PLUS sign beside **File** and then select **Script**
-    * Click on [CacheFinance.js](https://github.com/demmings/cachefinance/blob/main/dist/CacheFinance.js), and then click on **Copy Raw Contents** which puts the file into your copy buffer.
+    * Click on [CacheFinance.js](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/dist/CacheFinance.js), and then click on **Copy Raw Contents** which puts the file into your copy buffer.
     * Back in your Google Project, rename **Untitled** to the file name you just selected in Github.  It is not necessary to enter the .gs extension.
     * Remove the default contents of the file **myFunction()** and paste in the new content you have copied from Github (Ctrl-v).
     * Click the little diskette icon to save.
@@ -66,29 +73,10 @@ The original CacheFinance documentation follows.
 * After adding the script, it will require new permissions.
 * To authorize, run any function from the Apps Script editor **Run** menu that calls `CACHEFINANCE` (for example, paste `src/CacheFinanceAppScriptTests.js` into a second script file and run `testYieldPct`), or trigger the function from a sheet cell.
 * **Fast REST API Websites**
-  * For faster stock price lookups when external finance data is used, add the key to **Apps Script** ==> **Project Settings** ==> **Script Properties**
-  * The free API will have limitied functionality in all cases.  They are all throttled and may only provide end of day pricing.  You can always get a paid subscription and use that API key if your needs are greater.
-    * **Finnhub**
-      * Click on **Edit Script Properties** ==> **Add Script Property**.  
-        * Set the property name to:  **FINNHUB_API_KEY**
-        * Set the value to:  *'YOUR FINNHUB API KEY'*
-          * Get your API key at:  https://finnhub.io/
-    * **AlphaVantage**
-      * Click on **Edit Script Properties** ==> **Add Script Property**.  
-        * Set the property name to:  **ALPHA_VANTAGE_API_KEY**
-        * Set the value to:  *'YOUR Alpha Vantage API Key'*
-          * Get your API key at:  https://www.alphavantage.co/
-    * **TwelveData**
-      * Click on **Edit Script Properties** ==> **Add Script Property**.
-        * Set the property name to: **TWELVE_DATA_API_KEY**
-        * Set the value to:  *'YOUR Twelve Data API Key'*
-          * Get your API key at:  https://twelvedata.com/
-    * **CoinMarket**
-      * Site used for crypto currency lookups.
-      * Click on **Edit Script Properties** ==> **Add Script Property**.
-        * Set the property name to: **COINMARKET_API_KEY**
-        * Set the value to:  *'YOUR Coin Market API Key'*
-          * Get your API key at:  https://coinmarketcap.com/api/
+  * Reload the spreadsheet, then select **CacheFinance → API keys…** to save keys without opening Apps Script.
+  * Free plans have request limits and may supply end-of-day prices. Check each provider's plan before relying on its data.
+  * Obtain keys from [Finnhub](https://finnhub.io/), [Alpha Vantage](https://www.alphavantage.co/), [Twelve Data](https://twelvedata.com/) or [CoinMarketCap](https://coinmarketcap.com/api/).
+  * Existing keys in Script Properties continue to work. See [PROVIDER-TESTING.md](PROVIDER-TESTING.md#supply-optional-api-keys) for property names and removal instructions.
 * Canadian Mutual Funds.
   * GOOGLEFINANCE does not support (the one I have anyway) Canadian mutual fund codes.
   * I use the Globe and Mail web site to extract the data.

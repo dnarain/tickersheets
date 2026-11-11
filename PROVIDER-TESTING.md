@@ -5,7 +5,7 @@ It does not add SMF functions or require a hosted server.
 Each user runs the script in their own Google account.
 
 The upstream source starts at commit `8f84e202e0c5d56f27b2bf000bb86817c3503894`.
-The normal `dist/CacheFinance.js` bundle remains unchanged.
+Both bundles include the **CacheFinance → API keys…** menu.
 The separate test bundle disables upstream diagnostic logging, which can include API keys and response bodies.
 
 ## Install the test runner
@@ -21,7 +21,7 @@ The separate test bundle disables upstream diagnostic logging, which can include
 9. Click **Run**.
 10. Review the requested permissions before authorization.
 
-The manifest requests access to the current spreadsheet and external HTTP requests.
+The manifest requests access to the current spreadsheet, external HTTP requests and a sidebar in the spreadsheet.
 It does not request Drive access or access to other spreadsheets.
 The runner writes its report into dedicated tabs in this spreadsheet.
 
@@ -52,7 +52,18 @@ Synthetic symbols hold the supplied control prices, so the checks cannot overwri
 The public providers can run without API keys.
 The runner skips a keyed provider when its key is missing.
 
-In **Apps Script → Project Settings → Script Properties**, add the applicable property:
+Reload the spreadsheet after installing the script.
+Open **CacheFinance → API keys…**.
+Enter each key in its provider's password field, then click **Save keys**.
+You do not need to reopen Apps Script to enter or change keys.
+
+The sidebar shows **Saved** or **Not set** for each provider.
+It never loads a saved key into the browser.
+A blank field keeps the existing key.
+A new value replaces the existing key.
+Select **Remove saved key** and click **Save keys** to delete a key.
+
+The sidebar stores keys in these Script Properties, which the existing providers read:
 
 | Provider | Property |
 |---|---|
@@ -63,7 +74,11 @@ In **Apps Script → Project Settings → Script Properties**, add the applicabl
 
 Each user supplies keys in their own copy.
 Script editors can access that script's properties.
+The sidebar does not make keys private from other editors of the same script.
 Keep keys out of worksheet cells, Git commits, screenshots and issue reports.
+
+The settings menu sends no requests to financial providers.
+Run the provider checks separately after saving keys.
 
 ## Read the report
 

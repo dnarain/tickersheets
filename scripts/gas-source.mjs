@@ -15,7 +15,9 @@ export const SOURCE_FILES = Object.freeze([
     "CacheFinance3rdParty.js",
     "CacheFinanceTest.js",
     "CacheFinanceWebSites.js",
-    "CacheFinanceUtils.js"
+    "CacheFinanceUtils.js",
+    "CacheFinanceSettings.js",
+    "CacheFinanceMenu.js"
 ]);
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");

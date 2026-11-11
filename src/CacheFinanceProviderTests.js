@@ -1,6 +1,6 @@
 /*  *** DEBUG START ***
 import { FinanceWebSites } from "./CacheFinanceWebSites.js";
-export { CFProviderDiagnostics, CFProviderSanitize_, CFProviderNormalizeRows_, CFProviderWrite_, CFProviderRun_, CFProviderReportJson, onOpen, RunProviderTests, ContinueProviderTests, RunProviderYahooApi, RunProviderGoogle, RunProviderGlobe, RunProviderYahoo, RunProviderFinnhub, RunProviderTwelveData, RunProviderAlphaVantage, RunProviderCoinMarket, SetupProviderWorksheetTests, CollectProviderWorksheetTests };
+export { CFProviderDiagnostics, CFProviderSanitize_, CFProviderNormalizeRows_, CFProviderWrite_, CFProviderRun_, CFProviderReportJson, CFProviderTestMenu_, RunProviderTests, ContinueProviderTests, RunProviderYahooApi, RunProviderGoogle, RunProviderGlobe, RunProviderYahoo, RunProviderFinnhub, RunProviderTwelveData, RunProviderAlphaVantage, RunProviderCoinMarket, SetupProviderWorksheetTests, CollectProviderWorksheetTests };
 //  *** DEBUG END ***/
 
 /**
@@ -19,7 +19,7 @@ const CF_PROVIDER_KEYS = { FINNHUB: "FINNHUB_API_KEY", TWELVEDATA: "TWELVE_DATA_
 
 function CFProviderQuietLog() { /* Intentionally omit upstream URL/body logging. */ }
 
-function onOpen() {
+function CFProviderTestMenu_() {
     SpreadsheetApp.getUi().createMenu("CacheFinance tests")
         .addItem("Start provider tests", "RunProviderTests")
         .addItem("Continue provider tests", "ContinueProviderTests")

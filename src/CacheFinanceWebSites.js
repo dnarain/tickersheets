@@ -299,8 +299,8 @@ class YahooFinance {
         try {
             html = UrlFetchApp.fetch(URL).getContentText();
         }
-        catch (ex) {
-            Logger.log(`FAILED -> getInfo:  ${symbol}.  URL = ${URL}. Err=${ex.toString()}`);
+        catch {
+            Logger.log(`Yahoo request failed for ${symbol}`);
             return new StockAttributes();
         }
 
@@ -760,8 +760,7 @@ class FinnHub {
         }
 
         const URL = FinnHub.getURL(symbol, attribute, FinnHub.getApiKey());
-        Logger.log(`getInfo:  ${symbol}`);
-        Logger.log(`URL = ${URL}`);
+        Logger.log(`getInfo: FinnHub ${symbol}`);
 
         let jsonStr = null;
         try {
@@ -862,7 +861,7 @@ class AlphaVantage {
 
         const apiKey = AlphaVantage.getApiKey();
         const URL = AlphaVantage.getURL(symbol, attribute, apiKey);
-        Logger.log(`getInfo: AlphaVantage  ${symbol}.  URL = ${URL}.  Key = ${apiKey}`);
+        Logger.log(`getInfo: AlphaVantage ${symbol}`);
 
         let jsonStr = null;
         try {
@@ -919,8 +918,6 @@ class AlphaVantage {
      * @returns {StockAttributes}
      */
     static parseResponse(jsonStr, symbol, _attribute) {
-        Logger.log(`content=${jsonStr}`);
-
         const data = new StockAttributes();
         const countryCode = FinanceWebSites.getTickerCountryCode(symbol);
         const alphaVantageData = JSON.parse(jsonStr);
@@ -933,10 +930,9 @@ class AlphaVantage {
                 data.stockPrice = alphaVantageData["Global Quote"]["05. price"];
             }
 
-            Logger.log(`Price=${data.stockPrice}`);
         }
-        catch (ex) {
-            Logger.log(`AlphaVantage JSON Parse Error (looking for ${countryCode}. err=${ex}).`);
+        catch {
+            Logger.log("AlphaVantage response did not contain the requested field.");
         }
 
         return data;
@@ -1166,7 +1162,7 @@ class TwelveData {
 
         const apiKey = TwelveData.getApiKey();
         const URL = TwelveData.getURL(symbol, attribute, apiKey);
-        Logger.log(`getInfo: TwelveData  ${symbol}.  URL = ${URL}.  Key = ${apiKey}`);
+        Logger.log(`getInfo: TwelveData ${symbol}`);
 
         let jsonStr = null;
         try {
@@ -1230,19 +1226,16 @@ class TwelveData {
      * @returns {StockAttributes}
      */
     static parseResponse(jsonStr, symbol, attribute) {
-        Logger.log(`content=${jsonStr}`);
-
         const data = new StockAttributes();
         const countryCode = FinanceWebSites.getTickerCountryCode(symbol);
         const twelveData = JSON.parse(jsonStr);
 
         try {
             if (Object.hasOwn(twelveData, "code") && twelveData.code === 404) {
-                Logger.log(twelveData.message);
+                Logger.log("TwelveData returned a provider error response.");
             }
             else if (attribute === "NAME") {
                 data.stockName = twelveData.name;
-                Logger.log(`TwelveData. Name=${data.stockName}`);
             }
             else if (attribute === "PRICE") {
                 if (countryCode === "fx") {
@@ -1251,11 +1244,10 @@ class TwelveData {
                 else {
                     data.stockPrice = twelveData.close;
                 }
-                Logger.log(`TwelveData. Price=${data.stockPrice}`);
             }
         }
-        catch (ex) {
-            Logger.log(`TwelveData JSON Parse Error (looking for ${symbol}. err=${ex}).`);
+        catch {
+            Logger.log("TwelveData response did not contain the requested field.");
         }
 
         return data;
@@ -1299,7 +1291,7 @@ class CoinMarket {
 
         const apiKey = CoinMarket.getApiKey();
         const URL = CoinMarket.getURL(symbol, attribute, apiKey);
-        Logger.log(`getInfo: CoinMarket  ${symbol}.  URL = ${URL}.  Key = ${apiKey}`);
+        Logger.log(`getInfo: CoinMarket ${symbol}`);
 
         let jsonStr = null;
         try {
@@ -1355,8 +1347,6 @@ class CoinMarket {
      * @returns {StockAttributes}
      */
     static parseResponse(jsonStr, symbol, _attribute) {
-        Logger.log(`content=${jsonStr}`);
-
         const data = new StockAttributes();
         const coinMarketData = JSON.parse(jsonStr);
 
@@ -1374,10 +1364,9 @@ class CoinMarket {
             data.exchangeRate = coinMarketData.data[parts.fromCurrency].quote[parts.toCurrency].price;
             data.stockName = coinMarketData.data[parts.fromCurrency].name;
 
-            Logger.log(`Price=${data.exchangeRate}`);
         }
-        catch (ex) {
-            Logger.log(`CoinMarket JSON Parse Error (looking for ${symbol}. err=${ex}).`);
+        catch {
+            Logger.log("CoinMarket response did not contain the requested field.");
         }
 
         return data;
