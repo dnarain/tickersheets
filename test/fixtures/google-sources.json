@@ -1,0 +1,44 @@
+[
+  {
+    "file": "google-aapl.html",
+    "symbol": "NASDAQ:AAPL",
+    "source": "https://www.google.com/finance/quote/AAPL:NASDAQ?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON and complete primary rBmozc overview c-wiz with data-p ticker binding. Other content omitted; script nonce removed."
+  },
+  {
+    "file": "google-nvda.html",
+    "symbol": "NASDAQ:NVDA",
+    "source": "https://www.google.com/finance/quote/NVDA:NASDAQ?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON and complete primary rBmozc overview c-wiz with data-p ticker binding. Other content omitted; script nonce removed."
+  },
+  {
+    "file": "google-ry.html",
+    "symbol": "TSE:RY",
+    "source": "https://www.google.com/finance/quote/RY:TSE?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON and complete primary rBmozc overview c-wiz with data-p ticker binding. Other content omitted; script nonce removed."
+  },
+  {
+    "file": "google-xic.html",
+    "symbol": "TSE:XIC",
+    "source": "https://www.google.com/finance/quote/XIC:TSE?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON and complete primary rBmozc overview c-wiz with data-p ticker binding. Other content omitted; script nonce removed."
+  },
+  {
+    "file": "google-usdcad.html",
+    "symbol": "CURRENCY:USDCAD",
+    "source": "https://www.google.com/finance/quote/USD-CAD?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON if present and primary Dividend overview row if present. Other content omitted; script nonce removed."
+  },
+  {
+    "file": "google-invalid.html",
+    "symbol": "NASDAQ:ZZZZCFINVALID20261111",
+    "source": "https://www.google.com/finance/quote/ZZZZCFINVALID20261111:NASDAQ?hl=en",
+    "retrievedDate": "2026-11-11",
+    "retained": "Original title, primary URL link, ds:2 quote JSON if present and primary Dividend overview row if present. Other content omitted; script nonce removed."
+  }
+]

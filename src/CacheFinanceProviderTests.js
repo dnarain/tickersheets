@@ -1,5 +1,5 @@
 /*  *** DEBUG START ***
-import { FinanceWebSites } from "./CacheFinanceWebSites.js";
+import { FinanceWebSites, GlobeAndMail, GoogleWebSiteFinance } from "./CacheFinanceWebSites.js";
 export { CFProviderDiagnostics, CFProviderSanitize_, CFProviderNormalizeRows_, CFProviderWrite_, CFProviderRun_, CFProviderReportJson, CFProviderTestMenu_, RunProviderTests, ContinueProviderTests, RunProviderYahooApi, RunProviderGoogle, RunProviderGlobe, RunProviderYahoo, RunProviderFinnhub, RunProviderTwelveData, RunProviderAlphaVantage, RunProviderCoinMarket, SetupProviderWorksheetTests, CollectProviderWorksheetTests };
 //  *** DEBUG END ***/
 
@@ -108,7 +108,7 @@ class CFProviderDiagnostics {
     }
 
     static validValue(attribute, value) {
-        if (attribute === "NAME") return typeof value === "string" && value.trim().length > 1 && !/captcha|access denied|just a moment|not found|couldn't find|javascript required/i.test(value);
+        if (attribute === "NAME") return typeof value === "string" && value.trim().length > 1 && !/[<>]/.test(value) && !/captcha|access denied|just a moment|not found|couldn't find|javascript required/i.test(value);
         return typeof value === "number" && Number.isFinite(value) && (attribute === "PRICE" ? value > 0 : value >= 0);
     }
 
@@ -119,6 +119,8 @@ class CFProviderDiagnostics {
     static sourceDetails(provider, body, symbol) {
         const result = { timestamp: "Unknown", field: "", identity: "Unknown" };
         try {
+            if (provider === "GLOBE") return GlobeAndMail.sourceDetails(body, symbol);
+            if (provider === "GOOGLEWEBSITEFINANCE") return GoogleWebSiteFinance.sourceDetails(body, symbol);
             const data = JSON.parse(body);
             let epoch;
             if (provider === "YAHOOAPI") {
@@ -254,7 +256,7 @@ function CFProviderNormalizeRows_(rows) {
         const values = row.slice();
         if (values[7] instanceof Date) values[7] = Number.isFinite(values[7].getTime()) ? values[7].toISOString() : "Unknown";
         if (values[8] instanceof Date) {
-            if (!["meta.regularMarketTime", "t", "timestamp", "quote.last_updated"].includes(values[9]) || !Number.isFinite(values[8].getTime())) {
+            if (!["meta.regularMarketTime", "t", "timestamp", "quote.last_updated", "quote.raw.tradeTime"].includes(values[9]) || !Number.isFinite(values[8].getTime())) {
                 values[8] = "Unknown";
                 values[13] = "Prior sheet date conversion changed provider-local or date-only text. Rerun this provider to restore its source timestamp.";
             } else values[8] = values[8].toISOString();

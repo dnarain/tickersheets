@@ -3,6 +3,7 @@ import fs from "node:fs";
 import * as runner from "../src/CacheFinanceProviderTests.js";
 import { CFProviderDiagnostics as D } from "../src/CacheFinanceProviderTests.js";
 import { PropertiesService } from "../src/GasMocks.js";
+import { FinanceWebSites } from "../src/CacheFinanceWebSites.js";
 
 const upstream = "8f84e202e0c5d56f27b2bf000bb86817c3503894";
 const marker = "CacheFinance provider diagnostics v1";
@@ -103,7 +104,7 @@ describe("direct provider evidence", () => {
         expect(rows[0][4]).toBe("MISSING_VALUE");
     });
     it.each([NaN, Infinity, 0, -1, "123", undefined, null])("rejects an invalid price %s", value => expect(D.validValue("PRICE", value)).toBe(false));
-    it.each([undefined, null, "", " ", "Access denied", "Just a moment"]) ("rejects invalid company name %s", value => expect(D.validValue("NAME", value)).toBe(false));
+    it.each([undefined, null, "", " ", "Access denied", "Just a moment", "Google Finance</title><script>", "<div>Apple Inc.</div>"]) ("rejects invalid company name %s", value => expect(D.validValue("NAME", value)).toBe(false));
     it("accepts an explicit zero yield but rejects missing and NaN yields", () => {
         expect(D.validValue("YIELDPCT", 0)).toBe(true); expect(D.validValue("YIELDPCT", null)).toBe(false); expect(D.validValue("YIELDPCT", NaN)).toBe(false);
     });
@@ -207,6 +208,19 @@ describe("direct provider evidence", () => {
 });
 
 describe("metadata and secret handling", () => {
+    it.each([
+        ["GOOGLEWEBSITEFINANCE", "google-ry.html", "TSE:RY", "PRICE", "PARSED", 290, "Matched"],
+        ["GOOGLEWEBSITEFINANCE", "google-ry.html", "TSE:RY", "YIELDPCT", "PARSED", 0.0243, "Matched"],
+        ["GOOGLEWEBSITEFINANCE", "google-usdcad.html", "CURRENCY:USDCAD", "PRICE", "PARSED", 1.4251, "Matched"],
+        ["GOOGLEWEBSITEFINANCE", "google-xic.html", "TSE:XIC", "YIELDPCT", "MISSING_VALUE", "", "Matched"],
+        ["GOOGLEWEBSITEFINANCE", "google-invalid.html", "NASDAQ:ZZZZCFINVALID20261111", "NAME", "NEGATIVE_REJECTED", "", "Mismatch"],
+        ["YAHOO", "yahoo-ry-to.html", "TSE:RY", "YIELDPCT", "PARSED", 0.0245, "Name matched"]
+    ])("classifies the repaired %s %s field through the diagnostic writer", (provider, file, symbol, attribute, status, value, identity) => {
+        const item = row(provider, symbol, attribute);
+        const html = fs.readFileSync(new URL(`./fixtures/${file}`, import.meta.url), "utf8");
+        D.parse(item, new FinanceWebSites().getByName(provider), response(html), 10, "2026-11-11T20:00:00Z", []);
+        expect(item[4]).toBe(status); expect(item[10]).toBe(value); expect(item[12]).toBe(identity);
+    });
     it("redacts plain and percent-encoded API keys and removes URLs", () => {
         const secret = "private+key";
         expect(runner.CFProviderSanitize_(secret + " " + encodeURIComponent(secret) + " https://example.test?k=x", [secret])).toBe("[REDACTED] [REDACTED] [URL]");
@@ -293,6 +307,11 @@ describe("bound-sheet execution and report", () => {
         expect(normalized[0][8]).toBe("2026-11-10T08:00:00.000Z");
         expect(normalized.slice(1).every(item => item[8] === "Unknown" && item[13].includes("Rerun this provider"))).toBe(true);
         expect(rows[1][8]).toBeInstanceOf(Date);
+    });
+    it("preserves Globe's explicit Unix trade time if Sheets previously converted it to a Date", () => {
+        const item = row("GLOBE");
+        item[8] = new Date("2026-11-11T20:14:54.000Z"); item[9] = "quote.raw.tradeTime";
+        expect(runner.CFProviderNormalizeRows_([item])[0][8]).toBe("2026-11-11T20:14:54.000Z");
     });
     it("exports legacy Dates without inventing UTC times for Alpha date-only or naive timestamps", () => {
         vi.spyOn(D, "sites").mockReturnValue([site()]); runner.RunProviderTests();

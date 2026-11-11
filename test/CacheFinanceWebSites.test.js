@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
 import {
     AlphaVantage,
     CoinMarket,
@@ -42,7 +43,7 @@ describe("GlobeAndMail", () => {
         expect(GlobeAndMail.getURL("CURRENCY:USDEUR", "PRICE")).toBe("");
     });
 
-    it("parses price, yield, and name from HTML", () => {
+    it("rejects unbound price, yield, and name fragments", () => {
         const html = `
             "symbolName":"Canadian Premium Fund"
             "lastPrice" value="12.34"
@@ -50,9 +51,9 @@ describe("GlobeAndMail", () => {
         `;
 
         const data = GlobeAndMail.parseResponse(html);
-        expect(data.stockName).toBe("Canadian Premium Fund");
-        expect(data.stockPrice).toBe(12.34);
-        expect(data.yieldPct).toBeCloseTo(0.0325);
+        expect(data.stockName).toBeNull();
+        expect(data.stockPrice).toBeNull();
+        expect(data.yieldPct).toBeNull();
     });
 });
 
@@ -64,9 +65,11 @@ describe("YahooFinance", () => {
 
     it("parses price, yield, and name from HTML", () => {
         const html = `
-            <title>Vanguard S&P 500 ETF(VOO)
-            <span title="Yield">Yield</span> <span>1.42</span>
+            <title>Vanguard S&amp;P 500 ETF (VOO) Stock Price - Yahoo Finance</title>
+            <div data-testid="quote-statistics"><ul><li><span title="Yield">Yield</span> <span>1.42%</span></li></ul></div>
+            <section data-testid="quote-price">
             <fin-streamer data-field="regularMarketPrice" data-symbol="VOO" data-value="412.34" class="qsp-price">412.34</fin-streamer>
+            </section>
         `;
 
         const data = YahooFinance.parseResponse(html, "NYSEARCA:VOO");
@@ -258,28 +261,18 @@ describe("GoogleWebSiteFinance", () => {
     });
 
     it("extracts yield, price, and name from Google Finance HTML", () => {
-        const html = `
-            <title>Canadian Premium Fund(ZTL)
-            Dividend yield</span>2.15%</div>
-            data-last-price="18.76"
-        `;
-
-        expect(GoogleWebSiteFinance.extractYieldPct(html, "TSE:ZTL")).toBeCloseTo(0.0215);
-        expect(GoogleWebSiteFinance.extractStockPrice(html, "TSE:ZTL")).toBe(18.76);
-        expect(GoogleWebSiteFinance.extractStockName(html, "TSE:ZTL")).toBe("Canadian Premium Fund");
+        const html = fs.readFileSync(new URL("./fixtures/google-ry.html", import.meta.url), "utf8");
+        expect(GoogleWebSiteFinance.extractYieldPct(html, "TSE:RY")).toBeCloseTo(0.0243);
+        expect(GoogleWebSiteFinance.extractStockPrice(html, "TSE:RY")).toBe(290);
+        expect(GoogleWebSiteFinance.extractStockName(html, "TSE:RY")).toBe("Royal Bank of Canada");
     });
 
     it("parses a complete Google Finance response for stocks", () => {
-        const html = `
-            <title>Canadian Premium Fund(ZTL)
-            Dividend yield</span>2.15%</div>
-            data-last-price="18.76"
-        `;
-
-        const data = GoogleWebSiteFinance.parseResponse(html, "TSE:ZTL");
-        expect(data.stockPrice).toBe(18.76);
-        expect(data.yieldPct).toBeCloseTo(0.0215);
-        expect(data.stockName).toBe("Canadian Premium Fund");
+        const html = fs.readFileSync(new URL("./fixtures/google-ry.html", import.meta.url), "utf8");
+        const data = GoogleWebSiteFinance.parseResponse(html, "TSE:RY");
+        expect(data.stockPrice).toBe(290);
+        expect(data.yieldPct).toBeCloseTo(0.0243);
+        expect(data.stockName).toBe("Royal Bank of Canada");
     });
 });
 
