@@ -85,6 +85,8 @@ An HTTP response alone does not establish that the requested field works.
 The report records retrieval time separately from quote time.
 When a response does not supply a quote time, the report states that the quote time is unknown.
 A parsed value without a quote time does not establish freshness.
+The runner stores timestamp columns as plain text to preserve date-only and provider-local strings.
+Alpha Vantage requests have a minimum 1.25-second gap after each previous Alpha response.
 
 The runner tests selected symbols and fields.
 A passing result does not establish every ticker or every feature of that provider.
@@ -108,4 +110,4 @@ Do not replace failed Google results with successful requests from a local compu
 
 The [November 11 Google Apps Script results](test-results/2026-11-11-google-apps-script/README.md) contain the first live run.
 The report includes direct provider cases and separate worksheet checks.
-Four providers remain untested because their API keys are missing.
+The [keyed-provider follow-up](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) includes the remaining four providers and an Alpha Vantage recheck.

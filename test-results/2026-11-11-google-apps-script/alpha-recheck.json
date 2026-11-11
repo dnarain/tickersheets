@@ -1,0 +1,86 @@
+{
+  "environment": "Google Apps Script",
+  "source": "CFProviderReportJson sanitized execution-log JSON",
+  "upstream_commit": "8f84e202e0c5d56f27b2bf000bb86817c3503894",
+  "diagnostic_commit": "1ecc84b64ef7552a5518a56fcc7fa9940b2108fa",
+  "diagnostic_source_hash": "4c2a5ca3983d",
+  "diagnostic_bundle_sha256": "cd5ba181085455533c8d262cae06a2331116e0e9faaea7c31d2bec7c925edf9c",
+  "run_id": "2026-11-11T19:20:54.398Z-3905e00e",
+  "exported_utc": "2026-11-11T20:27:30.416Z",
+  "distinct_direct_requests": 3,
+  "field_cases": 3,
+  "status_counts": {
+    "PARSED": 3
+  },
+  "alpha_request_gap_ms": 1250,
+  "notes": [
+    "The initial NVDA case returned HTTP 200 without an accepted value. It parsed on this later paced rerun; the initial cause remains undetermined.",
+    "Source date-only and provider-local timestamp strings are preserved as text without an inferred UTC offset."
+  ],
+  "headers": [
+    "Run ID",
+    "Provider",
+    "Symbol",
+    "Attribute",
+    "Status",
+    "HTTP",
+    "Elapsed ms",
+    "Retrieved UTC",
+    "Source timestamp",
+    "Timestamp field",
+    "Value",
+    "Endpoint without query",
+    "Identity",
+    "Note"
+  ],
+  "rows": [
+    [
+      "2026-11-11T19:20:54.398Z-3905e00e",
+      "ALPHAVANTAGE",
+      "NASDAQ:AAPL",
+      "PRICE",
+      "PARSED",
+      200,
+      88,
+      "2026-11-11T20:26:22.814Z",
+      "2026-11-10",
+      "latest trading day (date only)",
+      348.51,
+      "[URL]",
+      "Unknown",
+      "Direct response parsed. Freshness and financial accuracy require separate checks."
+    ],
+    [
+      "2026-11-11T19:20:54.398Z-3905e00e",
+      "ALPHAVANTAGE",
+      "NASDAQ:NVDA",
+      "PRICE",
+      "PARSED",
+      200,
+      101,
+      "2026-11-11T20:26:24.471Z",
+      "2026-11-10",
+      "latest trading day (date only)",
+      168.89,
+      "[URL]",
+      "Unknown",
+      "Direct response parsed. Freshness and financial accuracy require separate checks."
+    ],
+    [
+      "2026-11-11T19:20:54.398Z-3905e00e",
+      "ALPHAVANTAGE",
+      "CURRENCY:USDCAD",
+      "PRICE",
+      "PARSED",
+      200,
+      161,
+      "2026-11-11T20:26:26.173Z",
+      "2026-11-11 20:26:26",
+      "Last Refreshed (provider timezone)",
+      1.4247,
+      "[URL]",
+      "Unknown",
+      "Direct response parsed. Freshness and financial accuracy require separate checks."
+    ]
+  ]
+}

@@ -1,5 +1,8 @@
 # Google Apps Script provider results: November 11, 2026
 
+This file records the initial public-provider run before API keys were supplied.
+See [the keyed-provider follow-up](KEYED-PROVIDERS.md) for the latest results across all eight providers.
+
 We ran the diagnostic bundle from a private Google spreadsheet with its bound Apps Script project.
 The direct tests bypassed financial caches and fallback providers.
 The normal CacheFinance source and bundle remained unchanged.
