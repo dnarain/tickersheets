@@ -3,6 +3,7 @@
 This fork first tests the existing providers from Google Sheets and Apps Script.
 It does not require a hosted server or add SMF functions.
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
+The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/README.md) record the first live Apps Script run.
 
 The original CacheFinance documentation follows.
 

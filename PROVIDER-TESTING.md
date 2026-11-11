@@ -106,5 +106,6 @@ Do not replace failed Google results with successful requests from a local compu
 
 ## Results
 
-Live results will be recorded under `test-results/` after the first Google Apps Script run.
-The initial fork contains no claim that a provider passed a live test.
+The [November 11 Google Apps Script results](test-results/2026-11-11-google-apps-script/README.md) contain the first live run.
+The report includes direct provider cases and separate worksheet checks.
+Four providers remain untested because their API keys are missing.
