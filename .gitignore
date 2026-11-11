@@ -2,3 +2,8 @@
 .vscode/
 node_modules/
 coverage/
+.clasp.json
+.clasprc.json
+.env
+.env.local
+*.private.json

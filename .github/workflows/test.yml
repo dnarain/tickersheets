@@ -5,6 +5,9 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Unit Tests
@@ -16,24 +19,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - name: build distribution
-        run: npm run build  
-      - name: Commit and Push Dist File
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add dist/
-          git diff-index --quiet HEAD || git commit -m "auto update distribution file"
-          git push
-      - name: Create GitHub Release and Upload Asset
-        uses: softprops/action-gh-release@0bd7e8b279c9b5b36661d552472fbbfe671fe26e # v3.0.0
-        with:
-          tag_name: "latest"
-          files: dist/CacheFinance.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify bundle is up to date
         run: npm run build:check
+      - name: Verify provider test bundle is up to date
+        run: npm run build:provider-tests:check
       - name: Run unit tests with coverage
         run: npm run test:coverage
       - uses: actions/upload-artifact@v4

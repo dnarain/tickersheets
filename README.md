@@ -1,3 +1,11 @@
+## This fork
+
+This fork first tests the existing providers from Google Sheets and Apps Script.
+It does not require a hosted server or add SMF functions.
+See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
+
+The original CacheFinance documentation follows.
+
 ![Your Repository’s Stats](https://github-readme-stats.vercel.app/api?username=demmings&show_icons=true)
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=demmings_cachefinance)](https://sonarcloud.io/summary/new_code?id=demmings_cachefinance)

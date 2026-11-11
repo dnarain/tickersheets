@@ -6,6 +6,8 @@
   "scripts": {
     "build": "node scripts/build-cachefinance.mjs",
     "build:check": "node scripts/build-cachefinance.mjs --check",
+    "build:provider-tests": "node scripts/build-provider-tests.mjs",
+    "build:provider-tests:check": "node scripts/build-provider-tests.mjs --check",
     "validate": "npm run build:check && npm run test:coverage",
     "test": "vitest run",
     "test:watch": "vitest",
