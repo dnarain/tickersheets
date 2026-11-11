@@ -14,7 +14,7 @@ const site = (name = "YAHOOAPI", value = 12.34, extra = {}) => ({ siteName: name
 } });
 
 class Sheet {
-    constructor(name) { this.name = name; this.values = []; }
+    constructor(name) { this.name = name; this.values = []; this.events = []; }
     getRange(a, b, h = 1, w = 1) {
         let r = a, c = b;
         if (typeof a === "string") {
@@ -22,11 +22,11 @@ class Sheet {
         }
         const sheet = this;
         const api = {
-            setValues(values) { values.forEach((line, i) => line.forEach((value, j) => { sheet.values[r - 1 + i] ||= []; sheet.values[r - 1 + i][c - 1 + j] = value; })); return api; },
+            setValues(values) { sheet.events.push({ method: "setValues", r, c, h, w }); values.forEach((line, i) => line.forEach((value, j) => { sheet.values[r - 1 + i] ||= []; sheet.values[r - 1 + i][c - 1 + j] = value; })); return api; },
             getValues() { return Array.from({ length: h }, (_, i) => Array.from({ length: w }, (_, j) => sheet.values[r - 1 + i]?.[c - 1 + j] ?? "")); },
             getDisplayValues() { return api.getValues().map(line => line.map(String)); },
             setValue(value) { return api.setValues([[value]]); }, getValue() { return api.getValues()[0][0]; },
-            setNumberFormat() { return api; }, setFontWeight() { return api; }
+            setNumberFormat(format) { sheet.events.push({ method: "setNumberFormat", r, c, h, w, format }); return api; }, setFontWeight() { return api; }
         };
         return api;
     }
@@ -45,7 +45,7 @@ beforeEach(() => {
     fetch = vi.fn(() => response());
     globalThis.SpreadsheetApp = { getActiveSpreadsheet: () => book, flush: vi.fn(), getUi: () => ({ createMenu: () => menu }) };
     globalThis.LockService = { getDocumentLock: () => lock };
-    globalThis.Utilities = { getUuid: () => "01234567-abcdef" };
+    globalThis.Utilities = { getUuid: () => "01234567-abcdef", sleep: vi.fn() };
     globalThis.UrlFetchApp = { fetch };
     log = vi.spyOn(console, "log").mockImplementation(() => {});
 });
@@ -134,6 +134,44 @@ describe("direct provider evidence", () => {
         const rows = [row("GOOGLEWEBSITEFINANCE", "CURRENCY:USDCAD", "NAME"), row("GOOGLEWEBSITEFINANCE", "CURRENCY:USDCAD", "YIELDPCT")];
         const { directFetch } = runRows(rows, site("GOOGLEWEBSITEFINANCE"));
         expect(rows.every(item => item[4] === "UNSUPPORTED_ATTRIBUTE")).toBe(true); expect(directFetch).not.toHaveBeenCalled();
+    });
+    it("paces only distinct Alpha Vantage requests and does not repeat shared field downloads", () => {
+        const rows = [row("ALPHAVANTAGE"), row("ALPHAVANTAGE", "NASDAQ:NVDA"), row("ALPHAVANTAGE", "CURRENCY:USDCAD")];
+        const provider = site("ALPHAVANTAGE", 12.34, { getApiKey: () => "test-key" });
+        let now = 0; const starts = []; const pauses = [];
+        D.batch(rows, [provider], () => { starts.push(now); return response(); }, () => {}, () => now, ms => { pauses.push(ms); now += ms; });
+        expect(starts).toEqual([0, 1250, 2500]); expect(pauses).toEqual([1250, 1250]);
+        const publicPause = vi.fn();
+        D.batch([row(), row("YAHOOAPI", "NASDAQ:NVDA")], [site()], () => response(), () => {}, () => 0, publicPause);
+        expect(publicPause).not.toHaveBeenCalled();
+    });
+    it("does not add Alpha pacing after another provider already consumed the gap", () => {
+        const rows = [row("ALPHAVANTAGE"), row(), row("ALPHAVANTAGE", "NASDAQ:NVDA")];
+        let now = 0; const pauses = vi.fn();
+        const alpha = site("ALPHAVANTAGE", 1, { getApiKey: () => "test-key" });
+        D.batch(rows, [alpha, site()], () => { now += 2000; return response(); }, () => {}, () => now, pauses);
+        expect(pauses).not.toHaveBeenCalled();
+    });
+    it.each([
+        '{"Note":"secret-token https://example.test?apikey=secret-token"}',
+        '{"Information":"private account limit text"}',
+        '{"Error Message":"private provider error"}',
+        '{"status":"error","message":"private provider error"}'
+    ])("records a fixed safe note for a JSON provider message", body => {
+        const rows = [row("ALPHAVANTAGE")];
+        runRows(rows, site("ALPHAVANTAGE", null, { getApiKey: () => "secret-token" }), response(body));
+        expect(rows[0][4]).toBe("MISSING_VALUE");
+        expect(rows[0][13]).toBe("Provider error or limit message present; no valid value accepted.");
+        expect(JSON.stringify(rows)).not.toMatch(/secret-token|private provider error|private account limit/);
+        expect(log.mock.calls.flat().join("")).not.toContain("secret-token");
+    });
+    it("does not classify a normal JSON message or HTML body as a provider error message", () => {
+        for (const body of ['{"status":"ok","message":"Thank you"}', "<html>Information</html>", "null"]) {
+            expect(D.providerErrorMessagePresent(body)).toBe(false);
+        }
+        const rows = [row("ALPHAVANTAGE")];
+        runRows(rows, site("ALPHAVANTAGE", 123, { getApiKey: () => "test-key" }), response('{"Information":"informational response"}'));
+        expect(rows[0][4]).toBe("PARSED");
     });
     it("records only safe categorical text for fetch exceptions", () => {
         const rows = [row()]; D.batch(rows, [site()], () => { throw new Error("https://secret.test/?token=abc"); }, () => {}, () => 100000);
@@ -234,6 +272,37 @@ describe("bound-sheet execution and report", () => {
         [123, "Loading...", "#N/A", 1.4, 123.45, 123.45, 234.56].forEach((value, index) => sheet.getRange(5 + index, 4).setValue(value));
         const results = runner.CollectProviderWorksheetTests(); expect(results.map(item => item.status)).toEqual(["PASS", "WAITING", "FAILED", "PASS", "PASS", "PASS", "PASS"]);
         expect(results.every(item => item.directProviderEvidence === false)).toBe(true); expect(fetch).not.toHaveBeenCalled();
+    });
+    it("sets timestamp columns to plain text before writing original provider date strings", () => {
+        const sheet = new Sheet("CF Provider tests"); const rows = [row("ALPHAVANTAGE"), row("ALPHAVANTAGE", "CURRENCY:USDCAD")];
+        rows[0][7] = "2026-11-11T20:14:54.000Z"; rows[0][8] = "2026-11-10"; rows[0][9] = "latest trading day (date only)";
+        rows[1][7] = "2026-11-11T20:14:54.000Z"; rows[1][8] = "2026-11-11 20:14:54"; rows[1][9] = "Last Refreshed (provider timezone)";
+        runner.CFProviderWrite_(sheet, rows);
+        expect(sheet.events[0]).toEqual({ method: "setNumberFormat", r: 5, c: 8, h: 2, w: 3, format: "@" });
+        expect(sheet.events[1].method).toBe("setValues");
+        expect(sheet.getRange(5, 8, 2, 3).getValues()).toEqual(rows.map(item => item.slice(7, 10)));
+        expect(rows[0][8]).toBe("2026-11-10"); expect(rows[1][8]).toBe("2026-11-11 20:14:54");
+    });
+    it("normalizes only unambiguous legacy Date timestamps and flags provider-local dates for rerun", () => {
+        const retrieved = new Date("2026-11-11T20:14:54.000Z");
+        const rows = [row("FINNHUB"), row("ALPHAVANTAGE"), row("ALPHAVANTAGE", "CURRENCY:USDCAD"), row("YAHOO")];
+        rows.forEach(item => { item[7] = retrieved; item[8] = new Date("2026-11-10T08:00:00.000Z"); });
+        rows[0][9] = "t"; rows[1][9] = "latest trading day (date only)"; rows[2][9] = "Last Refreshed (provider timezone)";
+        const normalized = runner.CFProviderNormalizeRows_(rows);
+        expect(normalized.every(item => item[7] === retrieved.toISOString())).toBe(true);
+        expect(normalized[0][8]).toBe("2026-11-10T08:00:00.000Z");
+        expect(normalized.slice(1).every(item => item[8] === "Unknown" && item[13].includes("Rerun this provider"))).toBe(true);
+        expect(rows[1][8]).toBeInstanceOf(Date);
+    });
+    it("exports legacy Dates without inventing UTC times for Alpha date-only or naive timestamps", () => {
+        vi.spyOn(D, "sites").mockReturnValue([site()]); runner.RunProviderTests();
+        const source = sheets.get("CF Provider tests");
+        source.getRange("H5").setValue(new Date("2026-11-11T20:14:54.000Z"));
+        source.getRange("I5").setValue(new Date("2026-11-10T08:00:00.000Z"));
+        source.getRange("J5").setValue("latest trading day (date only)");
+        const report = JSON.parse(runner.CFProviderReportJson());
+        expect(report.rows[0][7]).toBe("2026-11-11T20:14:54.000Z"); expect(report.rows[0][8]).toBe("Unknown");
+        expect(report.rows[0][13]).toContain("Rerun this provider");
     });
     it("requires initialized worksheets and provider results before export", () => {
         expect(() => runner.CFProviderReportJson()).toThrow("Run provider tests first"); expect(() => runner.CollectProviderWorksheetTests()).toThrow("Run SetupProviderWorksheetTests first");

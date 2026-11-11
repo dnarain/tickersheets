@@ -3,7 +3,7 @@
  * CacheFinance direct provider diagnostic bundle.
  * Generated from upstream modules and src/CacheFinanceProviderTests.js.
  * Upstream parser logging is suppressed to protect API keys and response bodies.
- * Diagnostic source hash: 460ef8263d93
+ * Diagnostic source hash: 4c2a5ca3983d
  */
 /*
  * CacheFinance Apps Script bundle.
@@ -3691,6 +3691,15 @@ class CFProviderDiagnostics {
         return result;
     }
 
+    static providerErrorMessagePresent(body) {
+        try {
+            const data = JSON.parse(body);
+            if (!data || typeof data !== "object") return false;
+            return ["Note", "Information", "Error Message"].some(key => typeof data[key] === "string" && data[key].trim() !== "") ||
+                (String(data.status).toLowerCase() === "error" && typeof data.message === "string" && data.message.trim() !== "");
+        } catch { return false; }
+    }
+
     static parse(row, site, response, elapsed, retrieved, secrets) {
         row[5] = response.getResponseCode(); row[6] = elapsed; row[7] = retrieved;
         if (row[5] < 200 || row[5] >= 300) {
@@ -3719,7 +3728,11 @@ class CFProviderDiagnostics {
                 if (row[12] === "Unknown") row[12] = "Name matched";
             }
             if (!CFProviderDiagnostics.validValue(row[3], value)) {
-                row[4] = "MISSING_VALUE"; row[13] = "HTTP succeeded, but the adapter did not extract a valid value."; return;
+                row[4] = "MISSING_VALUE";
+                row[13] = CFProviderDiagnostics.providerErrorMessagePresent(body) ?
+                    "Provider error or limit message present; no valid value accepted." :
+                    "HTTP succeeded, but the adapter did not extract a valid value.";
+                return;
             }
             row[10] = typeof value === "string" ? CFProviderSanitize_(value.trim(), secrets) : value;
             row[4] = "PARSED";
@@ -3728,7 +3741,7 @@ class CFProviderDiagnostics {
     }
 
     /** Fetch each distinct URL once in this batch and parse its requested fields. */
-    static batch(rows, sites, fetch, publish, clock = () => Date.now()) {
+    static batch(rows, sites, fetch, publish, clock = () => Date.now(), pause = ms => Utilities.sleep(ms)) {
         const secrets = [];
         const byName = new Map(sites.map(site => [site.siteName, site]));
         const groups = new Map();
@@ -3747,8 +3760,13 @@ class CFProviderDiagnostics {
         publish(rows);
         const start = clock();
         let downloads = 0;
+        let lastAlphaRequestEnd = null;
         for (const group of groups.values()) {
             if (clock() - start >= 180000) break;
+            if (group.site.siteName === "ALPHAVANTAGE" && lastAlphaRequestEnd !== null) {
+                const remaining = 1250 - (clock() - lastAlphaRequestEnd);
+                if (remaining > 0) pause(remaining);
+            }
             group.rows.forEach(row => { row[4] = "RUNNING"; row[13] = "Direct request in progress."; });
             publish(rows);
             const requestStart = clock();
@@ -3761,6 +3779,7 @@ class CFProviderDiagnostics {
             } catch {
                 group.rows.forEach(row => { row[4] = "FETCH_ERROR"; row[6] = clock() - requestStart; row[7] = new Date(clock()).toISOString(); row[13] = "Direct request failed. Exception text is omitted to protect credentials."; });
             }
+            if (group.site.siteName === "ALPHAVANTAGE") lastAlphaRequestEnd = clock();
             publish(rows);
         }
         return { downloads, pending: rows.filter(row => row[4] === "PENDING" || row[4] === "RUNNING").length };
@@ -3773,9 +3792,25 @@ function CFProviderSheet_(book, name) {
     return sheet || book.insertSheet(name);
 }
 
+/** Preserve original timestamp strings; old ambiguous sheet dates need a rerun. */
+function CFProviderNormalizeRows_(rows) {
+    return rows.map(row => {
+        const values = row.slice();
+        if (values[7] instanceof Date) values[7] = Number.isFinite(values[7].getTime()) ? values[7].toISOString() : "Unknown";
+        if (values[8] instanceof Date) {
+            if (!["meta.regularMarketTime", "t", "timestamp", "quote.last_updated"].includes(values[9]) || !Number.isFinite(values[8].getTime())) {
+                values[8] = "Unknown";
+                values[13] = "Prior sheet date conversion changed provider-local or date-only text. Rerun this provider to restore its source timestamp.";
+            } else values[8] = values[8].toISOString();
+        }
+        return values;
+    });
+}
+
 function CFProviderWrite_(sheet, rows) {
     if (rows.length) {
-        const safeRows = rows.map(row => row.map(value => typeof value === "string" && /^[=+@-]/.test(value) ? "'" + value : value));
+        const safeRows = CFProviderNormalizeRows_(rows).map(row => row.map(value => typeof value === "string" && /^[=+@-]/.test(value) ? "'" + value : value));
+        sheet.getRange(5, 8, rows.length, 3).setNumberFormat("@");
         sheet.getRange(5, 1, safeRows.length, CF_PROVIDER_HEADERS.length).setValues(safeRows);
         sheet.getRange(5, 7, rows.length, 1).setNumberFormat("0");
     }
@@ -3828,7 +3863,7 @@ function CFProviderReportJson() {
     if (!source || source.getRange("A1").getValue() !== CF_PROVIDER_MARKER) throw new Error("Run provider tests first.");
     const rows = source.getLastRow() >= 5 ? source.getRange(5, 1, source.getLastRow() - 4, CF_PROVIDER_HEADERS.length).getValues() : [];
     const secrets = Object.values(CF_PROVIDER_KEYS).map(key => PropertiesService.getScriptProperties().getProperty(key)).filter(Boolean);
-    const safeRows = rows.map(row => row.map(value => typeof value === "string" ? CFProviderSanitize_(value, secrets) : value));
+    const safeRows = CFProviderNormalizeRows_(rows).map(row => row.map(value => typeof value === "string" ? CFProviderSanitize_(value, secrets) : value));
     const report = { environment: "Google Apps Script", financialCacheBypassed: true, upstream: CF_PROVIDER_UPSTREAM, runId: CFProviderSanitize_(source.getRange("B2").getValue(), secrets), exportedUtc: new Date().toISOString(), headers: CF_PROVIDER_HEADERS, rows: safeRows };
     const json = JSON.stringify(report);
     const sheet = CFProviderSheet_(book, CF_REPORT_SHEET);
