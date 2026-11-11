@@ -1,0 +1,38 @@
+{
+  "environment": "Google Apps Script",
+  "phase": "Initial keyed-provider follow-up",
+  "source": "CFProviderReportJson sanitized execution-log JSON",
+  "upstream_commit": "8f84e202e0c5d56f27b2bf000bb86817c3503894",
+  "diagnostic_commit": "ba7fcef2bdc174ac0a64bf3752d2508d45124260",
+  "diagnostic_source_hash": "460ef8263d93",
+  "diagnostic_bundle_sha256": "62a063f54d96140085f052fddee2404d7fa6ad8d19f0bebbb06a6f09ee6d0f90",
+  "run_id": "2026-11-11T19:20:54.398Z-3905e00e",
+  "exported_utc": "2026-11-11T20:17:56.473Z",
+  "distinct_direct_requests": 10,
+  "field_cases": 15,
+  "status_counts": { "PARSED": 14, "MISSING_VALUE": 1 },
+  "limitations": [
+    "This file preserves the initial sanitized export without changing its values.",
+    "Google Sheets coerced Alpha Vantage date-only and provider-local timestamp strings to Date values. Do not interpret those exported ISO values as provider UTC times.",
+    "Twelve Data timestamp identifies the opening of the requested interval. It does not establish the last price update time.",
+    "PARSED establishes extraction from the direct response, not independent financial accuracy."
+  ],
+  "headers": ["Run ID", "Provider", "Symbol", "Attribute", "Status", "HTTP", "Elapsed ms", "Retrieved UTC", "Source timestamp", "Timestamp field", "Value", "Endpoint without query", "Identity", "Note"],
+  "rows": [
+    ["2026-11-11T19:20:54.398Z-3905e00e","FINNHUB","NASDAQ:AAPL","PRICE","PARSED",200,135,"2026-11-11T20:14:11.178Z","2026-11-11T20:13:58.000Z","t",355,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","FINNHUB","NASDAQ:NVDA","PRICE","PARSED",200,88,"2026-11-11T20:14:12.107Z","2026-11-11T20:13:59.000Z","t",174.99,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","NASDAQ:AAPL","PRICE","PARSED",200,207,"2026-11-11T20:16:00.161Z","2026-11-11T14:30:00.000Z","timestamp",354.97,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","NASDAQ:AAPL","NAME","PARSED",200,207,"2026-11-11T20:16:00.161Z","2026-11-11T14:30:00.000Z","timestamp","Apple Inc.","[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","NASDAQ:NVDA","PRICE","PARSED",200,210,"2026-11-11T20:16:01.416Z","2026-11-11T14:30:00.000Z","timestamp",174.98,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","NASDAQ:NVDA","NAME","PARSED",200,210,"2026-11-11T20:16:01.416Z","2026-11-11T14:30:00.000Z","timestamp","NVIDIA Corporation","[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","CURRENCY:USDCAD","PRICE","PARSED",200,180,"2026-11-11T20:16:02.740Z","2026-11-11T20:00:00.000Z","timestamp",1.4247,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","TWELVEDATA","CURRENCY:USDCAD","NAME","PARSED",200,180,"2026-11-11T20:16:02.740Z","2026-11-11T20:00:00.000Z","timestamp","US Dollar / Canadian Dollar","[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","ALPHAVANTAGE","NASDAQ:AAPL","PRICE","PARSED",200,128,"2026-11-11T20:14:52.280Z","2026-11-10T08:00:00.000Z","latest trading day (date only)",348.51,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","ALPHAVANTAGE","NASDAQ:NVDA","PRICE","MISSING_VALUE",200,99,"2026-11-11T20:14:53.161Z","Unknown","","","[URL]","Unknown","HTTP succeeded, but the adapter did not extract a valid value."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","ALPHAVANTAGE","CURRENCY:USDCAD","PRICE","PARSED",200,148,"2026-11-11T20:14:54.702Z","2026-11-12T04:14:54.000Z","Last Refreshed (provider timezone)",1.4244,"[URL]","Unknown","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","COINMARKET","CURRENCY:BTCUSD","PRICE","PARSED",200,139,"2026-11-11T20:17:01.820Z","2026-11-11T20:16:04.000Z","quote.last_updated",74537.7983,"[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","COINMARKET","CURRENCY:BTCUSD","NAME","PARSED",200,139,"2026-11-11T20:17:01.820Z","2026-11-11T20:16:04.000Z","quote.last_updated","Bitcoin","[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","COINMARKET","CURRENCY:ETHUSD","PRICE","PARSED",200,101,"2026-11-11T20:17:02.660Z","2026-11-11T20:16:04.000Z","quote.last_updated",2080.6758,"[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."],
+    ["2026-11-11T19:20:54.398Z-3905e00e","COINMARKET","CURRENCY:ETHUSD","NAME","PARSED",200,101,"2026-11-11T20:17:02.660Z","2026-11-11T20:16:04.000Z","quote.last_updated","Ethereum","[URL]","Name matched","Direct response parsed. Freshness and financial accuracy require separate checks."]
+  ]
+}
