@@ -80,6 +80,9 @@ Keep keys out of worksheet cells, Git commits, screenshots and issue reports.
 The settings menu sends no requests to financial providers.
 Run the provider checks separately after saving keys.
 
+If the sidebar opens blank, try a browser profile or private window signed in to only the spreadsheet's Google account.
+Google documents [Apps Script problems with multiple signed-in accounts](https://developers.google.com/apps-script/guides/support/troubleshooting#issues_with_multiple_google_accounts).
+
 ## Read the report
 
 The report distinguishes valid parsed fields, unsupported cases, missing keys, HTTP errors and parsing errors.
@@ -126,3 +129,4 @@ Do not replace failed Google results with successful requests from a local compu
 The [November 11 Google Apps Script results](test-results/2026-11-11-google-apps-script/README.md) contain the first live run.
 The report includes direct provider cases and separate worksheet checks.
 The [keyed-provider follow-up](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) includes the remaining four providers and an Alpha Vantage recheck.
+The [API-key settings checks](test-results/2026-11-11-google-apps-script/API-KEY-SETTINGS.md) separate local passes from the incomplete live sidebar check.
