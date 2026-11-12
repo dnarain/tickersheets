@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import vm from "node:vm";
-import { CFSettingsMenu_, CFShowApiKeySettings, CFGetApiKeyStatus, CFSaveApiKeys } from "../src/CacheFinanceSettings.js";
+import { CFSettingsMenu_, CFShowApiKeySettings, CFGetApiKeyStatus, CFSaveApiKeys, CFEnterFredKey } from "../src/CacheFinanceSettings.js";
 
-const ids = ["FINNHUB", "ALPHA_VANTAGE", "TWELVE_DATA", "COINMARKET"];
+const ids = ["FINNHUB", "ALPHA_VANTAGE", "TWELVE_DATA", "COINMARKET", "FRED"];
 const propertyNames = ids.map(id => `${id}_API_KEY`);
 const expectedStatus = (configured = false) => ({
     ok: true,
-    providers: ids.map((id, index) => ({ id, label: ["Finnhub", "Alpha Vantage", "Twelve Data", "CoinMarketCap"][index], configured }))
+    providers: ids.map((id, index) => ({ id, label: ["Finnhub", "Alpha Vantage", "Twelve Data", "CoinMarketCap", "FRED"][index], configured }))
 });
 
 let values;
@@ -61,6 +61,22 @@ describe("API key status", () => {
 });
 
 describe("API key saves", () => {
+    it("saves a FRED key through Google's native prompt without returning its value", () => {
+        const key = "a".repeat(32);
+        ui.Button = { OK: "OK" }; ui.ButtonSet = { OK_CANCEL: "OK_CANCEL" };
+        ui.prompt = vi.fn(() => ({ getSelectedButton: () => "OK", getResponseText: () => key }));
+        const result = CFEnterFredKey();
+        expect(result).toEqual({ ok: true }); expect(values.get("FRED_API_KEY")).toBe(key);
+        expect(JSON.stringify([result, ui.alert.mock.calls])).not.toContain(key);
+        expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: key }, false);
+    });
+    it.each([["CANCEL", "a".repeat(32)], ["OK", ""], ["OK", "bad-key"]])("keeps saved keys for cancelled, blank or invalid native entry (%s)", (button, value) => {
+        ui.Button = { OK: "OK" }; ui.ButtonSet = { OK_CANCEL: "OK_CANCEL" };
+        ui.prompt = vi.fn(() => ({ getSelectedButton: () => button, getResponseText: () => value }));
+        values.set("FRED_API_KEY", "existing"); CFEnterFredKey();
+        expect(values.get("FRED_API_KEY")).toBe("existing");
+        expect(properties.setProperties).not.toHaveBeenCalled(); expect(properties.deleteProperty).not.toHaveBeenCalled();
+    });
     it("keeps all keys for an empty update and reports no values", () => {
         values.set("FINNHUB_API_KEY", "saved-secret");
         const result = CFSaveApiKeys({ updates: [] });
@@ -100,7 +116,7 @@ describe("API key saves", () => {
         expect(JSON.stringify(result)).not.toContain("new-finnhub");
     });
 
-    it("supports all four provider keys without deleting other properties", () => {
+    it("supports all five provider keys without deleting other properties", () => {
         const result = CFSaveApiKeys({ updates: ids.map(provider => ({ provider, action: "replace", value: `synthetic-${provider}` })) });
         expect(result).toEqual(expectedStatus(true));
         expect([...values.keys()]).toEqual(propertyNames);

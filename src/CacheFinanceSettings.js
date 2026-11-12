@@ -1,19 +1,36 @@
 /*  *** DEBUG START ***
 //  Remove comments for testing in NODE
-export { CFSettingsMenu_, CFShowApiKeySettings, CFGetApiKeyStatus, CFSaveApiKeys };
+export { CFSettingsMenu_, CFShowApiKeySettings, CFGetApiKeyStatus, CFSaveApiKeys, CFEnterFredKey };
 //  *** DEBUG END ***/
 
 const CF_KEY_PROVIDERS_ = Object.freeze([
     { id: "FINNHUB", label: "Finnhub", property: "FINNHUB_API_KEY" },
     { id: "ALPHA_VANTAGE", label: "Alpha Vantage", property: "ALPHA_VANTAGE_API_KEY" },
     { id: "TWELVE_DATA", label: "Twelve Data", property: "TWELVE_DATA_API_KEY" },
-    { id: "COINMARKET", label: "CoinMarketCap", property: "COINMARKET_API_KEY" }
+    { id: "COINMARKET", label: "CoinMarketCap", property: "COINMARKET_API_KEY" },
+    { id: "FRED", label: "FRED", property: "FRED_API_KEY" }
 ]);
 
 /** Add this menu from the spreadsheet's onOpen function. */
 function CFSettingsMenu_() {
     SpreadsheetApp.getUi().createMenu("CacheFinance")
-        .addItem("API keys…", "CFShowApiKeySettings").addToUi();
+        .addItem("API keys…", "CFShowApiKeySettings")
+        .addItem("Enter FRED key…", "CFEnterFredKey").addToUi();
+}
+
+/** Native Google prompt works without the embedded HTML sidebar. The user submits it. */
+function CFEnterFredKey() {
+    const ui = SpreadsheetApp.getUi();
+    try {
+        const reply = ui.prompt("Save FRED API key", "Paste your existing FRED key. Google's standard prompt shows the text you type. The key is saved in this private script's properties, outside worksheet cells. Blank keeps the existing key.", ui.ButtonSet.OK_CANCEL);
+        if (reply.getSelectedButton() !== ui.Button.OK) return { ok: false, cancelled: true };
+        const value = reply.getResponseText().trim();
+        if (!value) { ui.alert("No key changed."); return { ok: true, changed: false }; }
+        if (!/^[a-z0-9]{32}$/.test(value)) { ui.alert("FRED keys contain 32 lowercase letters and digits. Check the key and try again."); return { ok: false, error: "Invalid FRED key format." }; }
+        const saved = CFSaveApiKeys({ updates: [{ provider: "FRED", action: "replace", value }] });
+        ui.alert(saved.ok ? "FRED key saved. Choose Stock analysis → Refresh selected ticker to load the economic series." : "Unable to save the FRED key. Try again.");
+        return { ok: saved.ok };
+    } catch (_error) { ui.alert("Unable to open or save FRED key settings. Try again."); return { ok: false, error: "Unable to save FRED key settings." }; }
 }
 
 /** Open a sidebar. Saved keys are never included in its HTML. */
@@ -77,7 +94,7 @@ function CFValidateKeyUpdates_(request) {
     return updates;
 }
 
-/** Save only the four supported API key properties. */
+/** Save only the supported API key properties. */
 function CFSaveApiKeys(request) {
     const failure = { ok: false, error: "Unable to save API keys. Check the entries and try again." };
     let lock;
@@ -127,8 +144,8 @@ input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
 <script>
 (function () {
   'use strict';
-  var ids = ['FINNHUB','ALPHA_VANTAGE','TWELVE_DATA','COINMARKET'];
-  var labels = ['Finnhub','Alpha Vantage','Twelve Data','CoinMarketCap'];
+  var ids = ['FINNHUB','ALPHA_VANTAGE','TWELVE_DATA','COINMARKET','FRED'];
+  var labels = ['Finnhub','Alpha Vantage','Twelve Data','CoinMarketCap','FRED'];
   var root = document.getElementById('providers');
   var form = document.getElementById('settings');
   var message = document.getElementById('message');
