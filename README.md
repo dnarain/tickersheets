@@ -1,7 +1,7 @@
 ## This fork
 
 This fork tests and repairs selected providers from Google Sheets and Apps Script.
-It does not require a hosted server or add SMF functions.
+It does not require a hosted server.
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
 The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
 The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDER-FIXES.md) include Google price/yield repairs, Yahoo yield repairs and Globe ticker checks.
@@ -9,6 +9,7 @@ The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDE
 The [one-ticker analysis guide](ANALYSIS.md) explains how to build the stock-analysis tabs directly in Apps Script.
 Change one ticker to refresh history, indicators, fundamentals, earnings and supported option data.
 FRED series use your private `FRED_API_KEY` setting.
+The [analysis test results](test-results/2026-11-11-google-apps-script/STOCK-ANALYSIS.md) record live ticker, expiration and FRED checks.
 
 Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
 Reload the spreadsheet after installing the script.

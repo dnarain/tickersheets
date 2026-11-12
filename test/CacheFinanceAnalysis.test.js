@@ -96,6 +96,30 @@ describe("one-ticker analysis collection", () => {
         expect(requests).toHaveBeenCalledTimes(2);
     });
 
+    it.each([
+        [404, ""],
+        [200, '<title>Symbol lookup from Yahoo Finance</title><div>Related assets</div>'],
+        [200, "{malformed JSON"],
+        [200, JSON.stringify({ chart: { result: null, error: { description: "synthetic-private-provider-error" } } })]
+    ])("returns an empty analysis for a well-formed nonexistent ticker when providers return HTTP %s (%#)", (http, body) => {
+        const requests = vi.fn(() => response(body, http));
+        const snapshot = CFAnalysisService.collect("ZZZZCFINVALID20261111", "", { fetch: requests, fredKey: syntheticKey });
+        expect(snapshot.ok).toBe(false); expect(snapshot.symbol).toBe("ZZZZCFINVALID20261111");
+        expect(snapshot.chart.history).toEqual([]); expect(snapshot.details.fields).toEqual({}); expect(snapshot.details.earnings).toEqual([]);
+        expect(snapshot.options.contracts).toEqual([]); expect(snapshot.benchmarks).toEqual({});
+        expect(requests).toHaveBeenCalledTimes(2);
+        expect(requests.mock.calls.some(([url]) => /stlouisfed|fc\.yahoo/.test(url))).toBe(false);
+        expect(CFAnalysisService.summary(snapshot)).toMatchObject({ ok: false, historyRows: 0, fundamentalFields: 0, earningsRows: 0, optionContracts: 0 });
+        expect(JSON.stringify(snapshot)).not.toContain("synthetic-private-provider-error"); expect(JSON.stringify(snapshot)).not.toContain(syntheticKey);
+    });
+
+    it("keeps all-source request failures structured and omits exception text", () => {
+        const requests = vi.fn(() => { throw new Error("synthetic-private-request-error"); });
+        const snapshot = CFAnalysisService.collect("ZZZZCFINVALID20261111", "", { fetch: requests });
+        expect(snapshot.ok).toBe(false); expect(snapshot.sources.map(row => row.status)).toEqual(["Request failed", "Request failed"]);
+        expect(JSON.stringify(snapshot)).not.toContain("synthetic-private-request-error");
+    });
+
     it("retains useful history when fundamentals, comparison pages and options fail", () => {
         const requests = network({ request: url => {
             if (url.includes("finance.yahoo.com/quote/") || url.includes("www.google.com") || url.includes("www.theglobeandmail.com")) return response("private-provider-error", 403);
@@ -223,6 +247,18 @@ describe("analysis spreadsheet actions", () => {
         expect(result).toEqual({ ok: false, error: "Unable to refresh. Check the ticker and try again." });
         expect(sheets.render).not.toHaveBeenCalled(); expect(lock.releaseLock).toHaveBeenCalledOnce();
         expect(JSON.stringify([result, log.mock.calls, sheets.status.mock.calls])).not.toContain(syntheticKey);
+    });
+
+    it("renders an unavailable-source result for a nonexistent ticker without reporting an internal fetch error", () => {
+        sheets.readInput.mockReturnValue({ ticker: "ZZZZCFINVALID20261111", expiration: "", loadedTicker: "ZZZZCFINVALID20261111" });
+        fetch.mockImplementation(() => response("", 404));
+        const summary = CFRefreshAnalysis();
+        expect(summary).toMatchObject({ ok: false, symbol: "ZZZZCFINVALID20261111", historyRows: 0, fundamentalFields: 0 });
+        expect(sheets.render).toHaveBeenCalledWith(book, expect.objectContaining({ ok: false }));
+        expect(log.mock.calls.some(([message]) => message.startsWith("CF_ANALYSIS_REFRESH "))).toBe(true);
+        expect(log.mock.calls.some(([message]) => message.startsWith("CF_ANALYSIS_ERROR "))).toBe(false);
+        expect(book.toast).toHaveBeenCalledWith("No matching quote data returned. Check the ticker and CF Sources.", "Stock analysis", 10);
+        expect(lock.releaseLock).toHaveBeenCalledOnce();
     });
 
     it("requires an open spreadsheet before building or refreshing", () => {

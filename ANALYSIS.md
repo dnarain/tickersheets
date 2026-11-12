@@ -50,6 +50,24 @@ It does not include the fixed NVIDIA archives from the Excel workbook.
 A reported zero remains zero.
 Times display in the spreadsheet's time zone.
 
+## Charts and images
+
+The script creates four native Google Sheets charts:
+
+- Six-month close, SMA50 and SMA200.
+- Two-year adjusted growth against SPY and QQQ.
+- RSI14 with the 30 and 70 reference levels.
+- Option payoff at expiration, when usable source quotes exist.
+
+The saved Excel reference also has four charts.
+Its IV-by-expiration chart still requires a port that downloads quotes for multiple expirations.
+The current options adapter downloads one selected expiration.
+
+The script does not insert provider images from StockCharts or Finviz.
+Those image endpoints require separate Google Sheets access tests.
+The downloaded tables can also support volume, MACD, earnings, FRED and selected-expiration IV charts.
+Those additional charts are not implemented yet.
+
 ## Price and indicator dates
 
 The current quote comes from Yahoo Chart metadata.
@@ -84,6 +102,8 @@ The source does not establish a bid/ask timestamp.
 
 The calculator uses European Black–Scholes prices and Greeks.
 Its inputs are editable and reset on refresh.
+The default days to expiration uses whole calendar days.
+Same-day options require an editable fractional-day input to model remaining time.
 Rates, dividend yields and implied volatility are fractions, formatted as percentages.
 Theta is per calendar day; vega and rho are per one percentage point.
 The default risk-free rate is an editable 4% assumption.
