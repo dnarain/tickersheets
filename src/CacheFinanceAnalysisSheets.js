@@ -226,7 +226,7 @@ class CFAnalysisSheets {
         const atmIv = atmQuotes.length ? atmQuotes.reduce((sum, row) => sum + row.iv, 0) / atmQuotes.length : null;
         main.getRange("A4").setValue("Ticker"); CFAnalysisSheets.input_(main, "B4", ticker);
         main.getRange("D4").setValue("Last refresh"); main.getRange("E4").setValue(CFAnalysisSheets.date_(snapshot.fetchedAt, book) || "N/A").setNumberFormat("mmm d, hh:mm");
-        main.getRange("G4").setValue("Status"); main.getRange("H4").setValue("Updated; see CF Sources for provider results."); main.setColumnWidth(8, 260);
+        main.getRange("G4").setValue("Status"); main.getRange("H4").setValue(snapshot.ok === false ? "No matching quote data. Check the ticker and CF Sources." : "Updated; see CF Sources for provider results."); main.setColumnWidth(8, 260);
         main.getRange("A5").setValue("Yahoo symbol"); main.getRange("B5").setValue(CFAnalysisSheets.safe_(snapshot.symbol));
         main.getRange("D5").setValue("Company"); main.getRange("E5:H5").merge().setValue(CFAnalysisSheets.safe_(chart.name || snapshot.details?.name));
         main.getRange("A6").setValue("Currency"); main.getRange("B6").setValue(CFAnalysisSheets.safe_(chart.currency));
@@ -333,7 +333,23 @@ class CFAnalysisSheets {
         const rows = name => { const sheet = book.getSheetByName(name); return sheet ? sheet.getRange(8, 1, Math.max(sheet.getLastRow() - 7, 1), Math.min(sheet.getMaxColumns(), 10)).getValues() : []; };
         const sourceRows = rows("CF Sources"), earningsRows = rows("CF Earnings");
         const earningsEnd = earningsRows.findIndex(row => row[0] === "Financial period");
+        const options = book.getSheetByName("CF Options");
+        const modelValues = options ? options.getRange("S4:S11").getValues().flat() : [];
+        const model = Object.fromEntries(["price", "delta", "gamma", "theta", "vega", "rho", "d1", "d2"].map((name, index) => [name, modelValues[index] ?? null]));
+        const formulaErrors = [];
+        for (const [sheet, address] of [[main, "B9:B24"], [options, "S4:S16"], [options, "O24:P44"]]) {
+            if (!sheet) continue;
+            const values = sheet.getRange(address).getValues();
+            values.forEach((line, row) => line.forEach((value, column) => {
+                if (typeof value === "string" && /^#(?:REF!|ERROR!|NAME\?|VALUE!|NUM!|DIV\/0!|N\/A)/.test(value)) formulaErrors.push({ sheet: sheet.getName(), range: address, rowOffset: row, columnOffset: column, value });
+            }));
+        }
+        const expiryCell = options?.getRange("B4");
+        const validation = typeof expiryCell?.getDataValidation === "function" ? expiryCell.getDataValidation() : null;
+        const criteria = validation ? validation.getCriteriaValues() : [];
+        const availableExpirations = Array.isArray(criteria[0]) ? criteria[0].filter(value => typeof value === "string").slice(0, 40) : [];
         return { ticker: sources ? sources.getRange("B3").getValue() || "" : "", inputTicker: main ? main.getRange("B4").getValue() : "", symbol: main ? main.getRange("B5").getValue() : "",
+            status: main ? main.getRange("H4").getValue() : "", selectedExpiration: options ? CFAnalysisSheets.readInput(book).expiration : "", availableExpirations, model, formulaErrors,
             historyRows: rows("CF Price history").filter(row => row[0] instanceof Date).length,
             earningsRows: earningsRows.slice(0, earningsEnd < 0 ? earningsRows.length : earningsEnd).filter(row => (row[1] === "GAAP" || row[1] === "Adjusted") && (typeof row[2] === "number" || typeof row[3] === "number")).length,
             fundamentalRows: rows("CF Fundamentals").filter(row => typeof row[0] === "string" && row[0] && row[0] !== "Metric" && row[4]).length,

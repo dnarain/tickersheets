@@ -53,6 +53,20 @@ describe("managed analysis tabs",()=>{
 });
 
 describe("analysis rendering",()=>{
+    it("shows a failed quote refresh without a success status", () => {
+        S.build(book);
+        const data = snapshot(); data.ok = false;
+        S.render(book, data);
+        expect(book.getSheetByName("CF Analysis").getRange("H4").getValue()).toBe("No matching quote data. Check the ticker and CF Sources.");
+    });
+    it("reports native model formula errors separately from unavailable source values", () => {
+        S.build(book); S.render(book, snapshot());
+        const options = book.getSheetByName("CF Options");
+        options.getRange("S4").setValue("#REF!"); options.getRange("S5").setValue("N/A");
+        const report = S.inspect(book);
+        expect(report.model.price).toBe("#REF!");
+        expect(report.formulaErrors).toEqual([{ sheet: "CF Options", range: "S4:S16", rowOffset: 0, columnOffset: 0, value: "#REF!" }]);
+    });
     it("writes typed data, three current-ticker charts and independently counted sections",()=>{S.build(book);const result=S.render(book,snapshot());expect(result).toMatchObject({ticker:"NVDA",symbol:"NVDA",historyRows:260,earningsRows:1,fundamentalRows:3,optionRows:0});expect(result.chartTitles).toHaveLength(3);expect(result.chartTitles.every(title=>title.includes("NVDA"))).toBe(true);expect(result.errors).toEqual([{provider:"Options",status:"HTTP_ERROR",note:"No accepted chain."}]);const h=book.getSheetByName("CF Price history");expect(h.getRange("A8").getValue()).toBeInstanceOf(Date);expect(h.getRange("E8").getValue()).toBe(100);expect(h.getRange("I8").getValue()).toBe("");expect(book.getSheetByName("CF Analysis").getRange("B9").getValue()).toBe(359);});
     it("charts exactly126recentbars without treating the first bar as a header",()=>{S.build(book);S.render(book,snapshot());const first=book.getSheetByName("CF Analysis").charts[0].spec;expect(first.headers).toBe(0);expect(first.ranges.every(range=>range.height===126)).toBe(true);expect(first.options.series[0].labelInLegend).toBe("Yahoo close");expect(first.options.interpolateNulls).toBe(false);});
     it("updates all visible sheet titles and chart titles when switching ticker",()=>{S.build(book);S.render(book,snapshot());book.getSheetByName("CF Analysis").getRange("B4").setValue("AAPL");S.invalidate(book,"Ticker changed");expect(S.inspect(book)).toMatchObject({ticker:"",inputTicker:"AAPL",historyRows:0,earningsRows:0,fundamentalRows:0,optionRows:0,chartTitles:[]});for(const name of names)expect(book.getSheetByName(name).getRange("A1").getValue()).toContain("AAPL");const result=S.render(book,snapshot("AAPL"));expect(result.chartTitles.every(title=>title.includes("AAPL")&&!title.includes("NVDA"))).toBe(true);});
