@@ -752,7 +752,7 @@ The historical `CACHEFINANCE` overload stores supplied `GOOGLEFINANCE` history.
 `CFHISTORY` retrieves Yahoo history directly.
 The historical overload can return the supplied history table with its header.
 
-The [original README](README.md) explains the existing cache commands and historical overload.
+The [upstream reference](UPSTREAM.md) explains the existing cache commands and historical overload.
 
 ## Keys and sharing
 
