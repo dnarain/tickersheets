@@ -2,6 +2,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import { describe, expect, it, vi } from "vitest";
 import { buildCacheFinanceBundle } from "../scripts/gas-source.mjs";
+import { ManagedBook } from "./helpers/ManagedSheetMock.js";
 
 const chart = fs.readFileSync(new URL("./fixtures/analysis-chart-nvda.json", import.meta.url), "utf8");
 const details = fs.readFileSync(new URL("./fixtures/analysis-details-nvda.html", import.meta.url), "utf8");
@@ -31,7 +32,7 @@ function runtime() {
         PropertiesService: { getScriptProperties: () => ({ getProperty: name => name === "FRED_API_KEY" ? fredKey : null }) },
         SpreadsheetApp: { getUi: () => ({ createMenu: menu }) } };
     const { bundle } = buildCacheFinanceBundle();
-    const bindings = vm.runInNewContext(bundle + ";({ CFQUOTE, CFHISTORY, CFFUNDAMENTALS, CFOPTIONS, CFEXPIRATIONS, CFFRED, CFFREDVALUE, CFRSITARGETS, CFFIELD, CFDATASTATUS, CFSTRATEGY, CFOPTIONMODEL, CACHEFINANCE, CACHEFINANCES, CFAnalysisService, CFPublicData, CFAnalysisStrategies, CFSmfProviders, CFFunctionExamples, CFWatchlist, onOpen, hasCallback: name => typeof globalThis[name] === 'function' });", globals);
+    const bindings = vm.runInNewContext(bundle + ";({ CFQUOTE, CFHISTORY, CFFUNDAMENTALS, CFOPTIONS, CFEXPIRATIONS, CFFRED, CFFREDVALUE, CFRSITARGETS, CFFIELD, CFDATASTATUS, CFSTRATEGY, CFOPTIONMODEL, CACHEFINANCE, CACHEFINANCES, CFAnalysisService, CFPublicData, CFAnalysisStrategies, CFSmfProviders, CFFunctionExamples, CFWatchlist, CFWorkbookNames, CFLookupChecks, onOpen, hasCallback: name => typeof globalThis[name] === 'function' });", globals);
     return { bindings, values, fetch, menuItems, logs, requests, bundle };
 }
 
@@ -50,6 +51,17 @@ describe("research features in the generated Apps Script bundle", () => {
         expect(b.CFHISTORY("NVDA", 1)[1][0]).toBe("2026-11-11"); expect(fetch).toHaveBeenCalledTimes(2);
         expect(b.CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeCloseTo(21.96, 1); expect(b.CFFIELD("FINVIZ", "NVDA", 4074)).toBe(173.73);
         expect(b.CFDATASTATUS("NVDA", "provider", "FINVIZ")[1][0]).toBe("Available"); expect(fetch).toHaveBeenCalledTimes(4);
+    });
+    it("creates named example, watchlist and lookup tabs with the current Analysis input", () => {
+        const { bindings: b, fetch } = runtime(), book = new ManagedBook(), main = book.insertSheet("Analysis");
+        main.getRange("Z1").setValue("CACHEFINANCE_ANALYSIS_V1"); main.getRange("B4").setValue("NVDA");
+        expect(typeof b.CFWorkbookNames.migrate).toBe("function");
+        expect(b.CFFunctionExamples.build(book).sheet).toBe("Formulas");
+        expect(book.getSheetByName("Formulas").getRange("B4").getValue()).toBe("=Analysis!B4");
+        expect(b.CFWatchlist.build(book).sheets).toEqual(["Watchlist", "Journal"]);
+        expect(b.CFLookupChecks.build(book)).toMatchObject({ sheet: "Lookup tests", cases: 18 });
+        expect([...book.sheets.keys()]).toEqual(["Analysis", "Formulas", "Watchlist", "Journal", "Lookup tests"]);
+        expect(fetch).not.toHaveBeenCalled();
     });
     it("runs the anonymous option flow and excludes session values from returned/cached data", () => {
         const { bindings: b, values, requests, logs } = runtime();

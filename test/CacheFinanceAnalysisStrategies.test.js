@@ -90,9 +90,9 @@ const quote = (type, strike, extra = {}) => ({ type, strike, expiration: "2026-1
 const snapshot = () => ({ ticker: "NVDA", symbol: "NVDA", chart: { price: 99 }, options: { ok: true, symbol: "NVDA", underlyingPrice: 100, contracts: [quote("Call", 100), quote("Call", 110), quote("Put", 90), quote("Put", 100)] } });
 let sheets, book;
 beforeEach(() => {
-    sheets = new Map(["CF Analysis", "CF Options"].map(name => [name, new Sheet(name)]));
+    sheets = new Map(["Analysis", "Options"].map(name => [name, new Sheet(name)]));
     for (const sheet of sheets.values()) { sheet.getRange("Z1").setValue("CACHEFINANCE_ANALYSIS_V1"); sheet.mutations = 0; }
-    sheets.get("CF Analysis").getRange("B4").setValue("NVDA"); sheets.get("CF Options").getRange("B4").setValue("2026-11-20");
+    sheets.get("Analysis").getRange("B4").setValue("NVDA"); sheets.get("Options").getRange("B4").setValue("2026-11-20");
     book = { getSheetByName: name => sheets.get(name), insertSheet: name => { const sheet = new Sheet(name); sheets.set(name, sheet); return sheet; }, getSpreadsheetTimeZone: () => "America/Los_Angeles" };
     vi.stubGlobal("Charts", { ChartType: { LINE: "LINE" } });
     vi.stubGlobal("SpreadsheetApp", { newDataValidation: () => { const data = {}; return { requireValueInList(values) { data.values = values; return this; }, setAllowInvalid(value) { data.allowInvalid = value; return this; }, build() { return data; } }; } });
@@ -100,14 +100,14 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 describe("editable strategy tab", () => {
     it("rejects an unmarked user tab and a changed ticker before writes", () => {
-        const own = new Sheet("CF Strategies"); own.getRange("A1").setValue("personal sheet"); own.mutations = 0; sheets.set("CF Strategies", own);
-        expect(() => Strategies.render(book, snapshot())).toThrow("not a CacheFinance"); expect(own.mutations).toBe(0);
-        expect(() => Strategies.invalidate(book, "changed")).toThrow("not a CacheFinance"); expect(own.getRange("A1").getValue()).toBe("personal sheet");
-        sheets.delete("CF Strategies"); sheets.get("CF Analysis").getRange("B4").setValue("AAPL");
-        expect(() => Strategies.render(book, snapshot())).toThrow("ticker changed"); expect(sheets.has("CF Strategies")).toBe(false);
+        const own = new Sheet("Strategies"); own.getRange("A1").setValue("personal sheet"); own.mutations = 0; sheets.set("Strategies", own);
+        expect(() => Strategies.render(book, snapshot())).toThrow("not managed by Single Stock Analysis"); expect(own.mutations).toBe(0);
+        expect(() => Strategies.invalidate(book, "changed")).toThrow("not managed by Single Stock Analysis"); expect(own.getRange("A1").getValue()).toBe("personal sheet");
+        sheets.delete("Strategies"); sheets.get("Analysis").getRange("B4").setValue("AAPL");
+        expect(() => Strategies.render(book, snapshot())).toThrow("ticker changed"); expect(sheets.has("Strategies")).toBe(false);
     });
     it("creates only its own marked tab and uses actual asks for longs and bids for shorts", () => {
-        const result = Strategies.render(book, snapshot()), sheet = sheets.get("CF Strategies");
+        const result = Strategies.render(book, snapshot()), sheet = sheets.get("Strategies");
         expect(result).toMatchObject({ ticker: "NVDA", quoteRows: 4, expiration: "2026-11-20", payoffChart: true });
         expect(sheet.getRange("Z1").getValue()).toBe("CACHEFINANCE_STRATEGIES_V1"); expect(sheet.maxRows).toBe(1055);
         expect(sheet.getRange("B5").getValue()).toBe(100); expect(sheet.getRange("B10").getValue()).toBe(1); expect(sheet.getRange("B11").getValue()).toBe(100);
@@ -119,17 +119,17 @@ describe("editable strategy tab", () => {
         ]);
         expect(sheet.formulas.get("B7")).toContain("FILTER($D$56:$D$1055"); expect(sheet.formulas.get("B9")).toContain("FILTER($C$56:$C$1055");
         for (const address of ["B7", "B9"]) { expect(sheet.formulas.get(address)).toContain('"Call","Put"'); expect(sheet.formulas.get(address)).toContain('"N/A"'); }
-        expect(sheet.formulas.get("A1")).toContain("'CF Analysis'!$B$4");
+        expect(sheet.formulas.get("A1")).toContain("Analysis!$B$4");
         expect(sheet.charts[0].options.title).toBe("NVDA — strategy payoff");
         expect(sheet.formulas.get("25:2")).toContain('"payoff",A25');
         expect(sheet.formulas.get("4:5")).toBe('=CFSTRATEGY($B$4,$B$5,$B$6,$B$7,$B$8,$B$9,$B$10,$B$11,$B$12,"initialCashflow")');
         expect(sheet.validations.get("B4")).toMatchObject({ values: Strategies.names(), allowInvalid: false });
-        expect(sheets.get("CF Options").getRange("Z1").getValue()).toBe("CACHEFINANCE_ANALYSIS_V1");
+        expect(sheets.get("Options").getRange("Z1").getValue()).toBe("CACHEFINANCE_ANALYSIS_V1");
     });
     it("never seeds mismatched symbols, dates, OCC identifiers or crossed quotes", () => {
         const data = snapshot(); data.options.contracts = [quote("Call", 100, { bid: 5, ask: 4 }), quote("Call", 100, { expiration: "2026-12-18" }), quote("Call", 100, { contractSymbol: "=IMPORTXML(1)" }), quote("Put", 100, { contractSymbol: "AAPL261120P00100000" })];
         expect(Strategies.render(book, data)).toMatchObject({ quoteRows: 0, payoffChart: false });
-        const sheet = sheets.get("CF Strategies"); expect(sheet.getRange("W5").getValue()).toBe("N/A"); expect(sheet.charts).toEqual([]);
+        const sheet = sheets.get("Strategies"); expect(sheet.getRange("W5").getValue()).toBe("N/A"); expect(sheet.charts).toEqual([]);
         data.options.symbol = "AAPL"; expect(Strategies.render(book, data).quoteRows).toBe(0); expect(sheet.getRange("B5").getValue()).toBe(99);
     });
     it.each([[1200, 500, 500], [3, 997, 3]])("retains nearest calls and puts in a chain with 1200 calls and %s puts", (putCount, expectedCalls, expectedPuts) => {
@@ -137,7 +137,7 @@ describe("editable strategy tab", () => {
         data.options.contracts = [...Array.from({ length: 1200 }, (_value, index) => quote("Call", index + 1)),
             ...Array.from({ length: putCount }, (_value, index) => quote("Put", putCount === 3 ? 899 + index : index + 1))];
         expect(Strategies.render(book, data).quoteRows).toBe(1000);
-        const sheet = sheets.get("CF Strategies"), rows = sheet.getRange("A56:G1055").getValues();
+        const sheet = sheets.get("Strategies"), rows = sheet.getRange("A56:G1055").getValues();
         expect(rows.filter(row => row[0] === "Call")).toHaveLength(expectedCalls);
         expect(rows.filter(row => row[0] === "Put")).toHaveLength(expectedPuts);
         for (const type of ["Call", "Put"]) expect(rows.some(row => row[0] === type && row[1] === 900)).toBe(true);
@@ -151,21 +151,21 @@ describe("editable strategy tab", () => {
     });
     it("preserves actual zero bids and converts Date expiration in the spreadsheet time zone", () => {
         const data = snapshot(); data.options.contracts[0].bid = 0;
-        const date = new Date("2026-11-19T15:00:00.000Z"); sheets.get("CF Options").getRange("B4").setValue(date);
+        const date = new Date("2026-11-19T15:00:00.000Z"); sheets.get("Options").getRange("B4").setValue(date);
         book.getSpreadsheetTimeZone = () => "Asia/Tokyo"; vi.stubGlobal("Utilities", { formatDate: vi.fn(() => "2026-11-20") });
-        expect(Strategies.render(book, data).quoteRows).toBe(4); expect(sheets.get("CF Strategies").getRange("X5").getValue()).toBe(0);
+        expect(Strategies.render(book, data).quoteRows).toBe(4); expect(sheets.get("Strategies").getRange("X5").getValue()).toBe(0);
         expect(Utilities.formatDate).toHaveBeenCalledWith(date, "Asia/Tokyo", "yyyy-MM-dd");
     });
     it("removes all old quotes, payoffs and charts on ticker/expiry invalidation", () => {
-        Strategies.render(book, snapshot()); const sheet = sheets.get("CF Strategies");
+        Strategies.render(book, snapshot()); const sheet = sheets.get("Strategies");
         Strategies.invalidate(book, "Ticker changed. Refresh the selected ticker.");
         expect(sheet.getRange("B4").getValue()).toBe(""); expect(sheet.getRange("A56").getValue()).toBe(""); expect(sheet.charts).toEqual([]);
-        expect(sheet.getRange("Z1").getValue()).toBe("CACHEFINANCE_STRATEGIES_V1"); expect(sheet.getRange("A1").getValue()).toContain("'CF Analysis'!$B$4");
+        expect(sheet.getRange("Z1").getValue()).toBe("CACHEFINANCE_STRATEGIES_V1"); expect(sheet.getRange("A1").getValue()).toContain("Analysis!$B$4");
         expect(sheet.getRange("A2").getValue()).toContain("Ticker changed");
         expect(Strategies.inspect(book)).toMatchObject({ present: true, quoteRows: 0, chartTitles: [], formulaErrors: [] });
     });
     it("inspects quote counts and real formula errors without treating NA chart gaps as defects", () => {
-        expect(Strategies.inspect(book)).toEqual({ present: false }); Strategies.render(book, snapshot()); const sheet = sheets.get("CF Strategies");
+        expect(Strategies.inspect(book)).toEqual({ present: false }); Strategies.render(book, snapshot()); const sheet = sheets.get("Strategies");
         sheet.getRange("E4").setValue("#REF!"); sheet.getRange("B25").setValue("#N/A");
         const result = Strategies.inspect(book); expect(result.quoteRows).toBe(4); expect(result.formulaErrors).toHaveLength(1); expect(result.formulaErrors[0].value).toBe("#REF!");
     });

@@ -49,7 +49,7 @@ describe("cachefinance bundle", () => {
     it("builds a valid Apps Script bundle", () => {
         const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
 
-        expect(sectionCount).toBe(26);
+        expect(sectionCount).toBe(27);
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);
         expect(bundle).toContain(`Source hash: ${sourceHash}`);
         expect(bundle).toContain("function CACHEFINANCE");

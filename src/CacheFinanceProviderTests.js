@@ -1,5 +1,6 @@
 /*  *** DEBUG START ***
 import { FinanceWebSites, GlobeAndMail, GoogleWebSiteFinance } from "./CacheFinanceWebSites.js";
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 export { CFProviderDiagnostics, CFProviderSanitize_, CFProviderNormalizeRows_, CFProviderWrite_, CFProviderRun_, CFProviderReportJson, CFProviderTestMenu_, RunProviderTests, ContinueProviderTests, RunProviderYahooApi, RunProviderGoogle, RunProviderGlobe, RunProviderYahoo, RunProviderFinnhub, RunProviderTwelveData, RunProviderAlphaVantage, RunProviderCoinMarket, SetupProviderWorksheetTests, CollectProviderWorksheetTests };
 //  *** DEBUG END ***/
 
@@ -11,16 +12,16 @@ export { CFProviderDiagnostics, CFProviderSanitize_, CFProviderNormalizeRows_, C
 const CF_PROVIDER_INVALID_SYMBOL = "NASDAQ:ZZZZCFINVALID20261111";
 const CF_PROVIDER_UPSTREAM = "8f84e202e0c5d56f27b2bf000bb86817c3503894";
 const CF_PROVIDER_MARKER = "CacheFinance provider diagnostics v1";
-const CF_PROVIDER_SHEET = "CF Provider tests";
-const CF_WORKSHEET_SHEET = "CF Worksheet tests";
-const CF_REPORT_SHEET = "CF Test report";
+const CF_PROVIDER_SHEET = "Provider tests";
+const CF_WORKSHEET_SHEET = "Worksheet tests";
+const CF_REPORT_SHEET = "Test report";
 const CF_PROVIDER_HEADERS = ["Run ID", "Provider", "Symbol", "Attribute", "Status", "HTTP", "Elapsed ms", "Retrieved UTC", "Source timestamp", "Timestamp field", "Value", "Endpoint without query", "Identity", "Note"];
 const CF_PROVIDER_KEYS = { FINNHUB: "FINNHUB_API_KEY", TWELVEDATA: "TWELVE_DATA_API_KEY", ALPHAVANTAGE: "ALPHA_VANTAGE_API_KEY", COINMARKET: "COINMARKET_API_KEY" };
 
 function CFProviderQuietLog() { /* Intentionally omit upstream URL/body logging. */ }
 
 function CFProviderTestMenu_() {
-    SpreadsheetApp.getUi().createMenu("CacheFinance tests")
+    SpreadsheetApp.getUi().createMenu("Provider tests")
         .addItem("Start provider tests", "RunProviderTests")
         .addItem("Continue provider tests", "ContinueProviderTests")
         .addSeparator()
@@ -282,6 +283,7 @@ function CFProviderRun_(provider, reset) {
     const lock = LockService.getDocumentLock();
     if (!lock || !lock.tryLock(1000)) throw new Error("Another provider test is running. Wait for it to finish.");
     try {
+        CFWorkbookNames.migrate(book);
         const sheet = CFProviderSheet_(book, CF_PROVIDER_SHEET);
         let rows;
         if (reset || sheet.getLastRow() < 5) {
@@ -309,13 +311,14 @@ function CFProviderRun_(provider, reset) {
         rows.forEach(row => { counts[row[4]] = (counts[row[4]] || 0) + 1; });
         const summary = { environment: "Google Apps Script", financialCacheBypassed: true, upstream: CF_PROVIDER_UPSTREAM, runId: rows[0]?.[0], downloadsThisBatch: result.downloads, pending: rows.filter(row => row[4] === "PENDING").length, counts };
         console.log("CF_PROVIDER_SUMMARY " + JSON.stringify(summary));
-        book.toast(summary.pending ? "Batch complete. Run ContinueProviderTests for the remaining rows." : "Provider tests complete. Run CFProviderReportJson to export the results.", "CacheFinance tests", 10);
+        book.toast(summary.pending ? "Batch complete. Run ContinueProviderTests for the remaining rows." : "Provider tests complete. Run CFProviderReportJson to export the results.", "Provider tests", 10);
         return summary;
     } finally { lock.releaseLock(); }
 }
 
 function CFProviderReportJson() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
+    if (book) CFWorkbookNames.migrate(book);
     if (!book) throw new Error("Open the bound test spreadsheet first.");
     const source = book.getSheetByName(CF_PROVIDER_SHEET);
     if (!source || source.getRange("A1").getValue() !== CF_PROVIDER_MARKER) throw new Error("Run provider tests first.");
@@ -339,6 +342,7 @@ function CFProviderReportJson() {
 /** Worksheet controls do not count as direct provider evidence. */
 function SetupProviderWorksheetTests() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
+    if (book) CFWorkbookNames.migrate(book);
     if (!book) throw new Error("Open the bound test spreadsheet first.");
     const sheet = CFProviderSheet_(book, CF_WORKSHEET_SHEET);
     sheet.clearContents(); sheet.getRange("A1").setValue(CF_PROVIDER_MARKER);
@@ -361,6 +365,7 @@ function SetupProviderWorksheetTests() {
 
 function CollectProviderWorksheetTests() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
+    if (book) CFWorkbookNames.migrate(book);
     const sheet = book && book.getSheetByName(CF_WORKSHEET_SHEET);
     if (!sheet || sheet.getRange("A1").getValue() !== CF_PROVIDER_MARKER) throw new Error("Run SetupProviderWorksheetTests first.");
     const rows = sheet.getRange(5, 1, 7, 6).getValues();

@@ -30,8 +30,8 @@ class CFExactFred {
         try {
             deps = CFPublicData.dependencies(overrides);
             key = typeof deps.fredKey === "function" ? deps.fredKey() : deps.fredKey;
-        } catch { return CFPublicData.failure("FRED API key unavailable. Use the CacheFinance menu.", source); }
-        if (typeof key !== "string" || !/^[a-z0-9]{32}$/.test(key)) return CFPublicData.failure("FRED API key required. Use the CacheFinance menu.", source);
+        } catch { return CFPublicData.failure("FRED API key unavailable. Use the Data settings menu.", source); }
+        if (typeof key !== "string" || !/^[a-z0-9]{32}$/.test(key)) return CFPublicData.failure("FRED API key required. Use the Data settings menu.", source);
         return CFPublicData.cached("fred-exact", id + ":" + day, 3600, services => {
             // These private request URLs never enter a result, error message or cache record.
             const parameters = "?series_id=" + encodeURIComponent(id) + "&api_key=" + encodeURIComponent(key) + "&file_type=json";
@@ -78,7 +78,7 @@ class CFExactFred {
 
 /**
  * FRED value for one exact observation date. Missing dates never use an earlier observation.
- * Values keep FRED's published units. Save your key through CacheFinance → API keys….
+ * Values keep FRED's published units. Save your key through Data settings → API keys….
  * @param {string} seriesId FRED series ID, such as DGS10.
  * @param {Date|string} date A date-valued cell or YYYY-MM-DD text.
  * @param {number} refresh Optional editable refresh number.

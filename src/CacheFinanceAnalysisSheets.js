@@ -1,15 +1,17 @@
 /*  *** DEBUG START ***
 import { CFAnalysisOptions } from "./CacheFinanceAnalysisOptions.js";
 import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 export { CFAnalysisSheets };
 //  *** DEBUG END ***/
 
-const CF_ANALYSIS_SHEET_NAMES_ = Object.freeze(["CF Analysis", "CF Price history", "CF Fundamentals", "CF Earnings", "CF Options", "CF Macro", "CF Sources"]);
+const CF_ANALYSIS_SHEET_NAMES_ = Object.freeze(["Analysis", "Price history", "Fundamentals", "Earnings", "Options", "Macro", "Sources"]);
 const CF_ANALYSIS_SHEET_MARKER_ = "CACHEFINANCE_ANALYSIS_V1";
 
 /** Writes only marked analysis tabs. It never reads API keys or makes requests. */
 class CFAnalysisSheets {
     static check_(book) {
+        CFWorkbookNames.migrate(book);
         for (const name of CF_ANALYSIS_SHEET_NAMES_) {
             const sheet = book.getSheetByName(name);
             if (sheet && sheet.getRange("Z1").getValue() !== CF_ANALYSIS_SHEET_MARKER_) {
@@ -52,9 +54,9 @@ class CFAnalysisSheets {
     }
 
     static title_(sheet, ticker, subtitle, formatting = true) {
-        const label = sheet.getName() === "CF Analysis" ? "Stock analysis" : sheet.getName().replace(/^CF /, "");
+        const label = sheet.getName() === "Analysis" ? "Stock analysis" : sheet.getName();
         const title = sheet.getRange("A1").setValue(CFAnalysisSheets.safe_(ticker + " — " + label));
-        const note = sheet.getRange("A2").setValue(CFAnalysisSheets.safe_(subtitle || "Change the ticker on CF Analysis, then use Stock analysis → Refresh selected ticker."));
+        const note = sheet.getRange("A2").setValue(CFAnalysisSheets.safe_(subtitle || "Change the ticker on Analysis, then use Stock analysis → Refresh selected ticker."));
         if (formatting) {
             title.setFontSize(14).setFontWeight("bold").setFontColor("#17365D").setBackground(null);
             note.setFontColor("#596579").setFontSize(9);
@@ -64,7 +66,7 @@ class CFAnalysisSheets {
     static base_(sheet, ticker, subtitle) {
         if (sheet.getMaxColumns() < 26) sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
         sheet.getRange(1, 1, Math.max(sheet.getLastRow(), 80), 25).setFontFamily("Arial").setFontSize(10).setVerticalAlignment("middle");
-        sheet.setHiddenGridlines(true); sheet.setFrozenRows(["CF Analysis", "CF Options"].includes(sheet.getName()) ? 8 : 7); sheet.setColumnWidths(1, 25, 115);
+        sheet.setHiddenGridlines(true); sheet.setFrozenRows(["Analysis", "Options"].includes(sheet.getName()) ? 8 : 7); sheet.setColumnWidths(1, 25, 115);
         sheet.setColumnWidth(1, 190); sheet.setColumnWidth(2, 145);
         sheet.getRange("A1:L1").merge(); sheet.getRange("A2:L2").merge();
         sheet.getRange("Z1").setValue(CF_ANALYSIS_SHEET_MARKER_); sheet.hideColumns(26);
@@ -84,7 +86,7 @@ class CFAnalysisSheets {
 
     static build(book) {
         CFAnalysisSheets.check_(book);
-        const existing = book.getSheetByName("CF Analysis");
+        const existing = book.getSheetByName("Analysis");
         const ticker = existing ? String(existing.getRange("B4").getValue() || "NVDA").trim().toUpperCase() : "NVDA";
         const created = [];
         for (const name of CF_ANALYSIS_SHEET_NAMES_) {
@@ -92,20 +94,20 @@ class CFAnalysisSheets {
             if (!sheet) { sheet = book.insertSheet(name); created.push(name); }
             CFAnalysisSheets.base_(sheet, ticker);
         }
-        const main = book.getSheetByName("CF Analysis");
+        const main = book.getSheetByName("Analysis");
         main.setTabColor("#17365D"); main.getRange("A4").setValue("Ticker"); CFAnalysisSheets.input_(main, "B4", ticker);
         main.getRange("D4").setValue("Last refresh"); main.getRange("G4").setValue("Status");
         main.getRange("H4").setValue("Choose Stock analysis → Refresh selected ticker."); main.setColumnWidth(8, 260);
-        const options = book.getSheetByName("CF Options"); options.getRange("A4").setValue("Expiration");
+        const options = book.getSheetByName("Options"); options.getRange("A4").setValue("Expiration");
         options.getRange("B4").setBackground("#FFF2CC").setFontColor("#0000FF");
-        CFAnalysisSheets.guide_(book.getSheetByName("CF Sources"), 8);
+        CFAnalysisSheets.guide_(book.getSheetByName("Sources"), 8);
         return { sheets: [...CF_ANALYSIS_SHEET_NAMES_], created };
     }
 
     static readInput(book) {
         CFAnalysisSheets.check_(book);
-        const main = book.getSheetByName("CF Analysis"), options = book.getSheetByName("CF Options");
-        if (!main) throw new Error("Build the analysis sheet from the CacheFinance menu first.");
+        const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options");
+        if (!main) throw new Error("Build the analysis sheet from the Stock analysis menu first.");
         const raw = main.getRange("B4").getValue();
         const expiration = options ? options.getRange("B4").getValue() : "";
         let expiry = "";
@@ -116,14 +118,14 @@ class CFAnalysisSheets {
             if (typeof Utilities !== "undefined" && typeof Utilities.formatDate === "function") expiry = Utilities.formatDate(expiration, book.getSpreadsheetTimeZone(), "yyyy-MM-dd");
             else expiry = expiration.toISOString().slice(0, 10);
         }
-        const source = book.getSheetByName("CF Sources");
+        const source = book.getSheetByName("Sources");
         return { ticker: typeof raw === "string" ? raw.trim().toUpperCase() : String(raw), expiration: expiry,
             loadedTicker: source ? String(source.getRange("B3").getValue() || "").trim().toUpperCase() : "" };
     }
 
     static clear_(sheet, formatting = false) {
         const last = Math.max(formatting ? sheet.getMaxRows() : sheet.getLastRow(), 5);
-        const input = ["CF Analysis", "CF Options"].includes(sheet.getName());
+        const input = ["Analysis", "Options"].includes(sheet.getName());
         const areas = input ? ["A3:Y3", "A4", "C4:Y4", "A5:Y" + last] : ["A3:Y" + last];
         if (formatting) sheet.getRange(3, 1, last - 2, 25).breakApart();
         const list = typeof sheet.getRangeList === "function" ? sheet.getRangeList(areas) : null;
@@ -131,25 +133,25 @@ class CFAnalysisSheets {
         if (list && typeof list[method] === "function") list[method]();
         else for (const area of areas) sheet.getRange(area)[method]();
         if (formatting) sheet.setRowHeights(3, last - 2, 21);
-        if (sheet.getName() === "CF Options") sheet.getRange("B4").clearDataValidations();
+        if (sheet.getName() === "Options") sheet.getRange("B4").clearDataValidations();
         for (const chart of sheet.getCharts()) sheet.removeChart(chart);
     }
 
     static invalidate(book, reason) {
         CFAnalysisSheets.check_(book);
-        const main = book.getSheetByName("CF Analysis");
+        const main = book.getSheetByName("Analysis");
         if (!main) return;
         const input = CFAnalysisSheets.readInput(book);
-        const source = book.getSheetByName("CF Sources");
+        const source = book.getSheetByName("Sources");
         const expiration = input.loadedTicker !== input.ticker ? "" : input.expiration;
         if (source) source.getRange("B3").setValue("");
         CFAnalysisSheets.clear_(main);
         CFAnalysisSheets.title_(main, input.ticker, reason, false);
         main.getRange("A4").setValue("Ticker");
         main.getRange("G4:H4").setValues([["Status", CFAnalysisSheets.safe_(reason)]]);
-        const options = book.getSheetByName("CF Options");
+        const options = book.getSheetByName("Options");
         if (options && input.loadedTicker !== input.ticker) options.getRange("B4").setValue(expiration);
-        for (const name of CF_ANALYSIS_SHEET_NAMES_.filter(name => name !== "CF Analysis")) {
+        for (const name of CF_ANALYSIS_SHEET_NAMES_.filter(name => name !== "Analysis")) {
             const sheet = book.getSheetByName(name);
             if (sheet) { CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason, false); }
         }
@@ -159,7 +161,7 @@ class CFAnalysisSheets {
 
     static invalidateOptions(book, reason) {
         CFAnalysisSheets.check_(book);
-        const sheet = book.getSheetByName("CF Options");
+        const sheet = book.getSheetByName("Options");
         if (!sheet) return;
         const input = CFAnalysisSheets.readInput(book);
         CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason, false);
@@ -169,21 +171,21 @@ class CFAnalysisSheets {
 
     static status(book, text) {
         CFAnalysisSheets.check_(book);
-        const sheet = book.getSheetByName("CF Analysis");
+        const sheet = book.getSheetByName("Analysis");
         if (sheet) sheet.getRange("H4").setValue(CFAnalysisSheets.safe_(text));
     }
 
     static guide_(sheet, row) {
         CFAnalysisSheets.table_(sheet, row, 1, ["How to use this workbook", "Details"], [
-            ["One ticker", "Edit CF Analysis!B4. Other titles and charts follow that input after Refresh selected ticker."],
+            ["One ticker", "Edit Analysis!B4. Other titles and charts follow that input after Refresh selected ticker."],
             ["Refresh", "Choose Stock analysis → Refresh selected ticker. Ticker edits clear old results before the next download."],
-            ["API keys", "Choose CacheFinance → API keys… . Keys stay in Script Properties, outside worksheet cells."],
+            ["API keys", "Choose Data settings → API keys… . Keys stay in Script Properties, outside worksheet cells."],
             ["Unavailable data", "N/A means the provider did not supply an accepted value. Empty history cells keep chart gaps."],
             ["Return basis", "Returns, benchmark growth and volatility use adjusted close. SMA, EMA, MACD and RSI use Yahoo close."],
             ["Benchmark currencies", "Growth uses each instrument's local currency. SPY and QQQ are USD. No FX conversion is applied."],
             ["Sessions", "1 month = 21 sessions; 1 year = 252 sessions. RSI14 uses Wilder smoothing; volatility uses sample log returns × √252."],
             ["Provider yields", "Yahoo forward yield and Globe trailing yield can differ. Source labels preserve their definitions."],
-            ["Options", "Choose a published expiration on CF Options!B4, then Refresh selected ticker. Missing chains remain unavailable."],
+            ["Options", "Choose a published expiration on Options!B4, then Refresh selected ticker. Missing chains remain unavailable."],
             ["Macro", "FRED requires your own key. Observation dates describe periods; they are not publication timestamps."],
             ["Scope", "This workbook shows source data and calculations. Provider extraction does not independently verify financial accuracy."]
         ]);
@@ -228,7 +230,7 @@ class CFAnalysisSheets {
             if (!sheet) throw new Error("Build the analysis sheet before refreshing it.");
             CFAnalysisSheets.clear_(sheet, true); CFAnalysisSheets.base_(sheet, ticker, "Source times use the spreadsheet time zone. N/A means unavailable."); sheets[name] = sheet;
         }
-        const main = sheets["CF Analysis"], history = sheets["CF Price history"], options = sheets["CF Options"], sources = sheets["CF Sources"];
+        const main = sheets["Analysis"], history = sheets["Price history"], options = sheets["Options"], sources = sheets["Sources"];
         const chart = snapshot.chart || {}, technical = snapshot.technical || { series: [], summary: {} }, summary = technical.summary || {};
         const displayedQuote = CFAnalysisData.selectQuote({ ...chart, symbol: chart.symbol || snapshot.symbol, price: chart.price ?? summary.price }, snapshot.details);
         const series = technical.series || [], growth = CFAnalysisSheets.growth_(series, snapshot.benchmarks);
@@ -243,7 +245,7 @@ class CFAnalysisSheets {
         const atmIv = atm.atmIV;
         main.getRange("A4").setValue("Ticker"); CFAnalysisSheets.input_(main, "B4", ticker);
         main.getRange("D4").setValue("Last refresh"); main.getRange("E4").setValue(CFAnalysisSheets.date_(snapshot.fetchedAt, book) || "N/A").setNumberFormat("mmm d, hh:mm");
-        main.getRange("G4").setValue("Status"); main.getRange("H4").setValue(snapshot.ok === false ? "No matching quote data. Check the ticker and CF Sources." : "Updated; see CF Sources for provider results."); main.setColumnWidth(8, 260);
+        main.getRange("G4").setValue("Status"); main.getRange("H4").setValue(snapshot.ok === false ? "No matching quote data. Check the ticker and Sources." : "Updated; see Sources for provider results."); main.setColumnWidth(8, 260);
         main.getRange("A5").setValue("Yahoo symbol"); main.getRange("B5").setValue(CFAnalysisSheets.safe_(snapshot.symbol));
         main.getRange("D5").setValue("Company"); main.getRange("E5:H5").merge().setValue(CFAnalysisSheets.safe_(chart.name || snapshot.details?.name));
         main.getRange("A6").setValue("Currency"); main.getRange("B6").setValue(CFAnalysisSheets.safe_(chart.currency));
@@ -294,8 +296,8 @@ class CFAnalysisSheets {
             CFAnalysisSheets.chart_(main, history, [1, 19, 20, 21].map(col => ({ row: 7, col, count: series.length + 1 })), ticker + " vs SPY / QQQ — adjusted growth" + (chart.currency !== "USD" ? " (local currencies)" : ""), 47, ["#17365D", "#2C8B8B", "#D99520"]);
             CFAnalysisSheets.chart_(main, history, [1, 16, 22, 23].map(col => ({ row: 7, col, count: series.length + 1 })), ticker + " — RSI14 with 30 / 70 levels", 66, ["#17365D", "#D99520", "#B04747"], 0, 100);
         }
-        CFAnalysisSheets.fundamentals_(sheets["CF Fundamentals"], snapshot);
-        CFAnalysisSheets.earnings_(sheets["CF Earnings"], snapshot, book);
+        CFAnalysisSheets.fundamentals_(sheets["Fundamentals"], snapshot);
+        CFAnalysisSheets.earnings_(sheets["Earnings"], snapshot, book);
         options.getRange("A4").setValue("Expiration");
         const expirationCell = options.getRange("B4").setNumberFormat("@");
         if (expirations.length) expirationCell.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(expirations, true).setAllowInvalid(false).build());
@@ -305,7 +307,7 @@ class CFAnalysisSheets {
         options.getRange("A6").setValue(CFAnalysisSheets.safe_(optionData.ok ? "Showing " + contracts.length + " of " + selectedContracts.length + " contracts for selected expiry " + (selectedExpiry || "N/A") + (spot === null ? "; underlying price unavailable." : "; nearest strikes to underlying price.") : optionData.error || "Options data is unavailable from the tested endpoint."));
         CFAnalysisSheets.table_(options, 8, 1, ["Expiration", "Type", "Strike", "Last", "Bid", "Ask", "Mid", "Spread", "IV", "Volume", "Open interest", "Last trade", "In the money"], contracts.map(row => [CFAnalysisSheets.date_(row.expiration, book), row.type, row.strike, row.last, row.bid, row.ask, row.mid, row.spread, row.iv, row.volume, row.openInterest, CFAnalysisSheets.date_(row.lastTrade, book), row.inTheMoney]));
         if (contracts.length) { options.getRange(9, 1, contracts.length, 1).setNumberFormat("yyyy-mm-dd"); options.getRange(9, 3, contracts.length, 6).setNumberFormat("0.00"); options.getRange(9, 9, contracts.length, 1).setNumberFormat("0.00%"); options.getRange(9, 10, contracts.length, 2).setNumberFormat("#,##0"); options.getRange(9, 12, contracts.length, 1).setNumberFormat("yyyy-mm-dd hh:mm"); }
-        CFAnalysisSheets.macro_(sheets["CF Macro"], snapshot.fred || [], book);
+        CFAnalysisSheets.macro_(sheets["Macro"], snapshot.fred || [], book);
         sources.getRange("A3").setValue("Loaded ticker"); sources.getRange("B3").setValue(CFAnalysisSheets.safe_(ticker));
         const sourceRows = (snapshot.sources || []).map(row => [row.provider, row.scope, row.http, row.status, row.identity, CFAnalysisSheets.date_(row.retrievedAt, book), CFAnalysisSheets.date_(row.quoteTime, book), row.note, CFAnalysisSheets.source_(row.source)]);
         CFAnalysisSheets.table_(sources, 7, 1, ["Provider", "Scope", "HTTP", "Status", "Identity", "Retrieved", "Quote time", "Note", "Public source"], sourceRows);
@@ -361,11 +363,11 @@ class CFAnalysisSheets {
 
     static inspect(book) {
         CFAnalysisSheets.check_(book);
-        const main = book.getSheetByName("CF Analysis"), sources = book.getSheetByName("CF Sources");
+        const main = book.getSheetByName("Analysis"), sources = book.getSheetByName("Sources");
         const rows = name => { const sheet = book.getSheetByName(name); return sheet ? sheet.getRange(8, 1, Math.max(sheet.getLastRow() - 7, 1), Math.min(sheet.getMaxColumns(), 10)).getValues() : []; };
-        const sourceRows = rows("CF Sources"), earningsRows = rows("CF Earnings");
+        const sourceRows = rows("Sources"), earningsRows = rows("Earnings");
         const earningsEnd = earningsRows.findIndex(row => row[0] === "Financial period");
-        const options = book.getSheetByName("CF Options");
+        const options = book.getSheetByName("Options");
         const modelValues = options ? options.getRange("S4:S11").getValues().flat() : [];
         const model = Object.fromEntries(["price", "delta", "gamma", "theta", "vega", "rho", "d1", "d2"].map((name, index) => [name, modelValues[index] ?? null]));
         const formulaErrors = [];
@@ -383,10 +385,10 @@ class CFAnalysisSheets {
         return { ticker: sources ? sources.getRange("B3").getValue() || "" : "", inputTicker: main ? main.getRange("B4").getValue() : "", symbol: main ? main.getRange("B5").getValue() : "",
             status: main ? main.getRange("H4").getValue() : "", selectedExpiration: options ? CFAnalysisSheets.readInput(book).expiration : "", availableExpirations, model, formulaErrors,
             displayedPrice: main ? main.getRange("B9").getValue() : "", displayedQuoteTime: main ? main.getRange("B10").getValue() : "", displayedSession: main ? main.getRange("H6").getValue() : "",
-            historyRows: rows("CF Price history").filter(row => row[0] instanceof Date).length,
+            historyRows: rows("Price history").filter(row => row[0] instanceof Date).length,
             earningsRows: earningsRows.slice(0, earningsEnd < 0 ? earningsRows.length : earningsEnd).filter(row => (row[1] === "GAAP" || row[1] === "Adjusted") && (typeof row[2] === "number" || typeof row[3] === "number")).length,
-            fundamentalRows: rows("CF Fundamentals").filter(row => typeof row[0] === "string" && row[0] && row[0] !== "Metric" && row[4]).length,
-            optionRows: rows("CF Options").filter(row => row[0] instanceof Date && ["CALL", "PUT"].includes(String(row[1]).toUpperCase())).length,
+            fundamentalRows: rows("Fundamentals").filter(row => typeof row[0] === "string" && row[0] && row[0] !== "Metric" && row[4]).length,
+            optionRows: rows("Options").filter(row => row[0] instanceof Date && ["CALL", "PUT"].includes(String(row[1]).toUpperCase())).length,
             chartTitles: CF_ANALYSIS_SHEET_NAMES_.flatMap(name => (book.getSheetByName(name)?.getCharts() || []).map(chart => String(chart.getOptions().get("title") || ""))),
             errors: sourceRows.filter(row => typeof row[3] === "string" && row[3] && !/^(?:OK|PASS|AVAILABLE|PARSED|COMPLETE|SUCCESS)$/i.test(row[3]) && row[0] !== "Provider").map(row => ({ provider: row[0], status: row[3], note: row[7] })) };
     }

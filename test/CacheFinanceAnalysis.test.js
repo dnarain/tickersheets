@@ -223,13 +223,13 @@ describe("one-ticker analysis collection", () => {
 
 describe("research tab order", () => {
     const markers = {
-        "CF Analysis": "CACHEFINANCE_ANALYSIS_V1", "CF Research": "CACHEFINANCE_RESEARCH_V1",
-        "CF Options": "CACHEFINANCE_ANALYSIS_V1", "CF Strategies": "CACHEFINANCE_STRATEGIES_V1",
-        "CF Watchlist": "CACHEFINANCE_WATCHLIST_V1", "CF Journal": "CACHEFINANCE_JOURNAL_V1",
-        "CF Fundamentals": "CACHEFINANCE_ANALYSIS_V1", "CF Earnings": "CACHEFINANCE_ANALYSIS_V1",
-        "CF Macro": "CACHEFINANCE_ANALYSIS_V1", "CF Formulas": "CACHEFINANCE_FUNCTIONS_V1",
-        "CF Price history": "CACHEFINANCE_ANALYSIS_V1", "CF Sources": "CACHEFINANCE_ANALYSIS_V1",
-        "CF Images": "CACHEFINANCE_IMAGES_V1"
+        "Analysis": "CACHEFINANCE_ANALYSIS_V1", "Research": "CACHEFINANCE_RESEARCH_V1",
+        "Options": "CACHEFINANCE_ANALYSIS_V1", "Strategies": "CACHEFINANCE_STRATEGIES_V1",
+        "Watchlist": "CACHEFINANCE_WATCHLIST_V1", "Journal": "CACHEFINANCE_JOURNAL_V1",
+        "Fundamentals": "CACHEFINANCE_ANALYSIS_V1", "Earnings": "CACHEFINANCE_ANALYSIS_V1",
+        "Macro": "CACHEFINANCE_ANALYSIS_V1", "Formulas": "CACHEFINANCE_FUNCTIONS_V1",
+        "Price history": "CACHEFINANCE_ANALYSIS_V1", "Sources": "CACHEFINANCE_ANALYSIS_V1",
+        "Chart links": "CACHEFINANCE_IMAGES_V1"
     };
     function sortableBook(entries, withActivation = true) {
         const target = new ManagedBook(), order = [];
@@ -263,35 +263,35 @@ describe("research tab order", () => {
         expect(state.order.map(sheet => sheet.getName())).toEqual([...Object.keys(markers), "Sheet1", "Portfolio", "Notes"]);
         expect(contents(state.target)).toEqual(before);
         expect(state.target.moveActiveSheet).toHaveBeenCalledTimes(13);
-        expect(state.active.getName()).toBe("CF Analysis");
-        expect(state.selection).toEqual({ name: "CF Analysis", address: "B4" });
+        expect(state.active.getName()).toBe("Analysis");
+        expect(state.selection).toEqual({ name: "Analysis", address: "B4" });
         expect(fetch).not.toHaveBeenCalled();
     });
 
     it("moves only known names with the exact marker for that name", () => {
         const state = sortableBook([
-            ["Portfolio", markers["CF Analysis"]], ["CF Research", markers["CF Analysis"]],
-            ["CF Options", markers["CF Options"]], ["CF Analysis", markers["CF Analysis"]],
-            ["CF Images", ""], ["Scratch", ""], ["CF Journal", markers["CF Journal"]]
+            ["Portfolio", markers["Analysis"]], ["Research", markers["Analysis"]],
+            ["Options", markers["Options"]], ["Analysis", markers["Analysis"]],
+            ["Chart links", ""], ["Scratch", ""], ["Journal", markers["Journal"]]
         ]), before = contents(state.target);
-        expect(CFAnalysisService.arrange(state.target)).toEqual(["CF Analysis", "CF Options", "CF Journal"]);
-        expect(state.order.map(sheet => sheet.getName())).toEqual(["CF Analysis", "CF Options", "CF Journal", "Portfolio", "CF Research", "CF Images", "Scratch"]);
-        expect(state.target.setActiveSheet.mock.calls.every(([sheet]) => ["CF Analysis", "CF Options", "CF Journal"].includes(sheet.getName()))).toBe(true);
+        expect(CFAnalysisService.arrange(state.target)).toEqual(["Analysis", "Options", "Journal"]);
+        expect(state.order.map(sheet => sheet.getName())).toEqual(["Analysis", "Options", "Journal", "Portfolio", "Research", "Chart links", "Scratch"]);
+        expect(state.target.setActiveSheet.mock.calls.every(([sheet]) => ["Analysis", "Options", "Journal"].includes(sheet.getName()))).toBe(true);
         expect(contents(state.target)).toEqual(before);
     });
 
     it("supports old mocks without movement or range activation methods", () => {
         expect(CFAnalysisService.arrange(book)).toEqual([]);
-        const state = sortableBook([["CF Analysis", markers["CF Analysis"]]], false);
-        expect(CFAnalysisService.arrange(state.target)).toEqual(["CF Analysis"]);
-        expect(state.active.getName()).toBe("CF Analysis"); expect(state.selection).toBeNull();
+        const state = sortableBook([["Analysis", markers["Analysis"]]], false);
+        expect(CFAnalysisService.arrange(state.target)).toEqual(["Analysis"]);
+        expect(state.active.getName()).toBe("Analysis"); expect(state.selection).toBeNull();
     });
 });
 
 describe("analysis spreadsheet actions", () => {
     it("preflights formula-tab ownership before changing any core worksheet", () => {
-        vi.stubGlobal("CFFunctionExamples", { check: () => { throw Error("Unmanaged CF Formulas"); } });
-        expect(() => CFBuildAnalysis()).toThrow("Unmanaged CF Formulas"); expect(sheets.build).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+        vi.stubGlobal("CFFunctionExamples", { check: () => { throw Error("Unmanaged Formulas"); } });
+        expect(() => CFBuildAnalysis()).toThrow("Unmanaged Formulas"); expect(sheets.build).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
     });
     it("requires five empty provider key flags for the clean-template check and logs no extra fields", () => {
         const flags = ["FINNHUB", "ALPHA_VANTAGE", "TWELVE_DATA", "COINMARKET", "FRED"].map(id => ({ id, configured: false, secret: "synthetic-key-value" }));
@@ -380,7 +380,7 @@ describe("analysis spreadsheet actions", () => {
         expect(sheets.render).toHaveBeenCalledWith(book, expect.objectContaining({ ok: false }));
         expect(log.mock.calls.some(([message]) => message.startsWith("CF_ANALYSIS_REFRESH "))).toBe(true);
         expect(log.mock.calls.some(([message]) => message.startsWith("CF_ANALYSIS_ERROR "))).toBe(false);
-        expect(book.toast).toHaveBeenCalledWith("No matching quote data returned. Check the ticker and CF Sources.", "Stock analysis", 10);
+        expect(book.toast).toHaveBeenCalledWith("No matching quote data returned. Check the ticker and Sources.", "Stock analysis", 10);
         expect(lock.releaseLock).toHaveBeenCalledOnce();
     });
 
@@ -396,7 +396,7 @@ describe("analysis spreadsheet actions", () => {
     });
 
     it("reads actual formula and watchlist cells without requests or credential reads", () => {
-        const workspace = new ManagedBook(), formulas = workspace.insertSheet("CF Formulas"), watch = workspace.insertSheet("CF Watchlist"), journal = workspace.insertSheet("CF Journal");
+        const workspace = new ManagedBook(), formulas = workspace.insertSheet("Formulas"), watch = workspace.insertSheet("Watchlist"), journal = workspace.insertSheet("Journal");
         formulas.getRange("Z1").setValue("CACHEFINANCE_FUNCTIONS_V1"); formulas.getRange("B4").setValue("AAPL");
         formulas.getRange("B23").setValue(205); formulas.getRange("B24").setValue("#REF!"); formulas.getRange("B30").setValue(4.2);
         watch.getRange("Z1").setValue("CACHEFINANCE_WATCHLIST_V1"); watch.getRange("A8:D8").setValues([["AAPL", "Available", 205, "USD"]]);
@@ -404,7 +404,7 @@ describe("analysis spreadsheet actions", () => {
         SpreadsheetApp.getActiveSpreadsheet.mockReturnValue(workspace);
         const result = CFInspectWorkspace();
         expect(result.functions.ticker).toBe("AAPL"); expect(result.functions.samples[0][1]).toBe(205); expect(result.functions.samples[7][1]).toBe(4.2);
-        expect(result.formulaErrors).toEqual([{ sheet: "CF Formulas", range: "B23:B30", row: 1, col: 0, value: "#REF!" }]);
+        expect(result.formulaErrors).toEqual([{ sheet: "Formulas", range: "B23:B30", row: 1, col: 0, value: "#REF!" }]);
         expect(result.watchlist).toEqual([{ ticker: "AAPL", status: "Available", price: 205, currency: "USD" }]); expect(result.journalRows).toBe(1);
         expect(fetch).not.toHaveBeenCalled(); expect(property).not.toHaveBeenCalled();
     });
@@ -434,7 +434,7 @@ describe("analysis spreadsheet actions", () => {
     });
 });
 
-const edit = (name = "CF Analysis", row = 4, column = 2, lastRow = row, lastColumn = column) => ({ source: book,
+const edit = (name = "Analysis", row = 4, column = 2, lastRow = row, lastColumn = column) => ({ source: book,
     range: { getSheet: () => ({ getName: () => name }), getRow: () => row, getLastRow: () => lastRow, getColumn: () => column, getLastColumn: () => lastColumn } });
 
 describe("simple onEdit safety", () => {
@@ -452,15 +452,15 @@ describe("simple onEdit safety", () => {
         expect(fetch).not.toHaveBeenCalled(); expect(property).not.toHaveBeenCalled();
     });
     it("clears stale option data for an expiration edit without requests", () => {
-        CFAnalysisHandleEdit_(edit("CF Options"));
+        CFAnalysisHandleEdit_(edit("Options"));
         expect(sheets.invalidateOptions).toHaveBeenCalledWith(book, "Expiration changed. Refresh the selected ticker.");
         expect(fetch).not.toHaveBeenCalled(); expect(sheets.invalidate).not.toHaveBeenCalled();
     });
     it("recognizes a multi-cell paste overlapping the ticker input", () => {
-        CFAnalysisHandleEdit_(edit("CF Analysis", 3, 1, 5, 3));
+        CFAnalysisHandleEdit_(edit("Analysis", 3, 1, 5, 3));
         expect(sheets.invalidate).toHaveBeenCalledOnce(); expect(fetch).not.toHaveBeenCalled();
     });
-    it.each([["CF Analysis", 5, 2], ["CF Analysis", 4, 3], ["CF Analysis", 3, 2], ["Other", 4, 2]])("ignores an unrelated %s edit at %s:%s", (name, row, column) => {
+    it.each([["Analysis", 5, 2], ["Analysis", 4, 3], ["Analysis", 3, 2], ["Other", 4, 2]])("ignores an unrelated %s edit at %s:%s", (name, row, column) => {
         CFAnalysisHandleEdit_(edit(name, row, column));
         expect(sheets.invalidate).not.toHaveBeenCalled(); expect(sheets.invalidateOptions).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
     });

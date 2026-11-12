@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 export { CFFunctionExamples, CFBuildFormulaExamples, CFRefreshFormulaExamples };
 //  *** DEBUG END ***/
 
@@ -22,21 +23,22 @@ class CFFunctionExamples {
         ];
     }
     static check(book) {
-        const sheet = book.getSheetByName("CF Formulas");
-        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_FUNCTIONS_V1") throw new Error("Rename the existing CF Formulas tab before building the examples.");
+        CFWorkbookNames.migrate(book);
+        const sheet = book.getSheetByName("Formulas");
+        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_FUNCTIONS_V1") throw new Error("Rename the existing Formulas tab before building the examples.");
     }
     static build(book) {
         CFFunctionExamples.check(book);
-        const existing = book.getSheetByName("CF Formulas"), counter = existing?.getRange("E4").getValue();
-        const sheet = existing || book.insertSheet("CF Formulas");
+        const existing = book.getSheetByName("Formulas"), counter = existing?.getRange("E4").getValue();
+        const sheet = existing || book.insertSheet("Formulas");
         if (sheet.getMaxColumns() < 26) sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
         if (sheet.getMaxRows() < 160) sheet.insertRowsAfter(sheet.getMaxRows(), 160 - sheet.getMaxRows());
         sheet.getRange(1, 1, sheet.getMaxRows(), 25).breakApart().clear(); sheet.setRowHeights(1, sheet.getMaxRows(), 21);
         sheet.setHiddenGridlines(true); sheet.setFrozenRows(4); sheet.setColumnWidths(1, 25, 145);
         sheet.getRange("A1:M1").merge().setValue("Spreadsheet functions and working examples").setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
-        sheet.getRange("A2:M2").merge().setValue("The ticker follows CF Analysis!B4. Increment the yellow refresh number to request a new formula result.");
+        sheet.getRange("A2:M2").merge().setValue("The ticker follows Analysis!B4. Increment the yellow refresh number to request a new formula result.");
         sheet.getRange("A4").setValue("Ticker");
-        if (book.getSheetByName("CF Analysis")) sheet.getRange("B4").setFormula("='CF Analysis'!B4"); else sheet.getRange("B4").setValue("NVDA");
+        if (book.getSheetByName("Analysis")) sheet.getRange("B4").setFormula("=Analysis!B4"); else sheet.getRange("B4").setValue("NVDA");
         sheet.getRange("D4").setValue("Refresh number"); sheet.getRange("E4").setValue(Number.isInteger(counter) && counter >= 0 && counter <= 2147483647 ? counter : 1).setBackground("#FFF2CC").setFontColor("#0000FF");
         sheet.getRange("A7:D7").setValues([["Function", "Arguments", "Result", "Units / notes"]]).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold");
         const catalog = CFFunctionExamples.catalog();
@@ -70,11 +72,11 @@ class CFFunctionExamples {
         sheet.getRange("A133:L133").merge().setValue("RSI2 and trigger targets for the quoted regular session; missing bid/ask or unattainable targets stay N/A").setWrap(true).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A135:L136").setNumberFormat("0.00"); sheet.getRange("A135").setFormula('=CFRSITARGETS($B$4,20,80,"all",$E$4)');
         sheet.getRange("Z1").setValue("CACHEFINANCE_FUNCTIONS_V1"); sheet.hideColumns(26);
-        return { ok: true, functions: catalog.length, sheet: "CF Formulas" };
+        return { ok: true, functions: catalog.length, sheet: "Formulas" };
     }
     static refresh(book) {
         CFFunctionExamples.check(book);
-        const sheet = book.getSheetByName("CF Formulas");
+        const sheet = book.getSheetByName("Formulas");
         if (!sheet) return CFFunctionExamples.build(book);
         const input = sheet.getRange("E4").getValue(), value = typeof input === "number" || typeof input === "string" && /^\d{1,10}$/.test(input) ? Number(input) : NaN;
         sheet.getRange("E4").setValue(Number.isInteger(value) && value >= 0 && value < 2147483647 ? value + 1 : 1);

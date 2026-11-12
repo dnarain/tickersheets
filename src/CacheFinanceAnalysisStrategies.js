@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 import { CFAnalysisOptions } from './CacheFinanceAnalysisOptions.js';
 export { CFAnalysisStrategies };
 //  *** DEBUG END ***/
@@ -87,8 +88,9 @@ class CFAnalysisStrategies {
         return Number.isFinite(result) ? result : null;
     }
     static check(book) {
-        const sheet = book.getSheetByName("CF Strategies");
-        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_STRATEGIES_V1") throw new Error("The existing CF Strategies tab is not a CacheFinance strategy tab. Rename it before building the analysis.");
+        CFWorkbookNames.migrate(book);
+        const sheet = book.getSheetByName("Strategies");
+        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_STRATEGIES_V1") throw new Error("The existing Strategies tab is not a CacheFinance strategy tab. Rename it before building the analysis.");
         return sheet;
     }
     static clear_(sheet) {
@@ -114,7 +116,7 @@ class CFAnalysisStrategies {
     }
     static render(book, snapshot) {
         let sheet = CFAnalysisStrategies.check(book);
-        const main = book.getSheetByName("CF Analysis"), source = book.getSheetByName("CF Options");
+        const main = book.getSheetByName("Analysis"), source = book.getSheetByName("Options");
         const ticker = typeof snapshot?.ticker === "string" ? snapshot.ticker.trim().toUpperCase() : "";
         if (!ticker || !main || !source || main.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1" || source.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1"
             || String(main.getRange("B4").getValue()).trim().toUpperCase() !== ticker) throw new Error("The ticker changed or the marked analysis tabs are missing. Refresh the current ticker again.");
@@ -129,12 +131,12 @@ class CFAnalysisStrategies {
         const call = nearest("Call"), put = nearest("Put");
         const upper = call ? rows.find(row => row.type === "Call" && row.strike > call.strike) : null;
         const lower = put ? [...rows].reverse().find(row => row.type === "Put" && row.strike < put.strike) : null;
-        if (!sheet) { sheet = book.insertSheet("CF Strategies"); sheet.getRange("Z1").setValue("CACHEFINANCE_STRATEGIES_V1"); }
+        if (!sheet) { sheet = book.insertSheet("Strategies"); sheet.getRange("Z1").setValue("CACHEFINANCE_STRATEGIES_V1"); }
         const requiredRows = 1055; // Fixed FILTER input ranges must exist even for a short option chain.
         if (sheet.getMaxRows() < requiredRows) sheet.insertRowsAfter(sheet.getMaxRows(), requiredRows - sheet.getMaxRows());
         if (sheet.getMaxColumns() < 26) sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
         CFAnalysisStrategies.clear_(sheet);
-        sheet.getRange("A1").setFormula('=UPPER(TRIM(\'CF Analysis\'!$B$4))&" — strategy calculator"').setFontSize(16).setFontWeight("bold").setFontColor("#17365D");
+        sheet.getRange("A1").setFormula('=UPPER(TRIM(Analysis!$B$4))&" — strategy calculator"').setFontSize(16).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2").setValue("Edit yellow cells. Refresh resets assumptions. Source asks seed long legs; bids seed short legs.").setWrap(true);
         for (const [address, values] of [["A3:B3", [["Assumption", "Value"]]], ["D3:E3", [["Expiry result", "Whole position / note"]]], ["A24:B24", [["Stock at expiration", "Position profit / loss"]]],
             ["A55:G55", [["Type", "Strike", "Bid / share", "Ask / share", "Option symbol", "Expiration", "Quote condition"]]], ["T4:Y4", [["Strategy", "Long strike", "Long ask", "Short strike", "Short bid", "Source selection"]]]]) {
@@ -151,7 +153,7 @@ class CFAnalysisStrategies {
         const optionType = 'IF(OR($B$4="Covered call",$B$4="Call vertical"),"Call","Put")';
         sheet.getRange("B7").setFormula('=IF(OR($B$4="Covered call",$B$4="Cash-secured put"),"N/A",IFERROR(INDEX(FILTER($D$56:$D$1055,$A$56:$A$1055=' + optionType + ',$B$56:$B$1055=$B$6),1),"N/A"))');
         sheet.getRange("B9").setFormula('=IFERROR(INDEX(FILTER($C$56:$C$1055,$A$56:$A$1055=' + optionType + ',$B$56:$B$1055=$B$8),1),"N/A")');
-        sheet.getRange("B12").setFormula('=IFERROR(IF(ISNUMBER(\'CF Options\'!$B$4),TEXT(\'CF Options\'!$B$4,"yyyy-mm-dd"),\'CF Options\'!$B$4),"N/A")');
+        sheet.getRange("B12").setFormula('=IFERROR(IF(ISNUMBER(Options!$B$4),TEXT(Options!$B$4,"yyyy-mm-dd"),Options!$B$4),"N/A")');
         sheet.getRange("B5:B9").setNumberFormat("#,##0.00"); sheet.getRange("B10:B11").setNumberFormat("#,##0"); sheet.getRange("B13").setNumberFormat("#,##0.00");
         const metrics = [["Initial cash flow", "initialCashflow"], ["Net option premium", "netPremium"], ["Stock purchase cost", "stockCost"], ["Cash reserved for assignment", "collateral"],
             ["Maximum expiry P/L (signed)", "maxProfit"], ["Maximum loss amount", "maxLoss"], ["Expiry breakeven / share", "breakeven"], ["Premium cash flow type", "premiumType"],
@@ -187,7 +189,7 @@ class CFAnalysisStrategies {
         for (const address of ["B4:B13", "E4:E14", "A25:B45"]) sheet.getRange(address).getValues().forEach((line, row) => line.forEach((value, column) => {
             if (typeof value === "string" && /^#(?:REF!|ERROR!|NAME\?|VALUE!|NUM!|DIV\/0!)/.test(value)) formulaErrors.push({ range: address, rowOffset: row, columnOffset: column, value });
         }));
-        return { present: true, ticker: book.getSheetByName("CF Analysis")?.getRange("B4").getValue() || "", strategy: sheet.getRange("B4").getValue(), expiration: sheet.getRange("B12").getValue(),
+        return { present: true, ticker: book.getSheetByName("Analysis")?.getRange("B4").getValue() || "", strategy: sheet.getRange("B4").getValue(), expiration: sheet.getRange("B12").getValue(),
             quoteRows: sheet.getRange("A56:G" + Math.max(sheet.getLastRow(), 56)).getValues().filter(row => ["Call", "Put"].includes(row[0]) && typeof row[1] === "number").length,
             chartTitles: sheet.getCharts().map(chart => String(chart.getOptions().get("title") || "")), formulaErrors };
     }

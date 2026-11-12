@@ -1,6 +1,6 @@
 # Build your own Google Sheets research workbook
 
-These recipes use the CacheFinance functions in your spreadsheet's bound Apps Script project.
+These recipes use the Single Stock Analysis functions in your spreadsheet's bound Apps Script project.
 You write normal cell formulas after installation.
 The formulas require the current bundle, including `CFRSITARGETS` and `CFFREDVALUE`.
 The examples use English function names and comma separators.
@@ -12,10 +12,11 @@ The examples use English function names and comma separators.
 For a blank spreadsheet, finish **Option 2** in [INSTALL.md](INSTALL.md) before entering these formulas.
 That path installs the bundle once and authorizes it through **Stock analysis → Build analysis sheets**.
 The custom tabs then use the installed functions without further script changes.
+Use the custom names in this guide, including **Company fields** and **Option chain**, to keep them separate from the generated tabs.
 
-The generated `CF` tabs keep their own ticker input in **CF Analysis!B4**.
+The generated analysis tabs keep their own ticker input in **Analysis!B4**.
 The custom tabs in this guide read **Setup!B2**.
-To share the generated tabs' ticker, enter `='CF Analysis'!B4` in **Setup!B2**.
+To share the generated tabs' ticker, enter `='Analysis'!B4` in **Setup!B2**.
 
 ## 1. Create the controls
 
@@ -38,7 +39,7 @@ The functions do not continuously stream prices.
 After you change the refresh number, the functions request data again.
 The provider can return the same published values.
 `NOW()` and `RAND()` are not supported refresh arguments.
-The analysis menu refreshes the generated `CF` tabs.
+The analysis menu refreshes the generated analysis tabs.
 Your custom formulas use the **Setup!B3** refresh number.
 
 Each table formula expands into neighboring cells.
@@ -92,7 +93,7 @@ The function accepts `1` through `510` daily sessions within approximately two y
 A recent listing can have fewer rows.
 The regular-market historical close and a current after-hours quote describe different observations.
 
-Create a tab named **Fundamentals**.
+Create a tab named **Company fields**.
 Enter this formula in **A1**:
 
 ```excel
@@ -127,8 +128,8 @@ The first row is a header.
 The dates start in **A2**.
 
 1. Copy one published date into **Setup!B4**.
-2. Create a tab named **Options**.
-3. Enter the following formula in **Options!A1**.
+2. Create a tab named **Option chain**.
+3. Enter the following formula in **'Option chain'!A1**.
 
 ```excel
 =CFOPTIONS(Setup!$B$2,Setup!$B$4,Setup!$B$3)
@@ -190,7 +191,7 @@ A flat prior gain/loss history also leaves both targets unavailable.
 
 ## 6. Add FRED observations
 
-Save your own FRED key through **CacheFinance → API keys…** or **CacheFinance → Enter FRED key…**.
+Save your own FRED key through **Data settings → API keys…** or **Data settings → Enter FRED key…**.
 Keep the key out of cells and formulas.
 The script stores saved keys in Script Properties.
 Spreadsheet editors can edit its bound script and read those keys.
@@ -267,7 +268,7 @@ Enter each formula in the listed cell, with the surrounding output area empty:
 
 Each status table occupies five columns and two rows.
 It shows the status, retrieval time, quote time, cache flag and source.
-The generated **CF Sources** tab reports the generated analysis workflow's requests.
+The generated **Sources** tab reports the generated analysis workflow's requests.
 
 Use these checks before calculations or comparisons:
 

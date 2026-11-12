@@ -1,4 +1,4 @@
-# Spreadsheet functions
+# Single Stock Analysis functions
 
 This reference covers 14 worksheet functions: twelve `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
 All requests run in Google Apps Script. No hosted server is required.
@@ -343,7 +343,7 @@ Observation dates describe economic periods or sessions.
 They do not necessarily identify publication dates.
 
 The function reads your `FRED_API_KEY` from Script Properties.
-Use **CacheFinance → API keys…** or **CacheFinance → Enter FRED key…** to save it.
+Use **Data settings → API keys…** or **Data settings → Enter FRED key…** to save it.
 FRED requires each user to [request their own API key](https://fred.stlouisfed.org/docs/api/api_key.html).
 The key is never a formula argument.
 
@@ -716,7 +716,7 @@ The model does not estimate a broker's vertical margin requirement.
 `maxProfit` can be negative when unusual manual premiums make every scenario lose money.
 An unattainable breakeven returns `N/A`.
 The calculations exclude fees, taxes, dividends, financing, early exercise and assignment timing.
-The **CF Strategies** tab shows editable assumptions, source bid/ask values and a payoff chart.
+The **Strategies** tab shows editable assumptions, source bid/ask values and a payoff chart.
 A refresh resets those assumptions from the selected ticker and expiration.
 
 ## Original CACHEFINANCE and CACHEFINANCES

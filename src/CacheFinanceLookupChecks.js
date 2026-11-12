@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 import { CFRSITARGETS, CFRsiTargets } from "./CacheFinanceRsiTargets.js";
 import { CFFREDVALUE } from "./CacheFinanceFredValue.js";
 import { CFFRED } from "./CacheFinanceResearchFunctions.js";
@@ -7,7 +8,7 @@ export { CFLookupChecks, CFBuildLookupChecks, CFInspectLookupChecks };
 
 /** Actual worksheet formulas. An unavailable key or provider is BLOCKED, never a positive data PASS. */
 class CFLookupChecks {
-    static name() { return "CF Lookup tests"; }
+    static name() { return "Lookup tests"; }
     static marker() { return "CACHEFINANCE_LOOKUP_CHECKS_V1"; }
     static headers() { return ["Current RSI2", "Buy target price", "Sell target price", "Last traded price", "Bid price", "Ask price", "Open price", "Low price", "High price", "Volume", "Previous close", "Previous RSI2"]; }
     static cases() {
@@ -37,8 +38,9 @@ class CFLookupChecks {
         return cases;
     }
     static check(book) {
+        CFWorkbookNames.migrate(book);
         const sheet = book?.getSheetByName(CFLookupChecks.name());
-        if (sheet && sheet.getRange("Z1").getValue() !== CFLookupChecks.marker()) throw new Error("Rename the existing CF Lookup tests tab before building or inspecting lookup checks.");
+        if (sheet && sheet.getRange("Z1").getValue() !== CFLookupChecks.marker()) throw new Error("Rename the existing Lookup tests tab before building or inspecting lookup checks.");
         return sheet;
     }
     static build(book) {
@@ -96,7 +98,7 @@ class CFLookupChecks {
     }
     static inspect(book, overrides = {}) {
         const sheet = CFLookupChecks.check(book);
-        if (!sheet) throw new Error("Build CF Lookup tests before inspecting lookup checks.");
+        if (!sheet) throw new Error("Build Lookup tests before inspecting lookup checks.");
         const calls = { rsi: overrides.rsi || (typeof CFRSITARGETS === "function" ? CFRSITARGETS : null), fredValue: overrides.fredValue || (typeof CFFREDVALUE === "function" ? CFFREDVALUE : null),
             fred: overrides.fred || (typeof CFFRED === "function" ? CFFRED : null) };
         const definitions = CFLookupChecks.cases(), refresh = sheet.getRange("B4").getValue(), inputs = new Map(), results = new Map();

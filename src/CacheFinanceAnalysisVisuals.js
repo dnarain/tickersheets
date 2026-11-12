@@ -1,9 +1,10 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 import { CFAnalysisSheets } from "./CacheFinanceAnalysisSheets.js";
 export { CFAnalysisVisuals };
 //  *** DEBUG END ***/
 
-const CF_RESEARCH_NAME_ = "CF Research";
+const CF_RESEARCH_NAME_ = "Research";
 const CF_RESEARCH_MARKER_ = "CACHEFINANCE_RESEARCH_V1";
 
 /** Earnings comparisons and charts from an already downloaded analysis snapshot. */
@@ -93,10 +94,11 @@ class CFAnalysisVisuals {
     }
 
     static check(book, requireMain = true) {
-        const main = book.getSheetByName("CF Analysis");
+        CFWorkbookNames.migrate(book);
+        const main = book.getSheetByName("Analysis");
         if (requireMain && (!main || main.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1")) throw new Error("Build the stock analysis tabs first.");
         const sheet = book.getSheetByName(CF_RESEARCH_NAME_);
-        if (sheet && sheet.getRange("Z1").getValue() !== CF_RESEARCH_MARKER_) throw new Error("The existing CF Research tab is not managed by stock analysis. Rename it before refreshing.");
+        if (sheet && sheet.getRange("Z1").getValue() !== CF_RESEARCH_MARKER_) throw new Error("The existing Research tab is not managed by stock analysis. Rename it before refreshing.");
     }
 
     static clear_(sheet) {
@@ -109,7 +111,7 @@ class CFAnalysisVisuals {
         CFAnalysisVisuals.check(book);
         const sheet = book.getSheetByName(CF_RESEARCH_NAME_);
         if (!sheet) return;
-        const ticker = String(book.getSheetByName("CF Analysis").getRange("B4").getValue()).trim().toUpperCase();
+        const ticker = String(book.getSheetByName("Analysis").getRange("B4").getValue()).trim().toUpperCase();
         sheet.getRange(1, 1, sheet.getMaxRows(), 25).clearContent();
         for (const chart of sheet.getCharts()) sheet.removeChart(chart);
         sheet.getRange("A1").setValue(CFAnalysisSheets.safe_(ticker + " — Research charts"));
@@ -159,9 +161,9 @@ class CFAnalysisVisuals {
 
     static render(book, snapshot) {
         CFAnalysisVisuals.check(book);
-        const ticker = String(book.getSheetByName("CF Analysis").getRange("B4").getValue()).trim().toUpperCase();
+        const ticker = String(book.getSheetByName("Analysis").getRange("B4").getValue()).trim().toUpperCase();
         if (!snapshot || String(snapshot.ticker).trim().toUpperCase() !== ticker) throw new Error("The ticker changed during refresh. Refresh research charts again.");
-        for (const name of ["CF Price history", "CF Macro", "CF Options"]) {
+        for (const name of ["Price history", "Macro", "Options"]) {
             const existing = book.getSheetByName(name);
             if (existing && existing.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1") throw new Error("Rebuild the managed analysis tabs before adding research charts.");
         }
@@ -194,7 +196,7 @@ class CFAnalysisVisuals {
         sheet.getRange("A20:L20").merge().setValue("Quarterly growth is QoQ; annual growth is YoY. Comparisons require consecutive published periods, the same basis and currency. Nonpositive prior values have no growth percentage.").setWrap(true);
         sheet.getRange("A21:L21").merge().setValue("EPS uses provider fiscal labels; financial charts retain provider financial-period labels. IV requires noncrossed quotes with a positive ask. Source data remains in the analysis tabs.").setWrap(true);
         sheet.getRange("A22:L22").merge().setValue(CFAnalysisSheets.safe_(summary.notes.join(" ") || "Comparisons use provider-reported actuals. Estimates and accounting bases stay separate.")).setWrap(true);
-        const series = snapshot.technical?.series || [], history = book.getSheetByName("CF Price history");
+        const series = snapshot.technical?.series || [], history = book.getSheetByName("Price history");
         let index = 0, cursor = 7;
         const addDataChart = (headers, values, title, type = "LINE", options = {}) => {
             if (values.length < 2 || !values.some(row => row.slice(1).some(value => CFAnalysisVisuals.number_(value) !== null))) return;
@@ -210,7 +212,7 @@ class CFAnalysisVisuals {
         }
         for (const group of summary.earningsGroups) addDataChart(["Fiscal period", "Actual EPS", "Estimate EPS"], group.rows.map(row => [row.period, row.actual, row.estimate]), group.basis + " EPS actual / estimate (" + (group.currency || "currency unknown") + ")", "COLUMN", { vAxis: { title: group.currency || "Currency not supplied" } });
         for (const group of summary.financialGroups) addDataChart(["Provider period", "Revenue", "Net income"], group.rows.map(row => [row.period, row.revenue, row.netIncome]), group.basis + " " + group.frequency.toLowerCase() + " revenue / net income (" + group.currency + ")", "COLUMN", { vAxis: { title: group.currency, format: "short" } });
-        const optionSheet = book.getSheetByName("CF Options");
+        const optionSheet = book.getSheetByName("Options");
         const chosen = optionSheet?.getRange("B4").getValue();
         const expiration = typeof chosen === "string" && /^\d{4}-\d{2}-\d{2}$/.test(chosen) ? chosen : snapshot.options?.contracts?.[0]?.expiration || "";
         const pivot = CFAnalysisVisuals.optionPivot_(snapshot.options, expiration, snapshot.chart?.price);

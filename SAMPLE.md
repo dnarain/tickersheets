@@ -1,6 +1,6 @@
-# Sample stock research spreadsheet
+# Single Stock Analysis sample
 
-This guide explains the [CacheFinance Research Template sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
+This guide explains the [Single Stock Analysis sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
 You can view the public sample without editing it.
 [Make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy) to change the ticker and refresh its data.
 
@@ -35,7 +35,7 @@ You can add your own tabs with the formulas in [BUILD-YOUR-OWN.md](BUILD-YOUR-OW
 
 ## Change the stock
 
-Enter the ticker in **CF Analysis!B4**, then choose **Stock analysis → Refresh selected ticker**.
+Enter the ticker in **Analysis!B4**, then choose **Stock analysis → Refresh selected ticker**.
 Examples include `NVDA`, `AAPL`, `NYSE:IBM`, `TSE:RY` and `RY.TO`.
 Bare US tickers use Yahoo's returned exchange before requesting comparison quotes.
 
@@ -45,26 +45,25 @@ The edit handler makes no external requests; the refresh menu downloads the new 
 The formula examples can recalculate separately when their ticker input changes.
 A result from an earlier ticker is discarded if you change the ticker during a refresh.
 
-The sheet starts with NVDA as an example.
-It does not include the fixed NVIDIA archives from the Excel workbook.
-
 ## Tabs
 
 | Tab | Contents |
 |---|---|
-| CF Analysis | Current quote, indicator summary, provider comparison and three trend charts. |
-| CF Price history | Two-year daily OHLCV, adjusted close, moving averages, MACD, RSI14, drawdown and SPY/QQQ comparisons. |
-| CF Fundamentals | Sourced valuation, financial, ownership and trading fields from the selected quote page. |
-| CF Earnings | Separate GAAP and adjusted EPS results, annual/quarterly financial data, estimates, earnings dates, dividends and splits when supplied. |
-| CF Options | Expiration selector, selected-expiration quotes, implied volatility, volume/open interest and an editable option calculator. |
-| CF Macro | FRED series levels, observation dates and histories. |
-| CF Sources | Request results, returned ticker identity, retrieval/quote times and brief calculation notes. |
-| CF Research | Earnings comparisons, financial growth, additional provider fields and up to 15 further charts. |
-| CF Strategies | Editable covered-call, cash-secured-put and call/put vertical calculations, source bids/asks and payoff chart. |
-| CF Watchlist | Up to 20 ticker inputs, quotes, returns, indicators, valuation and changes since the previous refresh. |
-| CF Journal | Public values and changes recorded by selected-stock and watchlist refreshes. |
-| CF Formulas | Function reference and live examples that follow the selected ticker. |
-| CF Images | Provider chart links and manual-copy guidance, created by **Provider chart links**. |
+| Analysis | Current quote, indicator summary, provider comparison and three trend charts. |
+| Price history | Two-year daily OHLCV, adjusted close, moving averages, MACD, RSI14, drawdown and SPY/QQQ comparisons. |
+| Fundamentals | Sourced valuation, financial, ownership and trading fields from the selected quote page. |
+| Earnings | Separate GAAP and adjusted EPS results, annual/quarterly financial data, estimates, earnings dates, dividends and splits when supplied. |
+| Options | Expiration selector, selected-expiration quotes, implied volatility, volume/open interest and an editable option calculator. |
+| Macro | FRED series levels, observation dates and histories. |
+| Sources | Request results, returned ticker identity, retrieval/quote times and brief calculation notes. |
+| Research | Earnings comparisons, financial growth, additional provider fields and up to 15 further charts. |
+| Strategies | Editable covered-call, cash-secured-put and call/put vertical calculations, source bids/asks and payoff chart. |
+| Watchlist | Up to 20 ticker inputs, quotes, returns, indicators, valuation and changes since the previous refresh. |
+| Journal | Public values and changes recorded by selected-stock and watchlist refreshes. |
+| Formulas | Function reference and live examples that follow the selected ticker. |
+| Chart links | Provider chart links and manual-copy guidance, created by **Provider chart links**. |
+
+The sample's optional **Notes** tab is for your own notes; the script leaves it unchanged during refresh.
 
 `N/A` means the source or calculation did not supply a value.
 A reported zero remains zero.
@@ -116,7 +115,7 @@ It requires no personal Yahoo login.
 The parser checks the underlying ticker, expiration, option type, strike and standard OCC contract identifier.
 Nonstandard or mismatched contracts are excluded.
 
-Choose an available date in **CF Options!B4**, then refresh the selected ticker.
+Choose an available date in **Options!B4**, then refresh the selected ticker.
 The full chain covers that expiration. Changing the date clears the old chain before the next refresh.
 The research comparison also requests up to four additional published dates through the same anonymous Yahoo session.
 It targets approximately 30, 90, 180 and 365 calendar days, plus the selected expiration.
@@ -156,12 +155,12 @@ Provider fiscal EPS labels and provider financial-period labels remain unchanged
 
 ## Watchlist and journal
 
-Enter up to 20 tickers in the yellow cells on **CF Watchlist**.
+Enter up to 20 tickers in the yellow cells on **Watchlist**.
 Choose **Stock analysis → Refresh watchlist** to load the table.
 Ticker edits clear the affected row before the next refresh.
 The watchlist uses Yahoo history and fundamentals, with no option-chain request for every stock.
 
-Selected-stock and watchlist refreshes append public values to **CF Journal**.
+Selected-stock and watchlist refreshes append public values to **Journal**.
 The journal compares the previous row for the same underlying symbol and currency.
 It records price, RSI, earnings dates, EPS, analyst targets and available ATM IV.
 Missing values remain unavailable and do not create zero changes.
@@ -184,8 +183,8 @@ The function reference lists cache periods and text missing-data results.
 
 ## FRED key
 
-Choose **CacheFinance → API keys…**, enter your existing FRED key in **FRED**, then save.
-If the sidebar is blank, use **CacheFinance → Enter FRED key…**.
+Choose **Data settings → API keys…**, enter your existing FRED key in **FRED**, then save.
+If the sidebar is blank, use **Data settings → Enter FRED key…**.
 Google's standard dialog displays the text you enter.
 Blank entry preserves an existing key, and Cancel changes nothing.
 

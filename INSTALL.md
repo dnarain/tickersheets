@@ -1,6 +1,6 @@
-# Install CacheFinance for Google Sheets
+# Install Single Stock Analysis
 
-CacheFinance runs in a spreadsheet's Google Apps Script project.
+Single Stock Analysis runs in a spreadsheet's Google Apps Script project.
 Apps Script requests the provider data directly, without a hosted server.
 Each user uses a private spreadsheet copy and their own API keys.
 
@@ -10,7 +10,7 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and formulas 
 
 ## Option 1: Copy the template
 
-[Make your own copy of the CacheFinance Research Template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
+[Make your own copy of the Single Stock Analysis](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
 
 1. Open the copy link while signed in to your chosen Google account.
 2. Click **Make a copy** in Google's copy dialog.
@@ -24,7 +24,7 @@ Google copies its attached Apps Script into your spreadsheet.
 The template contains saved example values from its test run.
 A refresh requests new data for your copy.
 
-If **CacheFinance** and **Stock analysis** are missing, reload your copy once.
+If **Data settings** and **Stock analysis** are missing, reload your copy once.
 The menus appear in an editable copy of the spreadsheet.
 
 The clean template uses a new, separate Apps Script project with no saved credentials.
@@ -112,26 +112,26 @@ Those account restrictions can prevent authorization.
 
 ## Set the ticker and expiration
 
-1. Open **CF Analysis**.
+1. Open **Analysis**.
 2. Enter a ticker in the yellow cell `B4`.
 3. Choose **Stock analysis → Refresh selected ticker**.
-4. Open **CF Sources** to inspect provider statuses and timestamps.
+4. Open **Sources** to inspect provider statuses and timestamps.
 
 Supported examples include `NVDA`, `NASDAQ:AAPL`, `NYSE:IBM`, `TSE:RY` and `RY.TO`.
 The script updates the titles and charts for the selected ticker.
 A ticker edit clears the previous ticker's outputs before a new refresh.
 
-The builder places the managed analysis tabs first and opens **CF Analysis!B4**.
+The builder places the managed analysis tabs first and opens **Analysis!B4**.
 It preserves other tabs and their contents.
 
-**Stock analysis → Provider chart links** creates an optional **CF Images** tab.
+**Stock analysis → Provider chart links** creates an optional **Chart links** tab.
 It provides public chart links and manual-copy guidance.
 The menu makes no provider requests.
 StockCharts' [reprint policy](https://help.stockcharts.com/learning-more/policies-and-limitations/reprint-permission-policies) requires manual copying.
 
 For a different option expiration:
 
-1. Open **CF Options**.
+1. Open **Options**.
 2. Choose an available date in the `B4` dropdown.
 3. Choose **Stock analysis → Refresh selected ticker**.
 
@@ -149,7 +149,7 @@ Yahoo quote, history, fundamentals and anonymous option requests do not require 
 FRED requires your own key.
 To use Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap, save that provider's key.
 
-1. Choose **CacheFinance → API keys…**.
+1. Choose **Data settings → API keys…**.
 2. Enter your key in the matching provider field.
 3. Click **Save keys**.
 4. Check that the provider shows **Saved**.
@@ -171,7 +171,7 @@ It does not test the key or the provider connection.
 ### FRED
 
 1. Request your own key from [FRED's API key page](https://fred.stlouisfed.org/docs/api/api_key.html).
-2. Save the key in **CacheFinance → API keys…**.
+2. Save the key in **Data settings → API keys…**.
 3. Choose **Stock analysis → Refresh selected ticker**.
 
 The settings menu uses the Script Property `FRED_API_KEY`.
@@ -185,7 +185,7 @@ A browser profile with only the spreadsheet's account can resolve this problem.
 
 The FRED key also has a standard Google prompt:
 
-1. Choose **CacheFinance → Enter FRED key…**.
+1. Choose **Data settings → Enter FRED key…**.
 2. Paste your existing FRED key.
 3. Click **OK**.
 4. Choose **Stock analysis → Refresh selected ticker**.
@@ -200,18 +200,18 @@ The builder creates these tabs:
 
 | Tab | Contents |
 | --- | --- |
-| **CF Analysis** | Ticker input, quote, indicators and company summary |
-| **CF Price history** | Daily prices, adjusted returns and benchmark columns |
-| **CF Fundamentals** | Published fields, units and sources |
-| **CF Earnings** | Separate earnings results, financial statements, estimates and events |
-| **CF Options** | Selected-expiration chain and option model |
-| **CF Macro** | Four FRED series, with your key |
-| **CF Sources** | Provider statuses, timestamps and usage notes |
-| **CF Research** | Additional charts, earnings summary and selected Finviz, Zacks and GuruFocus fields |
-| **CF Watchlist** | Up to 20 ticker inputs and summary values |
-| **CF Journal** | Public snapshots and changes between refreshes |
-| **CF Formulas** | Function reference and live formula examples |
-| **CF Strategies** | Editable covered call, cash-secured put and vertical payoff models |
+| **Analysis** | Ticker input, quote, indicators and company summary |
+| **Price history** | Daily prices, adjusted returns and benchmark columns |
+| **Fundamentals** | Published fields, units and sources |
+| **Earnings** | Separate earnings results, financial statements, estimates and events |
+| **Options** | Selected-expiration chain and option model |
+| **Macro** | Four FRED series, with your key |
+| **Sources** | Provider statuses, timestamps and usage notes |
+| **Research** | Additional charts, earnings summary and selected Finviz, Zacks and GuruFocus fields |
+| **Watchlist** | Up to 20 ticker inputs and summary values |
+| **Journal** | Public snapshots and changes between refreshes |
+| **Formulas** | Function reference and live formula examples |
+| **Strategies** | Editable covered call, cash-secured put and vertical payoff models |
 
 The strategy worksheet uses the selected expiration.
 Long option premiums start from source asks, and short premiums start from source bids.
@@ -226,7 +226,7 @@ The journal keeps prior public snapshots for comparisons.
 
 For the watchlist:
 
-1. Enter up to 20 tickers in **CF Watchlist!A8:A27**.
+1. Enter up to 20 tickers in **Watchlist!A8:A27**.
 2. Choose **Stock analysis → Refresh watchlist**.
 
 Watchlist refreshes request quote, history and fundamental data.
@@ -236,7 +236,7 @@ The first snapshot has no prior change value.
 
 For cell formulas:
 
-1. Open **CF Formulas**.
+1. Open **Formulas**.
 2. Review the example formulas and their units.
 3. To request new formula results, choose **Stock analysis → Refresh formula examples**.
 
@@ -252,7 +252,7 @@ The [build-your-own guide](BUILD-YOUR-OWN.md#1-create-the-controls) explains thi
 ## Check the added lookups
 
 1. Choose **Stock analysis → Build lookup checks**.
-2. Open the new **CF Lookup tests** tab.
+2. Open the new **Lookup tests** tab.
 3. Wait for its formulas to finish calculating.
 4. Choose **Stock analysis → Inspect lookup checks**.
 
@@ -283,7 +283,7 @@ The original `CACHEFINANCE` functions retain their older cache and fallback beha
 
 A successful request does not guarantee every field.
 Provider pages can block Apps Script, change their format or stop publishing selected data.
-**CF Sources** reports those problems separately.
+**Sources** reports those problems separately.
 API keys do not automatically unlock every website or subscription dataset.
 
 ## Updates
@@ -292,22 +292,30 @@ The installed Apps Script copy does not update automatically from GitHub.
 Replace the code inside the existing bound project to keep its Script Properties and current workbook contents.
 
 1. Open **Extensions → Apps Script** in your private copy.
-2. Open the file that contains the installed CacheFinance bundle.
+2. Open the file that contains the installed application bundle.
 3. Replace that file's contents with the new `dist/CacheFinance.js` contents.
 4. Save the project.
 5. Reload the spreadsheet.
 6. Choose **Stock analysis → Refresh selected ticker**.
 
 Do not paste a second copy beside the old bundle.
+
+The refresh first renames the application's older tabs to the names in this guide.
+It keeps the same sheets, so Google Sheets updates their formula references and preserves their data during the rename.
+The rename also preserves watchlist inputs, journal rows and the project's saved API keys.
+If both an older tab and its new name exist, the script stops before renaming any tabs.
+An unrelated tab with one of these names also blocks the upgrade.
+Resolve the name conflict, then run the refresh again. Do not delete your older tabs to upgrade their names.
+
 Replacing the code file keeps the saved keys in the same project's Script Properties.
 The refresh replaces managed analysis contents and charts.
 Custom tabs remain separate, and the journal keeps its prior snapshots.
 Keep custom notes and formulas on your own tabs.
 
 For the added formula examples, choose **Stock analysis → Build formula examples**.
-That command replaces the generated contents of **CF Formulas**.
+That command replaces the generated contents of **Formulas**.
 For the added diagnostics, choose **Stock analysis → Build lookup checks**.
-That command replaces **CF Lookup tests**.
+That command replaces **Lookup tests**.
 
 If an update requires new analysis layouts, choose **Stock analysis → Build analysis sheets**.
 The builder preserves other tabs and keeps watchlist ticker inputs and prior journal rows.

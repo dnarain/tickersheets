@@ -15,6 +15,7 @@ export class ManagedRange {
     }
     getValues() { return Array.from({ length: this.height }, (_, r) => Array.from({ length: this.width }, (_, c) => this.sheet.cells.get((this.row + r) + ":" + (this.col + c)) ?? "")); }
     getValue() { return this.getValues()[0][0]; }
+    getFormula() { return this.sheet.formulas.get(this.row + ":" + this.col) || ""; }
     setFormula(value) { this.sheet.formulas.set(this.row + ":" + this.col, value); return this.setValue(value); }
     setFormulas(values) { values.forEach((line, r) => line.forEach((value, c) => this.sheet.formulas.set((this.row + r) + ":" + (this.col + c), value))); return this.setValues(values); }
     clearContent() { this.each((r, c) => { this.sheet.cells.delete(r + ":" + c); this.sheet.formulas.delete(r + ":" + c); }); return this.event("clearContent"); }
@@ -38,8 +39,23 @@ export class ManagedRange {
 }
 
 export class ManagedSheet {
-    constructor(name) { this.name = name; this.cells = new Map(); this.formulas = new Map(); this.events = []; this.maxRows = 1000; this.maxCols = 26; }
+    constructor(name, book = null, id = 1) { this.name = name; this.book = book; this.id = id; this.cells = new Map(); this.formulas = new Map(); this.events = []; this.maxRows = 1000; this.maxCols = 26; }
     getName() { return this.name; } getMaxRows() { return this.maxRows; } getMaxColumns() { return this.maxCols; }
+    getSheetId() { return this.id; }
+    createTextFinder(pattern) {
+        const finder = { useRegularExpression() { return this; }, matchCase() { return this; }, matchFormulaText() { return this; },
+            findAll: () => [...this.cells].filter(([, value]) => typeof value === "string" && new RegExp(pattern).test(value))
+                .map(([key]) => { const [row, col] = key.split(":").map(Number); return this.getRange(row, col); }) };
+        return finder;
+    }
+    setName(name) {
+        if (this.book?.sheets.has(name) && this.book.sheets.get(name) !== this) throw new Error("A sheet with that name already exists");
+        if (this.book) {
+            const entries = [...this.book.sheets].map(([key, sheet]) => [sheet === this ? name : key, sheet]);
+            this.book.sheets.clear(); entries.forEach(([key, sheet]) => this.book.sheets.set(key, sheet));
+        }
+        this.name = name; this.events.push({ kind: "rename", name }); return this;
+    }
     getLastRow() { return Math.max(0, ...[...this.cells].filter(([, value]) => value !== "").map(([key]) => Number(key.split(":")[0]))); }
     getRange(a, b, height = 1, width = 1) {
         if (typeof a === "number") return new ManagedRange(this, a, b, height, width);
@@ -56,9 +72,9 @@ export class ManagedSheet {
 }
 
 export class ManagedBook {
-    constructor() { this.sheets = new Map(); this.toasts = []; }
+    constructor() { this.sheets = new Map(); this.toasts = []; this.nextSheetId = 1; }
     getSheetByName(name) { return this.sheets.get(name) || null; }
-    insertSheet(name) { const sheet = new ManagedSheet(name); this.sheets.set(name, sheet); return sheet; }
+    insertSheet(name) { const sheet = new ManagedSheet(name, this, this.nextSheetId++); this.sheets.set(name, sheet); return sheet; }
     getSpreadsheetTimeZone() { return "America/Los_Angeles"; }
     toast(...values) { this.toasts.push(values); }
 }

@@ -24,7 +24,7 @@ class CFAnalysisCalculatorSheets {
     }
 
     static render(book, snapshot) {
-        const sheet = book.getSheetByName("CF Options"), main = book.getSheetByName("CF Analysis");
+        const sheet = book.getSheetByName("Options"), main = book.getSheetByName("Analysis");
         if (!sheet || sheet.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1") throw new Error("Build the marked analysis tabs before adding the option calculator.");
         const ticker = typeof snapshot?.ticker === "string" ? snapshot.ticker.trim().toUpperCase() : "";
         if (!ticker || !main || String(main.getRange("B4").getValue()).trim().toUpperCase() !== ticker) throw new Error("The ticker changed during refresh. Refresh the current ticker again.");
@@ -45,7 +45,7 @@ class CFAnalysisCalculatorSheets {
         sheet.getRange("O1:W60").clearContent();
         for (const chart of sheet.getCharts()) if (String(chart.getOptions().get("title") || "").endsWith(" — option payoff")) sheet.removeChart(chart);
         sheet.setColumnWidth(15, 235); sheet.setColumnWidth(16, 155); sheet.setColumnWidth(17, 25); sheet.setColumnWidth(18, 235); sheet.setColumnWidth(19, 155);
-        sheet.getRange("O1").setFormula('=UPPER(TRIM(\'CF Analysis\'!$B$4))&" — option calculator"').setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
+        sheet.getRange("O1").setFormula('=UPPER(TRIM(Analysis!$B$4))&" — option calculator"').setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("O2").setValue("Edit yellow cells. Refresh resets assumptions.").setFontSize(9).setFontColor("#596579");
         for (const [range, values] of [["O3:P3", [["Assumption", "Value"]]], ["R3:S3", [["Model output", "Value"]]]]) {
             sheet.getRange(range).setValues(values).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold");

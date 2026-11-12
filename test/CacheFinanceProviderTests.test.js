@@ -31,6 +31,8 @@ class Sheet {
         };
         return api;
     }
+    getName() { return this.name; }
+    setName(name) { sheets.delete(this.name); this.name = name; sheets.set(name, this); return this; }
     clearContents() { this.values = []; }
     getLastRow() { return this.values.length; }
     setFrozenRows() {}
@@ -255,20 +257,47 @@ describe("bound-sheet execution and report", () => {
         expect(() => runner.RunProviderTests()).toThrow("Another provider test"); expect(fetch).not.toHaveBeenCalled();
     });
     it("does not overwrite a user's unrelated same-name sheet", () => {
-        const existing = book.insertSheet("CF Provider tests"); existing.getRange("A1").setValue("User data");
-        expect(() => runner.RunProviderTests()).toThrow("not a diagnostic sheet"); expect(existing.getRange("A1").getValue()).toBe("User data"); expect(lock.releaseLock).toHaveBeenCalled();
+        const existing = book.insertSheet("Provider tests"); existing.getRange("A1").setValue("User data");
+        expect(() => runner.RunProviderTests()).toThrow(/not managed|not a diagnostic sheet/); expect(existing.getRange("A1").getValue()).toBe("User data"); expect(lock.releaseLock).toHaveBeenCalled();
+    });
+    it("continues and exports older marked diagnostic tabs without losing saved results", () => {
+        const source = book.insertSheet("CF Provider tests"); source.getRange("A1").setValue(marker);
+        const stored = row(); stored[4] = "PARSED"; stored[10] = 123.45;
+        source.getRange(5, 1, 1, 14).setValues([stored]);
+        const worksheet = book.insertSheet("CF Worksheet tests"); worksheet.getRange("A1").setValue(marker);
+        worksheet.getRange("B7").setValue("saved worksheet control");
+        const report = book.insertSheet("CF Test report"); report.getRange("A1").setValue(marker);
+        report.getRange("B5").setValue("saved report");
+        runner.ContinueProviderTests();
+        expect(sheets.get("Provider tests")).toBe(source); expect(source.getRange("K5").getValue()).toBe(123.45);
+        expect(sheets.get("Worksheet tests")).toBe(worksheet); expect(worksheet.getRange("B7").getValue()).toBe("saved worksheet control");
+        expect(sheets.get("Test report")).toBe(report); expect(report.getRange("B5").getValue()).toBe("saved report");
+        expect(sheets.has("CF Provider tests")).toBe(false); expect(sheets.has("CF Worksheet tests")).toBe(false); expect(sheets.has("CF Test report")).toBe(false);
+        const exported = JSON.parse(runner.CFProviderReportJson());
+        expect(exported.rows[0][10]).toBe(123.45); expect(sheets.get("Test report")).toBe(report);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+    it("rejects conflicting old and new diagnostic names before any rename or request", () => {
+        const previous = book.insertSheet("CF Provider tests"); previous.getRange("A1").setValue(marker);
+        const current = book.insertSheet("Provider tests"); current.getRange("A1").setValue(marker);
+        const worksheet = book.insertSheet("CF Worksheet tests"); worksheet.getRange("A1").setValue(marker);
+        worksheet.getRange("B5").setValue("preserved");
+        expect(() => runner.ContinueProviderTests()).toThrow("Both CF Provider tests and Provider tests tabs exist");
+        expect(sheets.get("CF Provider tests")).toBe(previous); expect(sheets.get("Provider tests")).toBe(current);
+        expect(sheets.get("CF Worksheet tests")).toBe(worksheet); expect(worksheet.getRange("B5").getValue()).toBe("preserved");
+        expect(fetch).not.toHaveBeenCalled(); expect(lock.releaseLock).toHaveBeenCalledOnce();
     });
     it("persists direct outcomes, exports valid JSON, and keeps API keys out of report and logs", () => {
         vi.spyOn(D, "sites").mockReturnValue([site()]);
         const summary = runner.RunProviderTests(); expect(summary.environment).toBe("Google Apps Script"); expect(summary.financialCacheBypassed).toBe(true);
-        const source = sheets.get("CF Provider tests"); expect(source.getRange("A1").getValue()).toBe(marker); expect(source.getRange("B3").getValue()).toBe(upstream);
+        const source = sheets.get("Provider tests"); expect(source.getRange("A1").getValue()).toBe(marker); expect(source.getRange("B3").getValue()).toBe(upstream);
         PropertiesService.getScriptProperties().setProperty("FINNHUB_API_KEY", "test-secret"); source.getRange("N5").setValue("test-secret https://private.test/?token=test-secret");
         const json = runner.CFProviderReportJson(); expect(() => JSON.parse(json)).not.toThrow(); expect(json).not.toContain("test-secret"); expect(json).not.toContain("private.test");
-        expect(log.mock.calls.flat().join("")).not.toContain("test-secret"); expect(sheets.get("CF Test report").getRange("B5").getValue()).toBe(json);
+        expect(log.mock.calls.flat().join("")).not.toContain("test-secret"); expect(sheets.get("Test report").getRange("B5").getValue()).toBe(json);
     });
     it("marks interrupted requests and reruns only the selected provider", () => {
         vi.spyOn(D, "sites").mockReturnValue([site(), site("YAHOO")]); runner.RunProviderTests();
-        const source = sheets.get("CF Provider tests"); source.getRange("E5").setValue("RUNNING");
+        const source = sheets.get("Provider tests"); source.getRange("E5").setValue("RUNNING");
         runner.ContinueProviderTests(); expect(source.getRange("E5").getValue()).toBe("INTERRUPTED");
         fetch.mockClear(); runner.RunProviderYahooApi(); expect(source.getRange("E5").getValue()).toBe("PARSED");
         expect(fetch.mock.calls.every(call => call[0].startsWith("https://example.test/quote/"))).toBe(true);
@@ -278,17 +307,17 @@ describe("bound-sheet execution and report", () => {
         ["RunProviderFinnhub", "FINNHUB"], ["RunProviderTwelveData", "TWELVEDATA"], ["RunProviderAlphaVantage", "ALPHAVANTAGE"], ["RunProviderCoinMarket", "COINMARKET"]
     ])("routes %s to its provider", (entry, name) => {
         vi.spyOn(D, "sites").mockReturnValue([site(name)]); const summary = runner[entry](); expect(summary.runId).toBeTruthy();
-        const source = sheets.get("CF Provider tests"); expect(source.getRange("B5").getValue()).toBe(name);
+        const source = sheets.get("Provider tests"); expect(source.getRange("B5").getValue()).toBe(name);
     });
     it("adds menu and keeps worksheet control results separate from direct provider evidence", () => {
         runner.CFProviderTestMenu_(); expect(menu.addToUi).toHaveBeenCalled(); runner.SetupProviderWorksheetTests();
-        const sheet = sheets.get("CF Worksheet tests"); expect(sheet.getRange("D9").getValue()).toBe('=CACHEFINANCE("CFTEST:CONTROL_A","PRICE",123.45)');
+        const sheet = sheets.get("Worksheet tests"); expect(sheet.getRange("D9").getValue()).toBe('=CACHEFINANCE("CFTEST:CONTROL_A","PRICE",123.45)');
         [123, "Loading...", "#N/A", 1.4, 123.45, 123.45, 234.56].forEach((value, index) => sheet.getRange(5 + index, 4).setValue(value));
         const results = runner.CollectProviderWorksheetTests(); expect(results.map(item => item.status)).toEqual(["PASS", "WAITING", "FAILED", "PASS", "PASS", "PASS", "PASS"]);
         expect(results.every(item => item.directProviderEvidence === false)).toBe(true); expect(fetch).not.toHaveBeenCalled();
     });
     it("sets timestamp columns to plain text before writing original provider date strings", () => {
-        const sheet = new Sheet("CF Provider tests"); const rows = [row("ALPHAVANTAGE"), row("ALPHAVANTAGE", "CURRENCY:USDCAD")];
+        const sheet = new Sheet("Provider tests"); const rows = [row("ALPHAVANTAGE"), row("ALPHAVANTAGE", "CURRENCY:USDCAD")];
         rows[0][7] = "2026-11-11T20:14:54.000Z"; rows[0][8] = "2026-11-10"; rows[0][9] = "latest trading day (date only)";
         rows[1][7] = "2026-11-11T20:14:54.000Z"; rows[1][8] = "2026-11-11 20:14:54"; rows[1][9] = "Last Refreshed (provider timezone)";
         runner.CFProviderWrite_(sheet, rows);
@@ -315,7 +344,7 @@ describe("bound-sheet execution and report", () => {
     });
     it("exports legacy Dates without inventing UTC times for Alpha date-only or naive timestamps", () => {
         vi.spyOn(D, "sites").mockReturnValue([site()]); runner.RunProviderTests();
-        const source = sheets.get("CF Provider tests");
+        const source = sheets.get("Provider tests");
         source.getRange("H5").setValue(new Date("2026-11-11T20:14:54.000Z"));
         source.getRange("I5").setValue(new Date("2026-11-10T08:00:00.000Z"));
         source.getRange("J5").setValue("latest trading day (date only)");

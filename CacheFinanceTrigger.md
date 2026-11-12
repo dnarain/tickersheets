@@ -1,3 +1,8 @@
+# Legacy CacheFinance trigger documentation
+
+This file preserves the upstream CacheFinance trigger instructions.
+Single Stock Analysis uses the refresh menus described in [INSTALL.md](INSTALL.md).
+
 ## Using through a trigger. (deprecated)
 * The custom function **=CACHEFINANCE()** works well enough, but it is still not 100% (the dreaded `Loading` error)
 * Using a trigger will ensure that you will **NEVER** have invalid data in your output columns.

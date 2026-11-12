@@ -2,7 +2,7 @@
 export { onOpen, onEdit };
 //  *** DEBUG END ***/
 
-/** Add settings to the normal bundle and diagnostics when installed. */
+/** Add the Single Stock Analysis menus and optional provider diagnostics. */
 function onOpen() {
     CFSettingsMenu_();
     if (typeof CFAnalysisMenu_ === "function") CFAnalysisMenu_();

@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
 import { CFPublicData } from "./CacheFinanceResearchFunctions.js";
 export { CFWatchlist, CFBuildWatchlist, CFRefreshWatchlist };
@@ -6,7 +7,7 @@ export { CFWatchlist, CFBuildWatchlist, CFRefreshWatchlist };
 
 /** User ticker inputs and public snapshots. No keys or raw provider pages enter these tabs. */
 class CFWatchlist {
-    static names() { return { "CF Watchlist": "CACHEFINANCE_WATCHLIST_V1", "CF Journal": "CACHEFINANCE_JOURNAL_V1" }; }
+    static names() { return { "Watchlist": "CACHEFINANCE_WATCHLIST_V1", "Journal": "CACHEFINANCE_JOURNAL_V1" }; }
     static safe(value) { return CFPublicData.safe(value); }
     static number(value) { return typeof value === "number" && Number.isFinite(value) ? value : null; }
     static date(value) {
@@ -15,6 +16,7 @@ class CFWatchlist {
         const date = new Date(value); return Number.isFinite(date.getTime()) ? date : null;
     }
     static check(book) {
+        CFWorkbookNames.migrate(book);
         for (const [name, marker] of Object.entries(CFWatchlist.names())) {
             const sheet = book.getSheetByName(name);
             if (sheet && sheet.getRange("Z1").getValue() !== marker) throw new Error("Rename the existing " + name + " tab before building the watchlist.");
@@ -36,10 +38,10 @@ class CFWatchlist {
         for (const [name, marker] of Object.entries(CFWatchlist.names())) {
             const existing = book.getSheetByName(name), sheet = existing || book.insertSheet(name);
             sheet.getRange("Z1").setValue(marker);
-            const headers = name === "CF Watchlist" ? CFWatchlist.headers() : CFWatchlist.journalHeaders();
-            CFWatchlist.decorate(sheet, name === "CF Watchlist" ? "Stock watchlist" : "Changes between refreshes", headers.length);
+            const headers = name === "Watchlist" ? CFWatchlist.headers() : CFWatchlist.journalHeaders();
+            CFWatchlist.decorate(sheet, name === "Watchlist" ? "Stock watchlist" : "Changes between refreshes", headers.length);
             sheet.getRange(7, 1, 1, headers.length).setValues([headers]).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold").setWrap(true);
-            if (name === "CF Watchlist") {
+            if (name === "Watchlist") {
                 sheet.getRange("A2:L2").setValue("Prices use the latest accepted session quote. Returns and indicators use regular daily closes. Source times use the spreadsheet time zone.");
                 sheet.getRange("A4:L4").merge().setValue("Edit up to 20 yellow ticker cells, then choose Stock analysis → Refresh watchlist.");
                 sheet.getRange("A8:A27").setBackground("#FFF2CC").setFontColor("#0000FF").setFontWeight("bold").setNumberFormat("@");
@@ -54,13 +56,13 @@ class CFWatchlist {
     }
     static inputs(book) {
         CFWatchlist.check(book);
-        const sheet = book.getSheetByName("CF Watchlist");
+        const sheet = book.getSheetByName("Watchlist");
         if (!sheet) throw new Error("Build the watchlist first.");
         return sheet.getRange("A8:A27").getValues().map((row, index) => ({ row: index + 8, input: typeof row[0] === "string" ? row[0].trim().toUpperCase() : row[0] })).filter(row => row.input !== "");
     }
     static clearRows(book, first = 8, count = 20) {
         CFWatchlist.check(book);
-        const sheet = book.getSheetByName("CF Watchlist");
+        const sheet = book.getSheetByName("Watchlist");
         const start = Math.max(8, first), height = Math.min(28, first + count) - start;
         if (sheet && Number.isInteger(start) && Number.isInteger(height) && height > 0) sheet.getRange(start, 2, height, CFWatchlist.headers().length - 1).clearContent();
     }
@@ -80,8 +82,8 @@ class CFWatchlist {
     static record(book, snapshot) {
         if (!snapshot?.ok) return null;
         CFWatchlist.check(book);
-        if (!book.getSheetByName("CF Journal")) CFWatchlist.build(book);
-        const sheet = book.getSheetByName("CF Journal"), metric = CFWatchlist.metrics(snapshot), last = sheet.getLastRow();
+        if (!book.getSheetByName("Journal")) CFWatchlist.build(book);
+        const sheet = book.getSheetByName("Journal"), metric = CFWatchlist.metrics(snapshot), last = sheet.getLastRow();
         const rows = last >= 8 ? sheet.getRange(8, 1, last - 7, 18).getValues() : [];
         const previous = rows.slice().reverse().find(row => row[1] === metric.symbol && row[3] === metric.currency);
         const delta = { price: previous ? CFWatchlist.change(metric.price, previous[2]) : null, rsi14: previous ? CFWatchlist.change(metric.rsi14, previous[6]) : null,
@@ -99,7 +101,7 @@ class CFWatchlist {
     }
     static refresh(book, dependencies = {}) {
         CFWatchlist.build(book);
-        const initial = CFWatchlist.inputs(book), sheet = book.getSheetByName("CF Watchlist"), results = [];
+        const initial = CFWatchlist.inputs(book), sheet = book.getSheetByName("Watchlist"), results = [];
         CFWatchlist.clearRows(book);
         sheet.getRange("E8:F27").setNumberFormat("yyyy-mm-dd hh:mm:ss"); sheet.getRange("G8:G27").setNumberFormat("@"); sheet.getRange("S8:S27").setNumberFormat("@");
         for (const input of initial) {
@@ -128,7 +130,7 @@ class CFWatchlist {
         return { ok: true, tickers: results.length, results };
     }
     static edit(event) {
-        if (!event?.range || event.range.getSheet().getName() !== "CF Watchlist" || event.range.getColumn() > 1 || event.range.getLastColumn() < 1 || event.range.getLastRow() < 8 || event.range.getRow() > 27) return;
+        if (!event?.range || event.range.getSheet().getName() !== "Watchlist" || event.range.getColumn() > 1 || event.range.getLastColumn() < 1 || event.range.getLastRow() < 8 || event.range.getRow() > 27) return;
         CFWatchlist.clearRows(event.source, event.range.getRow(), event.range.getLastRow() - event.range.getRow() + 1);
     }
 }
@@ -137,6 +139,6 @@ function CFBuildWatchlist() { return CFWatchlist.build(SpreadsheetApp.getActiveS
 function CFRefreshWatchlist() {
     const book = SpreadsheetApp.getActiveSpreadsheet(), lock = LockService.getDocumentLock();
     if (!lock?.tryLock(1000)) { book.toast("Another refresh is running.", "Watchlist", 8); return { ok: false, error: "Another refresh is running" }; }
-    try { const result = CFWatchlist.refresh(book); SpreadsheetApp.flush(); console.log("CF_WATCHLIST_CHECK " + JSON.stringify(result)); book.toast("Watchlist updated. See CF Journal for changes.", "Watchlist", 8); return result; }
+    try { const result = CFWatchlist.refresh(book); SpreadsheetApp.flush(); console.log("CF_WATCHLIST_CHECK " + JSON.stringify(result)); book.toast("Watchlist updated. See Journal for changes.", "Watchlist", 8); return result; }
     finally { lock.releaseLock(); }
 }

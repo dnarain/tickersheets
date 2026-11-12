@@ -176,7 +176,7 @@ describe("typed native-result classification", () => {
         expect(result(report, "rsi_nvda_rsi2").status).toBe("FAIL"); expect(JSON.stringify(report)).not.toContain("private provider exception");
     });
     it("requires a marked test tab and sanitizes unexpected public result details", () => {
-        expect(() => C.inspect(book, calls)).toThrow(/Build CF Lookup tests/);
+        expect(() => C.inspect(book, calls)).toThrow(/Build Lookup tests/);
         expect(C.safe_({ nested: [NaN, new Date("bad"), "https://example.test?api_key=private-value&x=1"] })).toEqual({ nested: ["NaN", "Invalid date", "https://example.test?api_key=[redacted]&x=1"] });
     });
     it("binds the public build and inspect functions to the active spreadsheet", () => {

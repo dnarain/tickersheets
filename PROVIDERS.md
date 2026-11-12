@@ -1,6 +1,6 @@
 # Data providers and testing
 
-CacheFinance requests data from Google Apps Script. No hosted server is required.
+Single Stock Analysis requests data from Google Apps Script. No hosted server is required.
 The table lists the fields this project reads and selected Google Sheets results from **November 11–12, 2026, Pacific time**.
 Those saved results do not guarantee access today, every ticker or every feature of a provider.
 
@@ -8,7 +8,7 @@ See [INSTALL.md](INSTALL.md) for setup and [FUNCTIONS.md](FUNCTIONS.md) for argu
 
 ## Providers
 
-| Provider | What CacheFinance reads | Authentication | Saved Google Sheets result and limits |
+| Provider | What the application reads | Authentication | Saved Google Sheets result and limits |
 |---|---|---|---|
 | Yahoo Chart | Regular-session quotes, daily history and inputs for RSI2 targets; original quote adapter | No personal key | Prices/names passed for AAPL, NVDA, RY and XIC. Research history and RSI2 checks passed for selected NVDA/AAPL inputs. Optional bid/ask values were unavailable. |
 | Yahoo Finance website | Selected fundamentals, earnings, estimates, regular/pre-market/post-market quotes; original price/name/yield adapter | No personal key | Selected NVDA/AAPL tables passed. The repaired original adapter accepted price/name/yield for AAPL, NVDA, RY and XIC. Active-session NVDA checks passed. Some fields and source timestamps remain unavailable. |
@@ -46,9 +46,15 @@ Live quotes can change between worksheet calculation and a later direct comparis
 Inspect a mismatch and its source times before deciding whether the calculation or the data changed.
 Worksheet/function agreement does not independently reconcile financial values against exchange data or company filings.
 
+We also verified the November 12 upgrade of 14 application tabs in the private workbook and 13 in the public sample.
+Both workbooks and their Apps Script projects use the title **Single Stock Analysis**.
+Ticker/expiration inputs, strategy assumptions, watchlist tickers and journal rows remained unchanged during the rename.
+Both workbook inspections reported zero formula errors and retained their charts and models.
+We have not verified installation and authorization from a new Google account.
+
 ### API keys
 
-Choose **CacheFinance → API keys…** in your private spreadsheet copy.
+Choose **Data settings → API keys…** in your private spreadsheet copy.
 Blank fields preserve saved keys; **Remove saved key** deletes a key when you save.
 The **Saved** label confirms that a property exists. It does not test provider access.
 
@@ -81,12 +87,12 @@ Do not add it beside the normal bundle; both bundles define the same functions.
 2. Replace `Code.gs` with [dist/CacheFinanceProviderTests.js](dist/CacheFinanceProviderTests.js).
 3. Save the project. Use the [supplied manifest](apps-script/provider-tests/appsscript.json) if setting scopes explicitly.
 4. Select `RunProviderTests` in Apps Script and click **Run**. Complete Google's authorization steps.
-5. Reload the spreadsheet. Save any provider keys through **CacheFinance → API keys…**.
-6. Choose **CacheFinance tests → Start provider tests** to create a new report.
+5. Reload the spreadsheet. Save any provider keys through **Data settings → API keys…**.
+6. Choose **Provider tests → Start provider tests** to create a new report.
 7. Choose **Continue provider tests** until no pending rows remain.
-8. To rerun one provider, choose its entry in **CacheFinance tests**, then continue any remaining rows.
+8. To rerun one provider, choose its entry in **Provider tests**, then continue any remaining rows.
 9. Choose **Set up worksheet checks**, wait for calculation, then choose **Collect worksheet results**.
-10. Choose **Export report JSON** for a sanitized report in **CF Test report**.
+10. Choose **Export report JSON** for a sanitized report in **Test report**.
 
 The eight adapters are Yahoo Chart, Google Finance website, Globe & Mail, Yahoo Finance website, Finnhub, Twelve Data, Alpha Vantage and CoinMarketCap.
 The runner bypasses financial caches and fallback providers. Each batch makes at most four distinct requests.
@@ -102,12 +108,12 @@ These historical results cover selected cases and have not established every pro
 ### Check research data in the normal spreadsheet
 
 1. Install the normal bundle using [INSTALL.md](INSTALL.md).
-2. Choose **Stock analysis → Refresh selected ticker**. Read **CF Sources** for statuses and source times.
+2. Choose **Stock analysis → Refresh selected ticker**. Read **Sources** for statuses and source times.
 3. Choose **Check provider data** to request a summary for the selected ticker without writing analysis tabs.
 4. Choose **Check additional providers** to request Finviz, Zacks and GuruFocus fields for NVDA, AAPL and an invalid ticker.
 5. Open **Extensions → Apps Script → Executions** to read those commands' sanitized summaries.
 6. Choose **Build lookup checks**, wait for formulas to finish, then choose **Inspect lookup checks**.
-7. Open **CF Lookup tests** and review each result. Missing keys and blocked requests remain **BLOCKED**.
+7. Open **Lookup tests** and review each result. Missing keys and blocked requests remain **BLOCKED**.
 8. Choose **Check all research sheets** to inspect rendered tables and charts without fetching provider data.
 
 The lookup tab checks RSI2 outputs and exact-date FRED results.
@@ -155,8 +161,8 @@ npm run build:provider-tests:check
 Commit the relevant source, test and generated `dist/` changes together.
 The tests and public fixtures remain in [test/](test/).
 Use `npm run test:watch` while editing, or `npm run test:coverage` for the coverage report in `coverage/index.html`.
-The **November 12, 2026** local run passed **1,258 tests in 33 files**.
-Coverage was 95.98% of lines, 89.26% of branches and 96.71% of functions.
+The **November 12, 2026** local run passed **1,277 tests in 34 files**.
+Coverage was 96% of lines, 89.15% of branches and 96.74% of functions.
 Those numbers describe controlled local tests, separate from the dated Google Sheets results above.
 
 ### Read and share results

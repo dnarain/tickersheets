@@ -13,7 +13,7 @@ beforeEach(() => {
         sheet.insertImage = vi.fn(() => { throw new Error("Provider image insertion is disabled"); });
         return sheet;
     };
-    main = book.insertSheet("CF Analysis");
+    main = book.insertSheet("Analysis");
     main.getRange("Z1").setValue("CACHEFINANCE_ANALYSIS_V1"); main.getRange("B4").setValue("NVDA");
     fetch = vi.fn(() => { throw new Error("Network access must not occur"); });
     vi.stubGlobal("UrlFetchApp", { fetch });
@@ -22,7 +22,7 @@ afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("manual provider chart links", () => {
     it("creates provider-page links without HTTP requests or image insertion", () => {
-        const result = Images.load(book, fetch), sheet = book.getSheetByName("CF Images");
+        const result = Images.load(book, fetch), sheet = book.getSheetByName("Chart links");
         expect(result).toMatchObject({ ok: true, ticker: "NVDA", mode: "manual", status: "Manual copy required", networkRequests: 0, imagesInserted: 0 });
         expect(result.results.map(row => row.url)).toEqual(["https://stockcharts.com/sc3/ui/?s=nvda", "https://finviz.com/quote.ashx?t=NVDA&p=d"]);
         expect(result.results.every(row => row.status === "Manual copy required")).toBe(true);
@@ -50,24 +50,24 @@ describe("manual provider chart links", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
     it("checks ownership before deleting images or changing cells", () => {
-        const sheet = book.insertSheet("CF Images"); sheet.getRange("Z1").setValue("other"); sheet.getRange("A1").setValue("User data");
+        const sheet = book.insertSheet("Chart links"); sheet.getRange("Z1").setValue("other"); sheet.getRange("A1").setValue("User data");
         expect(() => Images.load(book, fetch)).toThrow(/Rename/);
         expect(sheet.getImages).not.toHaveBeenCalled(); expect(sheet.getRange("A1").getValue()).toBe("User data"); expect(fetch).not.toHaveBeenCalled();
     });
     it("requires marked analysis tabs before creating provider links", () => {
         main.getRange("Z1").setValue("other");
-        expect(() => Images.load(book, fetch)).toThrow(/marked stock analysis/);
-        expect(book.getSheetByName("CF Images")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
+        expect(() => Images.load(book, fetch)).toThrow(/not managed by Single Stock Analysis/);
+        expect(book.getSheetByName("Chart links")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
     });
     it("removes legacy pictures and clears their old metadata", () => {
-        const sheet = book.insertSheet("CF Images"); sheet.getRange("Z1").setValue("CACHEFINANCE_IMAGES_V1");
+        const sheet = book.insertSheet("Chart links"); sheet.getRange("Z1").setValue("CACHEFINANCE_IMAGES_V1");
         const remove = vi.fn(); sheet.legacyImages.push({ remove }); sheet.getRange("K20").setValue("Old image metadata");
         Images.load(book, fetch);
         expect(remove).toHaveBeenCalledOnce(); expect(sheet.getRange("K20").getValue()).toBe(""); expect(sheet.insertImage).not.toHaveBeenCalled();
     });
     it("clears old links, policy metadata and images after a ticker edit", () => {
         Images.load(book, fetch);
-        const sheet = book.getSheetByName("CF Images"), remove = vi.fn(); sheet.legacyImages.push({ remove }); main.getRange("B4").setValue("AAPL");
+        const sheet = book.getSheetByName("Chart links"), remove = vi.fn(); sheet.legacyImages.push({ remove }); main.getRange("B4").setValue("AAPL");
         Images.invalidate(book);
         expect(remove).toHaveBeenCalledOnce();
         expect(sheet.getRange("D5:F6").getValues().flat().every(value => value === "")).toBe(true);
@@ -77,13 +77,13 @@ describe("manual provider chart links", () => {
     });
     it("ignores an absent link sheet and rejects unowned invalidation", () => {
         expect(() => Images.invalidate(book)).not.toThrow();
-        const sheet = book.insertSheet("CF Images"); sheet.getRange("Z1").setValue("other");
+        const sheet = book.insertSheet("Chart links"); sheet.getRange("Z1").setValue("other");
         expect(() => Images.invalidate(book)).toThrow(/Rename/); expect(sheet.getImages).not.toHaveBeenCalled();
     });
     it("rejects unsafe input before creating a provider tab", () => {
         main.getRange("B4").setValue("NVDA?private=value");
         expect(() => Images.load(book, fetch)).toThrow();
-        expect(book.getSheetByName("CF Images")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
+        expect(book.getSheetByName("Chart links")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
     });
 });
 describe("legacy chart-link callback name", () => {
@@ -97,6 +97,6 @@ describe("legacy chart-link callback name", () => {
     it("does not change sheets when another refresh holds the lock", () => {
         vi.stubGlobal("SpreadsheetApp", { getActiveSpreadsheet: () => book });
         vi.stubGlobal("LockService", { getDocumentLock: () => ({ tryLock: () => false }) });
-        expect(CFLoadProviderImages().ok).toBe(false); expect(book.getSheetByName("CF Images")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
+        expect(CFLoadProviderImages().ok).toBe(false); expect(book.getSheetByName("Chart links")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
     });
 });

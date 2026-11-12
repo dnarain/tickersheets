@@ -41,7 +41,7 @@ beforeEach(() => {
     options = new Sheet(); main = new Sheet();
     options.getRange("Z1").setValue("CACHEFINANCE_ANALYSIS_V1"); options.getRange("B4").setValue("2026-11-20"); main.getRange("B4").setValue("NVDA");
     options.mutations = []; main.mutations = [];
-    book = { getSheetByName: name => name === "CF Options" ? options : name === "CF Analysis" ? main : null };
+    book = { getSheetByName: name => name === "Options" ? options : name === "Analysis" ? main : null };
     vi.stubGlobal("Charts", { ChartType: { LINE: "LINE" } });
     vi.stubGlobal("SpreadsheetApp", { newDataValidation: () => { const validation = {}; return { requireValueInList(values, dropdown) { validation.values = values; validation.dropdown = dropdown; return this; }, setAllowInvalid(value) { validation.allowInvalid = value; return this; }, build() { return validation; } }; } });
 });
@@ -129,7 +129,7 @@ describe("marked option calculator rendering", () => {
         Calculator.render(book, snapshot()); main.getRange("B4").setValue("AAPL");
         const data = snapshot(); data.ticker = "AAPL"; data.symbol = "AAPL"; data.options = { ok: false, symbol: "AAPL", contracts: [] };
         Calculator.render(book, data); expect(options.getRange("P16").getValue()).toBe("No usable ATM call quote");
-        expect(options.charts).toEqual([]); expect(options.getRange("O1").getValue()).toBe('=UPPER(TRIM(\'CF Analysis\'!$B$4))&" — option calculator"');
+        expect(options.charts).toEqual([]); expect(options.getRange("O1").getValue()).toBe('=UPPER(TRIM(Analysis!$B$4))&" — option calculator"');
     });
     it("preserves a published zero dividend and labels a missing yield's zero assumption", () => {
         for (const value of [0, null, "=IMPORTXML(1)"]) {

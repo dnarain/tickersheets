@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
 import { CFSmfProviders } from "./CacheFinanceSmfProviders.js";
 import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
 export { CFProviderImages, CFLoadProviderImages };
@@ -7,22 +8,23 @@ export { CFProviderImages, CFLoadProviderImages };
 /** Provider chart pages open separately. This module makes no requests and copies no charts. */
 class CFProviderImages {
     static check(book) {
-        const sheet = book.getSheetByName("CF Images");
-        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_IMAGES_V1") throw new Error("Rename the existing CF Images tab before building provider chart links.");
+        CFWorkbookNames.migrate(book);
+        const sheet = book.getSheetByName("Chart links");
+        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_IMAGES_V1") throw new Error("Rename the existing Chart links tab before building provider chart links.");
     }
     static invalidate(book) {
         CFProviderImages.check(book);
-        const sheet = book.getSheetByName("CF Images");
+        const sheet = book.getSheetByName("Chart links");
         if (!sheet) return;
         for (const image of sheet.getImages()) image.remove();
         sheet.getRange(3, 1, Math.max(sheet.getLastRow() - 2, 1), 25).clearContent();
-        const value = String(book.getSheetByName("CF Analysis")?.getRange("B4").getValue() || "").trim().toUpperCase();
+        const value = String(book.getSheetByName("Analysis")?.getRange("B4").getValue() || "").trim().toUpperCase();
         sheet.getRange("A1").setValue((/^[=+@-]/.test(value) ? "'" : "") + value + " — provider chart links");
         sheet.getRange("A2").setValue("Ticker changed. Choose Stock analysis → Provider chart links.");
     }
     static load(book, _unusedFetch) {
         CFProviderImages.check(book);
-        const main = book.getSheetByName("CF Analysis");
+        const main = book.getSheetByName("Analysis");
         if (!main || main.getRange("Z1").getValue() !== "CACHEFINANCE_ANALYSIS_V1") throw new Error("Build the marked stock analysis tabs before adding provider chart links.");
         const input = String(main.getRange("B4").getValue() || "").trim().toUpperCase();
         const symbol = CFAnalysisData.normalizeTicker(input).yahooSymbol;
@@ -35,8 +37,8 @@ class CFProviderImages {
             { provider: "Finviz", description: "Quote page and chart", url: supported ? CFSmfProviders.buildUrl("FINVIZ", symbol) : "",
                 status: supported ? "Manual copy required" : "Unsupported ticker", policyUrl: "", instruction: "Open the quote page to view its chart." }
         ];
-        let sheet = book.getSheetByName("CF Images");
-        if (!sheet) sheet = book.insertSheet("CF Images");
+        let sheet = book.getSheetByName("Chart links");
+        if (!sheet) sheet = book.insertSheet("Chart links");
         if (sheet.getMaxColumns() < 26) sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
         for (const image of sheet.getImages()) image.remove();
         sheet.getRange(1, 1, sheet.getMaxRows(), 25).breakApart().clear();

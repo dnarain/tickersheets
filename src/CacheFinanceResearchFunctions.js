@@ -131,7 +131,7 @@ class CFPublicData {
         if (!/^[A-Z0-9_]{1,50}$/.test(id) || !Number.isInteger(count) || count < 1 || count > 1000) return CFPublicData.failure("Use a FRED series ID and 1–1000 observations.");
         const deps = CFPublicData.dependencies(overrides), key = typeof deps.fredKey === "function" ? deps.fredKey() : deps.fredKey;
         const source = "https://fred.stlouisfed.org/series/" + id;
-        if (typeof key !== "string" || !/^[a-z0-9]{32}$/.test(key)) return CFPublicData.failure("FRED API key required. Use the CacheFinance menu.", source);
+        if (typeof key !== "string" || !/^[a-z0-9]{32}$/.test(key)) return CFPublicData.failure("FRED API key required. Use the Data settings menu.", source);
         return CFPublicData.cached("fred", id + ":" + count, 3600, services => {
             // The private URL is sent only to FRED. Raw bodies and exceptions never leave this method.
             const parameters = "?series_id=" + encodeURIComponent(id) + "&api_key=" + encodeURIComponent(key) + "&file_type=json";
