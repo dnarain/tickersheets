@@ -6,7 +6,9 @@ const sheets = vi.hoisted(() => ({
 }));
 vi.mock("../src/CacheFinanceAnalysisSheets.js", () => ({ CFAnalysisSheets: sheets }));
 
-import { CFAnalysisService, CFBuildAnalysis, CFRefreshAnalysis, CFCheckAnalysisSources, CFInspectAnalysis, CFAnalysisMenu_, CFAnalysisHandleEdit_ } from "../src/CacheFinanceAnalysis.js";
+import { CFAnalysisService, CFBuildAnalysis, CFRefreshAnalysis, CFCheckAnalysisSources, CFInspectAnalysis, CFInspectWorkspace, CFCheckTemplateKeys, CFAnalysisMenu_, CFAnalysisHandleEdit_ } from "../src/CacheFinanceAnalysis.js";
+import { CFAnalysisOptions } from "../src/CacheFinanceAnalysisOptions.js";
+import { ManagedBook } from "./helpers/ManagedSheetMock.js";
 
 const fixture = name => fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8");
 const capturedChart = JSON.parse(fixture("analysis-chart-nvda.json"));
@@ -62,6 +64,43 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("one-ticker analysis collection", () => {
+    it("keeps the selected option chain if the maturity comparison fails", () => {
+        vi.spyOn(CFAnalysisOptions, "fetchMaturities").mockImplementation(() => { throw new Error("private-session-exception"); });
+        const data = CFAnalysisService.collect("NVDA", "2026-11-20", { fetch });
+        expect(data.options.ok).toBe(true); expect(data.options.contracts).toHaveLength(1);
+        expect(data.optionMaturities).toMatchObject({ ok: false, rows: [] });
+        expect(JSON.stringify(data)).not.toContain("private-session-exception");
+    });
+
+    it("can skip maturity requests while preserving the selected chain", () => {
+        const maturities = vi.spyOn(CFAnalysisOptions, "fetchMaturities");
+        const data = CFAnalysisService.collect("NVDA", "2026-11-20", { fetch, includeMaturities: false });
+        expect(data.options.ok).toBe(true); expect(maturities).not.toHaveBeenCalled();
+        expect(fetch.mock.calls.filter(([url]) => url.includes("/v7/finance/options/"))).toHaveLength(1);
+    });
+
+    it("records each extra maturity's status without duplicating the loaded chain's source row", () => {
+        vi.spyOn(CFAnalysisOptions, "fetchMaturities").mockReturnValue({ ok: true, symbol: "NVDA", rows: [
+            { expiration: "2026-11-20", status: "Available", http: 200, atmIV: .4 },
+            { expiration: "2026-12-18", status: "Available", http: 200, atmIV: .5, quoteTime: "2026-11-11T20:00:00Z", source: "https://finance.yahoo.com/quote/NVDA/options/" },
+            { expiration: "2027-01-15", status: "Unavailable", http: 403, atmIV: null, error: "Request unavailable" }
+        ] });
+        const data = CFAnalysisService.collect("NVDA", "2026-11-20", { fetch });
+        const sources = data.sources.filter(row => row.scope.startsWith("ATM comparison"));
+        expect(sources).toHaveLength(2); expect(sources.map(row => row.status)).toEqual(["Available", "Unavailable"]);
+        expect(CFAnalysisService.summary(data).optionMaturities).toHaveLength(3);
+    });
+
+    it("keeps added provider results separate and reports blocked access without substituting Yahoo fields", () => {
+        const fetchProvider = vi.fn(provider => ({ provider, symbol: "NVDA", ok: provider === "FINVIZ", http: provider === "FINVIZ" ? 200 : 403,
+            status: provider === "FINVIZ" ? "Available" : "Access challenge", identity: provider === "FINVIZ" ? "Matched" : "Unknown", source: "https://provider.test/quote/NVDA", fields: { price: { value: provider === "FINVIZ" ? 174 : null } } }));
+        vi.stubGlobal("CFSmfProviders", { registry: () => [{ provider: "FINVIZ", label: "Finviz" }, { provider: "ZACKS", label: "Zacks" }], fetch: fetchProvider });
+        const data = CFAnalysisService.collect("NVDA", "2026-11-20", { fetch });
+        expect(data.additionalProviders).toHaveLength(2); expect(data.additionalProviders[1].fields.price.value).toBeNull();
+        expect(data.sources.find(row => row.provider === "Zacks")).toMatchObject({ status: "Access challenge", http: 403 });
+        expect(CFAnalysisService.summary(data).additionalProviders.map(row => row.availableFields)).toEqual([1, 0]);
+        fetchProvider.mockClear(); CFAnalysisService.collect("NVDA", "", { fetch, includeProviders: false }); expect(fetchProvider).not.toHaveBeenCalled();
+    });
     it("collects history, fundamentals, separate earnings bases, benchmarks and actual option rows", () => {
         const snapshot = CFAnalysisService.collect("NVDA", "2026-11-20", { fetch, clock: () => 1794438000000 });
         expect(snapshot.ok).toBe(true); expect(snapshot.symbol).toBe("NVDA");
@@ -182,20 +221,104 @@ describe("one-ticker analysis collection", () => {
     });
 });
 
+describe("research tab order", () => {
+    const markers = {
+        "CF Analysis": "CACHEFINANCE_ANALYSIS_V1", "CF Research": "CACHEFINANCE_RESEARCH_V1",
+        "CF Options": "CACHEFINANCE_ANALYSIS_V1", "CF Strategies": "CACHEFINANCE_STRATEGIES_V1",
+        "CF Watchlist": "CACHEFINANCE_WATCHLIST_V1", "CF Journal": "CACHEFINANCE_JOURNAL_V1",
+        "CF Fundamentals": "CACHEFINANCE_ANALYSIS_V1", "CF Earnings": "CACHEFINANCE_ANALYSIS_V1",
+        "CF Macro": "CACHEFINANCE_ANALYSIS_V1", "CF Formulas": "CACHEFINANCE_FUNCTIONS_V1",
+        "CF Price history": "CACHEFINANCE_ANALYSIS_V1", "CF Sources": "CACHEFINANCE_ANALYSIS_V1",
+        "CF Images": "CACHEFINANCE_IMAGES_V1"
+    };
+    function sortableBook(entries, withActivation = true) {
+        const target = new ManagedBook(), order = [];
+        const state = { target, order, active: null, selection: null };
+        for (const [name, marker] of entries) {
+            const sheet = target.insertSheet(name); order.push(sheet);
+            sheet.getRange("Z1").setValue(marker); sheet.getRange("C6").setValue("Preserve " + name);
+            if (withActivation) {
+                const getRange = sheet.getRange.bind(sheet);
+                sheet.getRange = address => {
+                    const range = getRange(address);
+                    range.activate = () => { state.selection = { name, address }; return range; };
+                    return range;
+                };
+            }
+        }
+        target.setActiveSheet = vi.fn(sheet => { state.active = sheet; return target; });
+        target.moveActiveSheet = vi.fn(position => {
+            const previous = order.indexOf(state.active);
+            if (previous < 0 || position < 1 || position > order.length) throw Error("Invalid tab movement");
+            order.splice(previous, 1); order.splice(position - 1, 0, state.active); return target;
+        });
+        return state;
+    }
+    const contents = target => [...target.sheets].map(([name, sheet]) => [name, [...sheet.cells], [...sheet.formulas]]);
+
+    it("puts all marked tabs in reading order and keeps user tabs and their contents", () => {
+        const entries = [["Sheet1", ""], ...Object.entries(markers).reverse(), ["Portfolio", ""], ["Notes", ""]];
+        const state = sortableBook(entries), before = contents(state.target);
+        expect(CFAnalysisService.arrange(state.target)).toEqual(Object.keys(markers));
+        expect(state.order.map(sheet => sheet.getName())).toEqual([...Object.keys(markers), "Sheet1", "Portfolio", "Notes"]);
+        expect(contents(state.target)).toEqual(before);
+        expect(state.target.moveActiveSheet).toHaveBeenCalledTimes(13);
+        expect(state.active.getName()).toBe("CF Analysis");
+        expect(state.selection).toEqual({ name: "CF Analysis", address: "B4" });
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("moves only known names with the exact marker for that name", () => {
+        const state = sortableBook([
+            ["Portfolio", markers["CF Analysis"]], ["CF Research", markers["CF Analysis"]],
+            ["CF Options", markers["CF Options"]], ["CF Analysis", markers["CF Analysis"]],
+            ["CF Images", ""], ["Scratch", ""], ["CF Journal", markers["CF Journal"]]
+        ]), before = contents(state.target);
+        expect(CFAnalysisService.arrange(state.target)).toEqual(["CF Analysis", "CF Options", "CF Journal"]);
+        expect(state.order.map(sheet => sheet.getName())).toEqual(["CF Analysis", "CF Options", "CF Journal", "Portfolio", "CF Research", "CF Images", "Scratch"]);
+        expect(state.target.setActiveSheet.mock.calls.every(([sheet]) => ["CF Analysis", "CF Options", "CF Journal"].includes(sheet.getName()))).toBe(true);
+        expect(contents(state.target)).toEqual(before);
+    });
+
+    it("supports old mocks without movement or range activation methods", () => {
+        expect(CFAnalysisService.arrange(book)).toEqual([]);
+        const state = sortableBook([["CF Analysis", markers["CF Analysis"]]], false);
+        expect(CFAnalysisService.arrange(state.target)).toEqual(["CF Analysis"]);
+        expect(state.active.getName()).toBe("CF Analysis"); expect(state.selection).toBeNull();
+    });
+});
+
 describe("analysis spreadsheet actions", () => {
+    it("preflights formula-tab ownership before changing any core worksheet", () => {
+        vi.stubGlobal("CFFunctionExamples", { check: () => { throw Error("Unmanaged CF Formulas"); } });
+        expect(() => CFBuildAnalysis()).toThrow("Unmanaged CF Formulas"); expect(sheets.build).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+    });
+    it("requires five empty provider key flags for the clean-template check and logs no extra fields", () => {
+        const flags = ["FINNHUB", "ALPHA_VANTAGE", "TWELVE_DATA", "COINMARKET", "FRED"].map(id => ({ id, configured: false, secret: "synthetic-key-value" }));
+        const status = vi.fn(() => ({ ok: true, providers: flags })); vi.stubGlobal("CFGetApiKeyStatus", status);
+        expect(CFCheckTemplateKeys().ok).toBe(true);
+        flags[4].configured = true; expect(CFCheckTemplateKeys().ok).toBe(false);
+        status.mockReturnValue({ ok: true, providers: [] }); expect(CFCheckTemplateKeys().ok).toBe(false);
+        expect(JSON.stringify(log.mock.calls)).not.toContain("synthetic-key-value"); expect(fetch).not.toHaveBeenCalled();
+    });
     it("builds sheets before fetching and rendering the selected ticker", () => {
+        const arrange = vi.spyOn(CFAnalysisService, "arrange");
         const summary = CFBuildAnalysis();
         expect(sheets.build).toHaveBeenCalledWith(book); expect(summary).toMatchObject({ ok: true, symbol: "NVDA", historyRows: 25, optionContracts: 1 });
         expect(sheets.build.mock.invocationCallOrder[0]).toBeLessThan(sheets.invalidate.mock.invocationCallOrder[0]);
         expect(sheets.render).toHaveBeenCalledOnce(); expect(sheets.render.mock.calls[0][1].symbol).toBe("NVDA");
+        expect(arrange).toHaveBeenCalledWith(book);
+        expect(arrange.mock.invocationCallOrder[0]).toBeGreaterThan(sheets.render.mock.invocationCallOrder[0]);
         expect(lock.releaseLock).toHaveBeenCalledOnce();
     });
 
     it("invalidates old cells before requests and renders only after the second ticker check", () => {
+        const arrange = vi.spyOn(CFAnalysisService, "arrange");
         CFRefreshAnalysis();
         expect(sheets.invalidate.mock.invocationCallOrder[0]).toBeLessThan(fetch.mock.invocationCallOrder[0]);
         expect(sheets.readInput).toHaveBeenCalledTimes(2);
         expect(sheets.readInput.mock.invocationCallOrder[1]).toBeLessThan(sheets.render.mock.invocationCallOrder[0]);
+        expect(arrange).not.toHaveBeenCalled();
     });
 
     it("does not write an old snapshot if the ticker changes during requests", () => {
@@ -272,6 +395,20 @@ describe("analysis spreadsheet actions", () => {
         expect(sheets.inspect).toHaveBeenCalledWith(book); expect(fetch).not.toHaveBeenCalled();
     });
 
+    it("reads actual formula and watchlist cells without requests or credential reads", () => {
+        const workspace = new ManagedBook(), formulas = workspace.insertSheet("CF Formulas"), watch = workspace.insertSheet("CF Watchlist"), journal = workspace.insertSheet("CF Journal");
+        formulas.getRange("Z1").setValue("CACHEFINANCE_FUNCTIONS_V1"); formulas.getRange("B4").setValue("AAPL");
+        formulas.getRange("B23").setValue(205); formulas.getRange("B24").setValue("#REF!"); formulas.getRange("B30").setValue(4.2);
+        watch.getRange("Z1").setValue("CACHEFINANCE_WATCHLIST_V1"); watch.getRange("A8:D8").setValues([["AAPL", "Available", 205, "USD"]]);
+        journal.getRange("Z1").setValue("CACHEFINANCE_JOURNAL_V1"); journal.getRange("A8").setValue(new Date());
+        SpreadsheetApp.getActiveSpreadsheet.mockReturnValue(workspace);
+        const result = CFInspectWorkspace();
+        expect(result.functions.ticker).toBe("AAPL"); expect(result.functions.samples[0][1]).toBe(205); expect(result.functions.samples[7][1]).toBe(4.2);
+        expect(result.formulaErrors).toEqual([{ sheet: "CF Formulas", range: "B23:B30", row: 1, col: 0, value: "#REF!" }]);
+        expect(result.watchlist).toEqual([{ ticker: "AAPL", status: "Available", price: 205, currency: "USD" }]); expect(result.journalRows).toBe(1);
+        expect(fetch).not.toHaveBeenCalled(); expect(property).not.toHaveBeenCalled();
+    });
+
     it("checks provider sources without building, clearing or writing any worksheet", () => {
         book.getSheetByName = vi.fn(() => ({}));
         const summary = CFCheckAnalysisSources();
@@ -301,6 +438,14 @@ const edit = (name = "CF Analysis", row = 4, column = 2, lastRow = row, lastColu
     range: { getSheet: () => ({ getName: () => name }), getRow: () => row, getLastRow: () => lastRow, getColumn: () => column, getLastColumn: () => lastColumn } });
 
 describe("simple onEdit safety", () => {
+    it("clears every derived chart and strategy after ticker edits without requesting data", () => {
+        const visuals = { invalidate: vi.fn() }, strategies = { invalidate: vi.fn() }, images = { invalidate: vi.fn() };
+        vi.stubGlobal("CFAnalysisVisuals", visuals); vi.stubGlobal("CFAnalysisStrategies", strategies); vi.stubGlobal("CFProviderImages", images);
+        CFAnalysisHandleEdit_(edit());
+        expect(visuals.invalidate).toHaveBeenCalledWith(book, expect.stringContaining("Ticker changed"));
+        expect(strategies.invalidate).toHaveBeenCalledWith(book, expect.stringContaining("Ticker changed"));
+        expect(images.invalidate).toHaveBeenCalledWith(book); expect(fetch).not.toHaveBeenCalled(); expect(property).not.toHaveBeenCalled();
+    });
     it("clears stale analysis for a ticker edit without any network or key reads", () => {
         CFAnalysisHandleEdit_(edit());
         expect(sheets.invalidate).toHaveBeenCalledWith(book, "Ticker changed. Choose Stock analysis → Refresh selected ticker.");

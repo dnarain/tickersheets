@@ -1,0 +1,5576 @@
+{
+  "checks": [
+    {
+      "step": "Additional providers direct from Apps Script",
+      "results": [
+        {
+          "ticker": "NVDA",
+          "provider": "FINVIZ",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "price",
+              "value": 173.73,
+              "unit": "currency"
+            },
+            {
+              "id": "earnings_date",
+              "value": "Nov 17 AMC",
+              "unit": "date text"
+            },
+            {
+              "id": "market_cap",
+              "value": 4186890000000,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_pe",
+              "value": 21.96,
+              "unit": "ratio"
+            },
+            {
+              "id": "forward_pe",
+              "value": 11,
+              "unit": "ratio"
+            },
+            {
+              "id": "eps_ttm",
+              "value": 7.91,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_next_year",
+              "value": 15.79,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_growth_next_year",
+              "value": 0.6997,
+              "unit": "fraction"
+            },
+            {
+              "id": "target_price",
+              "value": 326.01,
+              "unit": "currency"
+            },
+            {
+              "id": "volume",
+              "value": 339233268,
+              "unit": "shares"
+            },
+            {
+              "id": "average_volume",
+              "value": 127460000,
+              "unit": "shares"
+            },
+            {
+              "id": "forward_dividend_rate",
+              "value": 0.78,
+              "unit": "currency"
+            },
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0045000000000000005,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_rate",
+              "value": 0.52,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.003,
+              "unit": "fraction"
+            },
+            {
+              "id": "dividend_ex_date",
+              "value": "Sep 10, 2026",
+              "unit": "date text"
+            },
+            {
+              "id": "short_float",
+              "value": 0.0121,
+              "unit": "fraction"
+            },
+            {
+              "id": "insider_ownership",
+              "value": 0.0378,
+              "unit": "fraction"
+            },
+            {
+              "id": "institutional_ownership",
+              "value": 0.722,
+              "unit": "fraction"
+            },
+            {
+              "id": "rsi14",
+              "value": 28.74,
+              "unit": "index 0-100"
+            },
+            {
+              "id": "sma20_distance",
+              "value": -0.1476,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma50_distance",
+              "value": -0.1999,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma200_distance",
+              "value": -0.1503,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_week",
+              "value": -0.1319,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_month",
+              "value": -0.2398,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_quarter",
+              "value": -0.2289,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_year",
+              "value": -0.10060000000000001,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_ytd",
+              "value": -0.06849999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "gross_margin",
+              "value": 0.7467,
+              "unit": "fraction"
+            },
+            {
+              "id": "operating_margin",
+              "value": 0.6520999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "profit_margin",
+              "value": 0.6365999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "beta",
+              "value": 2.27,
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "ticker": "NVDA",
+          "provider": "ZACKS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "target_price",
+              "value": 325.88,
+              "unit": "currency"
+            }
+          ]
+        },
+        {
+          "ticker": "NVDA",
+          "provider": "GURUFOCUS",
+          "ok": false,
+          "status": "Data unavailable",
+          "http": 200,
+          "identity": "Matched",
+          "fields": []
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "FINVIZ",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "price",
+              "value": 355.63,
+              "unit": "currency"
+            },
+            {
+              "id": "earnings_date",
+              "value": "Nov 02 AMC",
+              "unit": "date text"
+            },
+            {
+              "id": "market_cap",
+              "value": 5168080000000,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_pe",
+              "value": 39.63,
+              "unit": "ratio"
+            },
+            {
+              "id": "forward_pe",
+              "value": 33.9,
+              "unit": "ratio"
+            },
+            {
+              "id": "eps_ttm",
+              "value": 8.97,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_next_year",
+              "value": 10.49,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_growth_next_year",
+              "value": 0.1124,
+              "unit": "fraction"
+            },
+            {
+              "id": "target_price",
+              "value": 343.03,
+              "unit": "currency"
+            },
+            {
+              "id": "volume",
+              "value": 34453944,
+              "unit": "shares"
+            },
+            {
+              "id": "average_volume",
+              "value": 42730000,
+              "unit": "shares"
+            },
+            {
+              "id": "forward_dividend_rate",
+              "value": 1.14,
+              "unit": "currency"
+            },
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0032,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_rate",
+              "value": 1.06,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.003,
+              "unit": "fraction"
+            },
+            {
+              "id": "dividend_ex_date",
+              "value": "Nov 12, 2026",
+              "unit": "date text"
+            },
+            {
+              "id": "short_float",
+              "value": 0.01,
+              "unit": "fraction"
+            },
+            {
+              "id": "insider_ownership",
+              "value": 0.0012,
+              "unit": "fraction"
+            },
+            {
+              "id": "institutional_ownership",
+              "value": 0.6945,
+              "unit": "fraction"
+            },
+            {
+              "id": "rsi14",
+              "value": 60.42,
+              "unit": "index 0-100"
+            },
+            {
+              "id": "sma20_distance",
+              "value": 0.031200000000000002,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma50_distance",
+              "value": 0.0525,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma200_distance",
+              "value": 0.1844,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_week",
+              "value": 0.0175,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_month",
+              "value": 0.0421,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_quarter",
+              "value": 0.165,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_year",
+              "value": 0.292,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_ytd",
+              "value": 0.3081,
+              "unit": "fraction"
+            },
+            {
+              "id": "gross_margin",
+              "value": 0.4879,
+              "unit": "fraction"
+            },
+            {
+              "id": "operating_margin",
+              "value": 0.3301,
+              "unit": "fraction"
+            },
+            {
+              "id": "profit_margin",
+              "value": 0.276,
+              "unit": "fraction"
+            },
+            {
+              "id": "beta",
+              "value": 1.09,
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "ZACKS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "target_price",
+              "value": 338.96,
+              "unit": "currency"
+            }
+          ]
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "GURUFOCUS",
+          "ok": false,
+          "status": "Data unavailable",
+          "http": 200,
+          "identity": "Matched",
+          "fields": []
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "FINVIZ",
+          "ok": false,
+          "status": "HTTP 404",
+          "http": 404,
+          "identity": "Unknown",
+          "fields": []
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "ZACKS",
+          "ok": false,
+          "status": "HTTP 404",
+          "http": 404,
+          "identity": "Unknown",
+          "fields": []
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "GURUFOCUS",
+          "ok": false,
+          "status": "Data unavailable",
+          "http": 200,
+          "identity": "Unknown",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "step": "Expanded NVDA build",
+      "sourceHash": "0a13d70186b0",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 177,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-20",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.7841818457031251
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [
+          "DGS10",
+          "FEDFUNDS",
+          "CPIAUCSL",
+          "UNRATE"
+        ],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "Available",
+            "http": 200
+          }
+        ]
+      }
+    },
+    {
+      "step": "Clean template key presence",
+      "result": {
+        "ok": true,
+        "providers": [
+          {
+            "provider": "FINNHUB",
+            "configured": false
+          },
+          {
+            "provider": "ALPHA_VANTAGE",
+            "configured": false
+          },
+          {
+            "provider": "TWELVE_DATA",
+            "configured": false
+          },
+          {
+            "provider": "COINMARKET",
+            "configured": false
+          },
+          {
+            "provider": "FRED",
+            "configured": false
+          }
+        ],
+        "error": ""
+      }
+    },
+    {
+      "step": "Expanded NVDA rendered workspace",
+      "sourceHash": "0a13d70186b0",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-20",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 8.165104653316163,
+            "delta": 0.5044571984777033,
+            "gamma": 0.018302684576887412,
+            "theta": -0.4901853654196013,
+            "vega": 0.10880992734004455,
+            "rho": 0.019596389039559917,
+            "d1": 0.011356754053944488,
+            "d2": -0.11408128703943696
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 177,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.963337
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [],
+        "journalRows": 1,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-20 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-20 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration",
+            "NVDA context \u2014 FRED DGS10 (Percent)",
+            "NVDA context \u2014 FRED FEDFUNDS (Percent)",
+            "NVDA context \u2014 FRED CPIAUCSL (Index 1982-1984=100)",
+            "NVDA context \u2014 FRED UNRATE (Percent)"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-20T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.79883013671875,
+              "callOI": 12809,
+              "putStrike": 175,
+              "putIV": 0.7695335546875001,
+              "putOI": 30562,
+              "status": "Available"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-20",
+          "quoteRows": 176,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Clean template build without keys",
+      "sourceHash": "0a13d70186b0",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 165,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-13",
+            "status": "Partial",
+            "http": 200,
+            "atmIV": null
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "API key required",
+            "http": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "Five-stock watchlist",
+      "report": {
+        "ok": true,
+        "tickers": 5,
+        "results": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 9
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 10
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 11
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 12
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 13
+          }
+        ]
+      }
+    },
+    {
+      "step": "Clean template rendered without keys",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-13",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 3.993392213981039,
+            "delta": 0.5696511781312351,
+            "gamma": 0.04696618943387702,
+            "theta": -0.8302282725286443,
+            "vega": 0.0505182971364018,
+            "rho": 0.005203951066452517,
+            "d1": 0.1755330409109877,
+            "d2": 0.12738870809590003
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 165,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": [
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            }
+          ]
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.963337
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "",
+            "price": "",
+            "currency": ""
+          },
+          {
+            "ticker": "AAPL",
+            "status": "",
+            "price": "",
+            "currency": ""
+          },
+          {
+            "ticker": "MSFT",
+            "status": "",
+            "price": "",
+            "currency": ""
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "",
+            "price": "",
+            "currency": ""
+          },
+          {
+            "ticker": "AMZN",
+            "status": "",
+            "price": "",
+            "currency": ""
+          }
+        ],
+        "journalRows": 1,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-13 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-13 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-13T08:00:00.000Z",
+              "callStrike": 172.5,
+              "callIV": 0.65039412109375,
+              "callOI": 7135,
+              "putStrike": 172.5,
+              "putIV": "N/A",
+              "putOI": 3091,
+              "status": "Partial"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-13",
+          "quoteRows": 161,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "StockCharts images from Google Sheets",
+      "report": {
+        "ok": false,
+        "ticker": "NVDA",
+        "results": [
+          {
+            "provider": "StockCharts",
+            "description": "Six-month daily chart (SMF picture choice 4)",
+            "url": "https://stockcharts.com/c-sc/sc?s=NVDA&p=D&yr=0&mn=6&dy=0&i=t94339682869&r=4806",
+            "http": 404,
+            "status": "HTTP 404",
+            "bytes": 0
+          },
+          {
+            "provider": "StockCharts",
+            "description": "Point-and-figure chart (SMF picture choice 2)",
+            "url": "https://stockcharts.com/pnf/chart?c=NVDA,P",
+            "http": 404,
+            "status": "HTTP 404",
+            "bytes": 0
+          }
+        ]
+      }
+    },
+    {
+      "step": "Clean template five-stock watchlist",
+      "report": {
+        "ok": true,
+        "tickers": 5,
+        "results": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 9
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 10
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 11
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 12
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "quote": true,
+            "fundamentals": true,
+            "cacheHit": false,
+            "journalRow": 13
+          }
+        ]
+      }
+    },
+    {
+      "step": "Native strategy selection: cash-secured put",
+      "inputs": "Cash-secured put\n173.73\nN/A\nN/A\n175.00\n8.95\n1\n100\n2026-11-20\n173.73",
+      "outputs": "895.00\n895.00\n0.00\n17,500.00\n895.00\n16,605.00\n166.05\nNet credit\nOne stock price at expiration gives zero P/L.\n768\nCash-secured put"
+    },
+    {
+      "step": "Repaired providers final direct run",
+      "sourceHash": "0a13d70186b0",
+      "results": [
+        {
+          "ticker": "NVDA",
+          "provider": "FINVIZ",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "price",
+              "value": 173.73,
+              "unit": "currency"
+            },
+            {
+              "id": "earnings_date",
+              "value": "Nov 17 AMC",
+              "unit": "date text"
+            },
+            {
+              "id": "market_cap",
+              "value": 4186890000000,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_pe",
+              "value": 21.96,
+              "unit": "ratio"
+            },
+            {
+              "id": "forward_pe",
+              "value": 11,
+              "unit": "ratio"
+            },
+            {
+              "id": "eps_ttm",
+              "value": 7.91,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_next_year",
+              "value": 15.79,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_growth_next_year",
+              "value": 0.6997,
+              "unit": "fraction"
+            },
+            {
+              "id": "target_price",
+              "value": 322.73,
+              "unit": "currency"
+            },
+            {
+              "id": "volume",
+              "value": 339233268,
+              "unit": "shares"
+            },
+            {
+              "id": "average_volume",
+              "value": 127460000,
+              "unit": "shares"
+            },
+            {
+              "id": "forward_dividend_rate",
+              "value": 0.78,
+              "unit": "currency"
+            },
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0045000000000000005,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_rate",
+              "value": 0.52,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.003,
+              "unit": "fraction"
+            },
+            {
+              "id": "dividend_ex_date",
+              "value": "Sep 10, 2026",
+              "unit": "date text"
+            },
+            {
+              "id": "short_float",
+              "value": 0.0121,
+              "unit": "fraction"
+            },
+            {
+              "id": "insider_ownership",
+              "value": 0.0378,
+              "unit": "fraction"
+            },
+            {
+              "id": "institutional_ownership",
+              "value": 0.722,
+              "unit": "fraction"
+            },
+            {
+              "id": "rsi14",
+              "value": 28.74,
+              "unit": "index 0-100"
+            },
+            {
+              "id": "sma20_distance",
+              "value": -0.1476,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma50_distance",
+              "value": -0.1999,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma200_distance",
+              "value": -0.1503,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_week",
+              "value": -0.1319,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_month",
+              "value": -0.2398,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_quarter",
+              "value": -0.2289,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_year",
+              "value": -0.10060000000000001,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_ytd",
+              "value": -0.06849999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "gross_margin",
+              "value": 0.7467,
+              "unit": "fraction"
+            },
+            {
+              "id": "operating_margin",
+              "value": 0.6520999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "profit_margin",
+              "value": 0.6365999999999999,
+              "unit": "fraction"
+            },
+            {
+              "id": "beta",
+              "value": 2.27,
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "ticker": "NVDA",
+          "provider": "ZACKS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "target_price",
+              "value": 325.88,
+              "unit": "currency"
+            }
+          ]
+        },
+        {
+          "ticker": "NVDA",
+          "provider": "GURUFOCUS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0049,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.0026,
+              "unit": "fraction"
+            }
+          ]
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "FINVIZ",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "price",
+              "value": 355.63,
+              "unit": "currency"
+            },
+            {
+              "id": "earnings_date",
+              "value": "Nov 02 AMC",
+              "unit": "date text"
+            },
+            {
+              "id": "market_cap",
+              "value": 5168080000000,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_pe",
+              "value": 39.63,
+              "unit": "ratio"
+            },
+            {
+              "id": "forward_pe",
+              "value": 33.92,
+              "unit": "ratio"
+            },
+            {
+              "id": "eps_ttm",
+              "value": 8.97,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_next_year",
+              "value": 10.48,
+              "unit": "currency"
+            },
+            {
+              "id": "eps_growth_next_year",
+              "value": 0.11230000000000001,
+              "unit": "fraction"
+            },
+            {
+              "id": "target_price",
+              "value": 343.03,
+              "unit": "currency"
+            },
+            {
+              "id": "volume",
+              "value": 34453944,
+              "unit": "shares"
+            },
+            {
+              "id": "average_volume",
+              "value": 42730000,
+              "unit": "shares"
+            },
+            {
+              "id": "forward_dividend_rate",
+              "value": 1.14,
+              "unit": "currency"
+            },
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0032,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_rate",
+              "value": 1.06,
+              "unit": "currency"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.003,
+              "unit": "fraction"
+            },
+            {
+              "id": "dividend_ex_date",
+              "value": "Nov 12, 2026",
+              "unit": "date text"
+            },
+            {
+              "id": "short_float",
+              "value": 0.01,
+              "unit": "fraction"
+            },
+            {
+              "id": "insider_ownership",
+              "value": 0.0012,
+              "unit": "fraction"
+            },
+            {
+              "id": "institutional_ownership",
+              "value": 0.6945,
+              "unit": "fraction"
+            },
+            {
+              "id": "rsi14",
+              "value": 60.42,
+              "unit": "index 0-100"
+            },
+            {
+              "id": "sma20_distance",
+              "value": 0.031200000000000002,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma50_distance",
+              "value": 0.0525,
+              "unit": "fraction"
+            },
+            {
+              "id": "sma200_distance",
+              "value": 0.1844,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_week",
+              "value": 0.0175,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_month",
+              "value": 0.0421,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_quarter",
+              "value": 0.165,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_year",
+              "value": 0.292,
+              "unit": "fraction"
+            },
+            {
+              "id": "return_ytd",
+              "value": 0.3081,
+              "unit": "fraction"
+            },
+            {
+              "id": "gross_margin",
+              "value": 0.4879,
+              "unit": "fraction"
+            },
+            {
+              "id": "operating_margin",
+              "value": 0.3301,
+              "unit": "fraction"
+            },
+            {
+              "id": "profit_margin",
+              "value": 0.276,
+              "unit": "fraction"
+            },
+            {
+              "id": "beta",
+              "value": 1.09,
+              "unit": "ratio"
+            }
+          ]
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "ZACKS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "target_price",
+              "value": 338.96,
+              "unit": "currency"
+            }
+          ]
+        },
+        {
+          "ticker": "AAPL",
+          "provider": "GURUFOCUS",
+          "ok": true,
+          "status": "Available",
+          "http": 200,
+          "identity": "Matched",
+          "fields": [
+            {
+              "id": "forward_dividend_yield",
+              "value": 0.0034000000000000002,
+              "unit": "fraction"
+            },
+            {
+              "id": "trailing_dividend_yield",
+              "value": 0.0034000000000000002,
+              "unit": "fraction"
+            }
+          ]
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "FINVIZ",
+          "ok": false,
+          "status": "HTTP 404",
+          "http": 404,
+          "identity": "Unknown",
+          "fields": []
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "ZACKS",
+          "ok": false,
+          "status": "HTTP 404",
+          "http": 404,
+          "identity": "Unknown",
+          "fields": []
+        },
+        {
+          "ticker": "ZZZZCFINVALID20261111",
+          "provider": "GURUFOCUS",
+          "ok": false,
+          "status": "Data unavailable",
+          "http": 200,
+          "identity": "Unknown",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "step": "Native strategy selection: call vertical",
+      "inputs": "Call vertical\n173.73\n175.00\n8.15\n180.00\n5.95\n1\n100\n2026-11-20\n173.73",
+      "outputs": "-220.00\n-220.00\n0.00\n0.00\n280.00\n220.00\n177.20\nNet debit\nOne stock price at expiration gives zero P/L.\n-220\nBull call vertical"
+    },
+    {
+      "step": "Native strategy selection: put vertical",
+      "inputs": "Put vertical\n173.73\n175.00\n9.15\n170.00\n6.65\n1\n100\n2026-11-20\n173.73",
+      "outputs": "-250.00\n-250.00\n0.00\n0.00\n250.00\n250.00\n172.50\nNet debit\nOne stock price at expiration gives zero P/L.\n-123\nBear put vertical"
+    },
+    {
+      "step": "Native strategy selection: covered call",
+      "inputs": "Covered call\n173.73\nN/A\nN/A\n175.00\n8.05\n1\n100\n2026-11-20\n173.73",
+      "outputs": "-16,568.00\n805.00\n17,373.00\n0.00\n932.00\n16,568.00\n165.68\nNet credit\nOne stock price at expiration gives zero P/L.\n805\nCovered call"
+    },
+    {
+      "step": "Independent arithmetic check of four native selections",
+      "results": [
+        {
+          "strategy": "Cash-secured put",
+          "passed": true,
+          "sourceLongPremium": null,
+          "sourceShortPremium": 8.95
+        },
+        {
+          "strategy": "Call vertical",
+          "passed": true,
+          "sourceLongPremium": 8.15,
+          "sourceShortPremium": 5.95
+        },
+        {
+          "strategy": "Put vertical",
+          "passed": true,
+          "sourceLongPremium": 9.15,
+          "sourceShortPremium": 6.65
+        },
+        {
+          "strategy": "Covered call",
+          "passed": true,
+          "sourceLongPremium": null,
+          "sourceShortPremium": 8.05
+        }
+      ]
+    },
+    {
+      "step": "Pre-fix ticker edit timeout",
+      "sourceHash": "0a13d70186b0",
+      "function": "onEdit",
+      "type": "Simple Trigger",
+      "clientStart": "2026-11-11 19:11:00 America/Los_Angeles",
+      "durationSeconds": 30.169,
+      "status": "Timed Out",
+      "symptoms": {
+        "mainTickerBlank": true,
+        "historyCleared": true,
+        "optionsCleared": true,
+        "researchChartsRemaining": 15,
+        "strategyQuotesRemaining": 176
+      }
+    },
+    {
+      "step": "Fixed ticker edit preserves AAPL and clears all derived outputs",
+      "sourceHash": "1047d1ed3d53",
+      "report": {
+        "analysis": {
+          "ticker": "",
+          "inputTicker": "AAPL",
+          "symbol": "",
+          "status": "Ticker changed. Choose Stock analysis \u2192 Refresh selected ticker.",
+          "selectedExpiration": "",
+          "availableExpirations": [],
+          "model": {
+            "price": "",
+            "delta": "",
+            "gamma": "",
+            "theta": "",
+            "vega": "",
+            "rho": "",
+            "d1": "",
+            "d2": ""
+          },
+          "formulaErrors": [],
+          "historyRows": 0,
+          "earningsRows": 0,
+          "fundamentalRows": 0,
+          "optionRows": 0,
+          "chartTitles": [],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "AAPL",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              355.63
+            ],
+            [
+              "Trailing P/E",
+              39.60245
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:01.000Z"
+            ],
+            [
+              "Finviz price",
+              355.63
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            310.1400146484375,
+            319.2799987792969,
+            309.6000061035156,
+            316.8299865722656,
+            316.8299865722656,
+            50505600
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Call",
+            110,
+            244.9,
+            246.75,
+            245.825,
+            244.9,
+            6.390627011718751,
+            10,
+            22,
+            "2026-11-11T18:23:34.000Z",
+            "AAPL261113C00110000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 6,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "",
+          "chartTitles": [],
+          "maturityRows": [],
+          "summaryRows": 0,
+          "comparisonRows": 0
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "AAPL",
+          "strategy": "",
+          "expiration": "",
+          "quoteRows": 0,
+          "chartTitles": [],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Expanded AAPL refresh after edit fix",
+      "sourceHash": "1047d1ed3d53",
+      "summary": {
+        "ok": true,
+        "ticker": "AAPL",
+        "symbol": "AAPL",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 153,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-13",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.24414818359375
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.23041541076660155
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.25238784729003905
+          },
+          {
+            "expiration": "2027-06-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.2685848899078369
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.28095964408874513
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [
+          "DGS10",
+          "FEDFUNDS",
+          "CPIAUCSL",
+          "UNRATE"
+        ],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-06-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "Available",
+            "http": 200
+          }
+        ]
+      }
+    },
+    {
+      "step": "Final template build and tab arrangement",
+      "sourceHash": "1047d1ed3d53",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 177,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-20",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.7841818457031251
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "API key required",
+            "http": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "Expanded AAPL rendered workspace",
+      "report": {
+        "analysis": {
+          "ticker": "AAPL",
+          "inputTicker": "AAPL",
+          "symbol": "AAPL",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-13",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-03-17",
+            "2028-06-16",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 2.787644781468515,
+            "delta": 0.5494106507405262,
+            "gamma": 0.06517784074923601,
+            "theta": -0.6205471010014191,
+            "vega": 0.10421259752353838,
+            "rho": 0.010553384380349853,
+            "d1": 0.12419607048484446,
+            "d2": 0.10711736666684665
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 53,
+          "optionRows": 153,
+          "chartTitles": [
+            "AAPL \u2014 6-month close, SMA50 and SMA200",
+            "AAPL vs SPY / QQQ \u2014 adjusted growth",
+            "AAPL \u2014 RSI14 with 30 / 70 levels",
+            "AAPL \u2014 option payoff"
+          ],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "AAPL",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              355.63
+            ],
+            [
+              "Trailing P/E",
+              39.60245
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:01.000Z"
+            ],
+            [
+              "Finviz price",
+              355.63
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            310.1400146484375,
+            319.2799987792969,
+            309.6000061035156,
+            316.8299865722656,
+            316.8299865722656,
+            50505600
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Call",
+            110,
+            244.9,
+            246.75,
+            245.825,
+            244.9,
+            6.390627011718751,
+            10,
+            22,
+            "2026-11-11T18:23:34.000Z",
+            "AAPL261113C00110000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 7,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "AAPL",
+          "chartTitles": [
+            "AAPL \u2014 Daily volume; latest session may be partial",
+            "AAPL \u2014 MACD / signal / histogram",
+            "AAPL \u2014 GAAP EPS actual / estimate (USD)",
+            "AAPL \u2014 Adjusted EPS actual / estimate (USD)",
+            "AAPL \u2014 GAAP annual revenue / net income (USD)",
+            "AAPL \u2014 GAAP quarterly revenue / net income (USD)",
+            "AAPL \u2014 Adjusted annual revenue / net income (USD)",
+            "AAPL \u2014 Adjusted quarterly revenue / net income (USD)",
+            "AAPL \u2014 2026-11-13 IV by strike; nearest 200 contracts",
+            "AAPL \u2014 2026-11-13 open interest by strike",
+            "AAPL \u2014 ATM IV by expiration",
+            "AAPL context \u2014 FRED DGS10 (Percent)",
+            "AAPL context \u2014 FRED FEDFUNDS (Percent)",
+            "AAPL context \u2014 FRED CPIAUCSL (Index 1982-1984=100)",
+            "AAPL context \u2014 FRED UNRATE (Percent)"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-13T08:00:00.000Z",
+              "callStrike": 355,
+              "callIV": 0.23072058349609376,
+              "callOI": 11813,
+              "putStrike": 355,
+              "putIV": 0.25757578369140627,
+              "putOI": 1164,
+              "status": "Available"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 355,
+              "callIV": 0.2433547344970703,
+              "callOI": 5463,
+              "putStrike": 355,
+              "putIV": 0.2174760870361328,
+              "putOI": 1867,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 360,
+              "callIV": 0.27805287384033206,
+              "callOI": 5425,
+              "putStrike": 360,
+              "putIV": 0.2267228207397461,
+              "putOI": 1004,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-06-17T07:00:00.000Z",
+              "callStrike": 360,
+              "callIV": 0.3073799731445312,
+              "callOI": 7552,
+              "putStrike": 360,
+              "putIV": 0.22978980667114257,
+              "putOI": 1486,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 355,
+              "callIV": 0.33602043380737306,
+              "callOI": 2491,
+              "putStrike": 355,
+              "putIV": 0.2258988543701172,
+              "putOI": 109,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "AAPL",
+          "strategy": "Covered call",
+          "expiration": "2026-11-13",
+          "quoteRows": 151,
+          "chartTitles": [
+            "AAPL \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final manual provider chart links",
+      "report": {
+        "ok": true,
+        "ticker": "NVDA",
+        "mode": "manual",
+        "status": "Manual copy required",
+        "networkRequests": 0,
+        "imagesInserted": 0,
+        "results": [
+          {
+            "provider": "StockCharts",
+            "description": "SharpCharts workbench",
+            "url": "https://stockcharts.com/sc3/ui/?s=nvda",
+            "status": "Manual copy required",
+            "policyUrl": "https://help.stockcharts.com/learning-more/policies-and-limitations/reprint-permission-policies",
+            "instruction": "Open the chart page and copy manually. Keep the copyright notice and add Chart courtesy of StockCharts.com."
+          },
+          {
+            "provider": "Finviz",
+            "description": "Quote page and chart",
+            "url": "https://finviz.com/quote.ashx?t=NVDA&p=d",
+            "status": "Manual copy required",
+            "policyUrl": "",
+            "instruction": "Open the quote page to view its chart."
+          }
+        ]
+      }
+    },
+    {
+      "step": "Template final build with manual links and ordered tabs",
+      "sourceHash": "1047d1ed3d53",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 177,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-20",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.7841818457031251
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "API key required",
+            "http": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "Full AAPL-to-NVDA edit clears all twenty-chart workspace outputs",
+      "sourceHash": "1047d1ed3d53",
+      "report": {
+        "analysis": {
+          "ticker": "",
+          "inputTicker": "NVDA",
+          "symbol": "",
+          "status": "Ticker changed. Choose Stock analysis \u2192 Refresh selected ticker.",
+          "selectedExpiration": "",
+          "availableExpirations": [],
+          "model": {
+            "price": "",
+            "delta": "",
+            "gamma": "",
+            "theta": "",
+            "vega": "",
+            "rho": "",
+            "d1": "",
+            "d2": ""
+          },
+          "formulaErrors": [],
+          "historyRows": 0,
+          "earningsRows": 0,
+          "fundamentalRows": 0,
+          "optionRows": 0,
+          "chartTitles": [],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 7,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "",
+          "chartTitles": [],
+          "maturityRows": [],
+          "summaryRows": 0,
+          "comparisonRows": 0
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "",
+          "expiration": "",
+          "quoteRows": 0,
+          "chartTitles": [],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final clean-template key check",
+      "result": {
+        "ok": true,
+        "providers": [
+          {
+            "provider": "FINNHUB",
+            "configured": false
+          },
+          {
+            "provider": "ALPHA_VANTAGE",
+            "configured": false
+          },
+          {
+            "provider": "TWELVE_DATA",
+            "configured": false
+          },
+          {
+            "provider": "COINMARKET",
+            "configured": false
+          },
+          {
+            "provider": "FRED",
+            "configured": false
+          }
+        ],
+        "error": ""
+      }
+    },
+    {
+      "name": "final-private-nvda-refresh-1047d1ed3d53",
+      "result": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 165,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-13",
+            "status": "Partial",
+            "http": 200,
+            "atmIV": null
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [
+          "DGS10",
+          "FEDFUNDS",
+          "CPIAUCSL",
+          "UNRATE"
+        ],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "Available",
+            "http": 200
+          }
+        ]
+      }
+    },
+    {
+      "name": "final-private-nvda-workspace-1047d1ed3d53",
+      "result": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-13",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 3.993392213981039,
+            "delta": 0.5696511781312351,
+            "gamma": 0.04696618943387702,
+            "theta": -0.8302282725286443,
+            "vega": 0.0505182971364018,
+            "rho": 0.005203951066452517,
+            "d1": 0.1755330409109877,
+            "d2": 0.12738870809590003
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 165,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 8,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-13 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-13 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration",
+            "NVDA context \u2014 FRED DGS10 (Percent)",
+            "NVDA context \u2014 FRED FEDFUNDS (Percent)",
+            "NVDA context \u2014 FRED CPIAUCSL (Index 1982-1984=100)",
+            "NVDA context \u2014 FRED UNRATE (Percent)"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-13T08:00:00.000Z",
+              "callStrike": 172.5,
+              "callIV": 0.65039412109375,
+              "callOI": 7135,
+              "putStrike": 172.5,
+              "putIV": "N/A",
+              "putOI": 3091,
+              "status": "Partial"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-13",
+          "quoteRows": 161,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "name": "clean-template-final-workspace-1047d1ed3d53",
+      "result": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-20",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 8.165104653316163,
+            "delta": 0.5044571984777033,
+            "gamma": 0.018302684576887412,
+            "theta": -0.4901853654196013,
+            "vega": 0.10880992734004455,
+            "rho": 0.019596389039559917,
+            "d1": 0.011356754053944488,
+            "d2": -0.11408128703943696
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 177,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": [
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            }
+          ]
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 9,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-20 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-20 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-20T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.79883013671875,
+              "callOI": 12809,
+              "putStrike": 175,
+              "putIV": 0.7695335546875001,
+              "putOI": 30562,
+              "status": "Available"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-20",
+          "quoteRows": 176,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Pre-fix overview IV acceptance inconsistency",
+      "sourceHash": "1047d1ed3d53",
+      "invalidPairOverview": "62.45%; 2026-11-13; strike 172.5; mean IV",
+      "maturityStatus": "Partial; put IV rejected",
+      "validPairOverview": "78.42%; 2026-11-20; strike 175; mean IV"
+    },
+    {
+      "step": "Final NVDA refresh with strict overview ATM IV",
+      "sourceHash": "1b0589f8f9bb",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 165,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-13",
+            "status": "Partial",
+            "http": 200,
+            "atmIV": null
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [
+          "DGS10",
+          "FEDFUNDS",
+          "CPIAUCSL",
+          "UNRATE"
+        ],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "Available",
+            "http": 200
+          }
+        ]
+      }
+    },
+    {
+      "step": "Final overview rejects invalid near-expiry ATM pair",
+      "sourceHash": "1b0589f8f9bb",
+      "readback": "ATM IV\tN/A\tNo accepted same-strike call/put IV",
+      "passed": true
+    },
+    {
+      "step": "Final NVDA workspace with all four FRED series",
+      "sourceHash": "1b0589f8f9bb",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-13",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 3.993392213981039,
+            "delta": 0.5696511781312351,
+            "gamma": 0.04696618943387702,
+            "theta": -0.8302282725286443,
+            "vega": 0.0505182971364018,
+            "rho": 0.005203951066452517,
+            "d1": 0.1755330409109877,
+            "d2": 0.12738870809590003
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 165,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 9,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-13 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-13 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration",
+            "NVDA context \u2014 FRED DGS10 (Percent)",
+            "NVDA context \u2014 FRED FEDFUNDS (Percent)",
+            "NVDA context \u2014 FRED CPIAUCSL (Index 1982-1984=100)",
+            "NVDA context \u2014 FRED UNRATE (Percent)"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-13T08:00:00.000Z",
+              "callStrike": 172.5,
+              "callIV": 0.65039412109375,
+              "callOI": 7135,
+              "putStrike": 172.5,
+              "putIV": "N/A",
+              "putOI": 3091,
+              "status": "Partial"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-13",
+          "quoteRows": 161,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final keyless template refresh with strict overview ATM IV",
+      "sourceHash": "1b0589f8f9bb",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 177,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-20",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.7841818457031251
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "API key required",
+            "http": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "Final overview accepts valid same-strike call/put IV",
+      "sourceHash": "1b0589f8f9bb",
+      "readback": "ATM IV\t78.42%\t2026-11-20; strike 175; call/put mean",
+      "passed": true
+    },
+    {
+      "step": "Final keyless template worksheet audit",
+      "sourceHash": "1b0589f8f9bb",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-20",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 8.165104653316163,
+            "delta": 0.5044571984777033,
+            "gamma": 0.018302684576887412,
+            "theta": -0.4901853654196013,
+            "vega": 0.10880992734004455,
+            "rho": 0.019596389039559917,
+            "d1": 0.011356754053944488,
+            "d2": -0.11408128703943696
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 177,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": [
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            }
+          ]
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 10,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-20 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-20 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-20T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.79883013671875,
+              "callOI": 12809,
+              "putStrike": 175,
+              "putIV": 0.7695335546875001,
+              "putOI": 30562,
+              "status": "Available"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-20",
+          "quoteRows": 176,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final 5b13 private analysis build",
+      "sourceHash": "5b13f50d1358",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 165,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-13",
+            "status": "Partial",
+            "http": 200,
+            "atmIV": null
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [
+          "DGS10",
+          "FEDFUNDS",
+          "CPIAUCSL",
+          "UNRATE"
+        ],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "Available",
+            "http": 200
+          }
+        ]
+      }
+    },
+    {
+      "step": "Final 5b13 keyless template refresh",
+      "sourceHash": "5b13f50d1358",
+      "summary": {
+        "ok": true,
+        "ticker": "NVDA",
+        "symbol": "NVDA",
+        "historyRows": 501,
+        "fundamentalFields": 43,
+        "earningsRows": 8,
+        "estimateRows": 3,
+        "optionContracts": 177,
+        "optionMaturities": [
+          {
+            "expiration": "2026-11-20",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.7841818457031251
+          },
+          {
+            "expiration": "2026-12-18",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.5343979666137696
+          },
+          {
+            "expiration": "2027-02-19",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.4679008288574219
+          },
+          {
+            "expiration": "2027-05-21",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.45157408782958985
+          },
+          {
+            "expiration": "2027-12-17",
+            "status": "Available",
+            "http": 200,
+            "atmIV": 0.44403632141113286
+          }
+        ],
+        "additionalProviders": [
+          {
+            "provider": "FINVIZ",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 32
+          },
+          {
+            "provider": "ZACKS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 1
+          },
+          {
+            "provider": "GURUFOCUS",
+            "status": "Available",
+            "http": 200,
+            "availableFields": 2
+          }
+        ],
+        "fredAvailable": [],
+        "sources": [
+          {
+            "provider": "Yahoo Chart",
+            "scope": "Quote and two-year daily history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Finance",
+            "scope": "Fundamentals, earnings and estimates",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "SPY benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo Chart",
+            "scope": "QQQ benchmark history",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Google Finance",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Globe & Mail",
+            "scope": "Comparison quote",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "Expiration dates and selected option chain",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2026-12-18",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-02-19",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-05-21",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Yahoo options",
+            "scope": "ATM comparison: 2027-12-17",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Finviz",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "Zacks",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "GuruFocus",
+            "scope": "Selected SMF fields",
+            "status": "Available",
+            "http": 200
+          },
+          {
+            "provider": "FRED",
+            "scope": "DGS10 observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "FEDFUNDS observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "CPIAUCSL observations",
+            "status": "API key required",
+            "http": null
+          },
+          {
+            "provider": "FRED",
+            "scope": "UNRATE observations",
+            "status": "API key required",
+            "http": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "Final IV chart formatting and native chart layout",
+      "sourceHash": "5b13f50d1358",
+      "passed": true,
+      "observation": "IV axis shows 0.00%\u201380.00%; three IV legends visible; FRED DGS10 chart beside it; six frozen title/context rows; managed tabs ordered with CF Analysis first."
+    },
+    {
+      "step": "Final 5b13 private workspace audit",
+      "sourceHash": "5b13f50d1358",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-13",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 3.993392213981039,
+            "delta": 0.5696511781312351,
+            "gamma": 0.04696618943387702,
+            "theta": -0.8302282725286443,
+            "vega": 0.0505182971364018,
+            "rho": 0.005203951066452517,
+            "d1": 0.1755330409109877,
+            "d2": 0.12738870809590003
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 165,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": []
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              4.88
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              4.56
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "2026-10-23",
+            5,
+            "Percent",
+            "DGS10",
+            "https://fred.stlouisfed.org/series/DGS10"
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 10,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-13 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-13 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration",
+            "NVDA context \u2014 FRED DGS10 (Percent)",
+            "NVDA context \u2014 FRED FEDFUNDS (Percent)",
+            "NVDA context \u2014 FRED CPIAUCSL (Index 1982-1984=100)",
+            "NVDA context \u2014 FRED UNRATE (Percent)"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-13T08:00:00.000Z",
+              "callStrike": 172.5,
+              "callIV": 0.65039412109375,
+              "callOI": 7135,
+              "putStrike": 172.5,
+              "putIV": "N/A",
+              "putOI": 3091,
+              "status": "Partial"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-13",
+          "quoteRows": 161,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final 5b13 keyless template workspace audit",
+      "sourceHash": "5b13f50d1358",
+      "report": {
+        "analysis": {
+          "ticker": "NVDA",
+          "inputTicker": "NVDA",
+          "symbol": "NVDA",
+          "status": "Updated; see CF Sources for provider results.",
+          "selectedExpiration": "2026-11-20",
+          "availableExpirations": [
+            "2026-11-13",
+            "2026-11-16",
+            "2026-11-18",
+            "2026-11-20",
+            "2026-11-27",
+            "2026-12-04",
+            "2026-12-11",
+            "2026-12-18",
+            "2026-12-24",
+            "2027-01-15",
+            "2027-02-19",
+            "2027-03-19",
+            "2027-04-16",
+            "2027-05-21",
+            "2027-06-17",
+            "2027-09-17",
+            "2027-12-17",
+            "2028-01-21",
+            "2028-06-16",
+            "2028-09-15",
+            "2028-12-15",
+            "2029-01-19"
+          ],
+          "model": {
+            "price": 8.165104653316163,
+            "delta": 0.5044571984777033,
+            "gamma": 0.018302684576887412,
+            "theta": -0.4901853654196013,
+            "vega": 0.10880992734004455,
+            "rho": 0.019596389039559917,
+            "d1": 0.011356754053944488,
+            "d2": -0.11408128703943696
+          },
+          "formulaErrors": [],
+          "historyRows": 501,
+          "earningsRows": 8,
+          "fundamentalRows": 54,
+          "optionRows": 177,
+          "chartTitles": [
+            "NVDA \u2014 6-month close, SMA50 and SMA200",
+            "NVDA vs SPY / QQQ \u2014 adjusted growth",
+            "NVDA \u2014 RSI14 with 30 / 70 levels",
+            "NVDA \u2014 option payoff"
+          ],
+          "errors": [
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            },
+            {
+              "provider": "FRED",
+              "status": "API key required",
+              "note": "Enter your FRED key through CacheFinance \u2192 API keys\u2026"
+            }
+          ]
+        },
+        "functions": {
+          "ticker": "NVDA",
+          "refresh": 1,
+          "samples": [
+            [
+              "Price",
+              173.73
+            ],
+            [
+              "Trailing P/E",
+              21.34275
+            ],
+            [
+              "Quote timestamp",
+              "2026-11-11T21:00:00.000Z"
+            ],
+            [
+              "Finviz price",
+              173.73
+            ],
+            [
+              "Latest DGS10 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ],
+            [
+              "First published expiration",
+              "2026-11-13"
+            ],
+            [
+              "Model example: 100 spot/strike, 30 days, 25% IV",
+              3.0211408989744513
+            ],
+            [
+              "Latest DGS2 percent level",
+              "N/A: FRED data unavailable; check API key settings"
+            ]
+          ],
+          "firstHistory": [
+            "2026-08-19",
+            221.6699981689453,
+            222.8699951171875,
+            216.75999450683594,
+            217.55999755859375,
+            217.31683349609375,
+            96797300
+          ],
+          "firstExpiration": "2026-11-13",
+          "firstOption": [
+            "2026-11-13",
+            "Put",
+            50,
+            0,
+            0.01,
+            0.005,
+            0.01,
+            5.12500359375,
+            21,
+            459,
+            "2026-11-10T18:13:09.000Z",
+            "NVDA261113P00050000"
+          ],
+          "firstFred": [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ]
+        },
+        "watchlist": [
+          {
+            "ticker": "NVDA",
+            "status": "Available",
+            "price": 173.73,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AAPL",
+            "status": "Available",
+            "price": 355.63,
+            "currency": "USD"
+          },
+          {
+            "ticker": "MSFT",
+            "status": "Available",
+            "price": 521.125,
+            "currency": "USD"
+          },
+          {
+            "ticker": "GOOGL",
+            "status": "Available",
+            "price": 293.45,
+            "currency": "USD"
+          },
+          {
+            "ticker": "AMZN",
+            "status": "Available",
+            "price": 266.17,
+            "currency": "USD"
+          }
+        ],
+        "journalRows": 11,
+        "images": 0,
+        "formulaErrors": [],
+        "research": {
+          "ticker": "NVDA",
+          "chartTitles": [
+            "NVDA \u2014 Daily volume; latest session may be partial",
+            "NVDA \u2014 MACD / signal / histogram",
+            "NVDA \u2014 GAAP EPS actual / estimate (USD)",
+            "NVDA \u2014 Adjusted EPS actual / estimate (USD)",
+            "NVDA \u2014 GAAP annual revenue / net income (USD)",
+            "NVDA \u2014 GAAP quarterly revenue / net income (USD)",
+            "NVDA \u2014 Adjusted annual revenue / net income (USD)",
+            "NVDA \u2014 Adjusted quarterly revenue / net income (USD)",
+            "NVDA \u2014 2026-11-20 IV by strike; nearest 200 contracts",
+            "NVDA \u2014 2026-11-20 open interest by strike",
+            "NVDA \u2014 ATM IV by expiration"
+          ],
+          "maturityRows": [
+            {
+              "expiration": "2026-11-20T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.79883013671875,
+              "callOI": 12809,
+              "putStrike": 175,
+              "putIV": 0.7695335546875001,
+              "putOI": 30562,
+              "status": "Available"
+            },
+            {
+              "expiration": "2026-12-18T08:00:00.000Z",
+              "callStrike": 174,
+              "callIV": 0.5490157403564455,
+              "callOI": 2267,
+              "putStrike": 174,
+              "putIV": 0.5197801928710937,
+              "putOI": 4208,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-02-19T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.49786879089355474,
+              "callOI": 4505,
+              "putStrike": 175,
+              "putIV": 0.43793286682128907,
+              "putOI": 9460,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-05-21T07:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4909718872070313,
+              "callOI": 1870,
+              "putStrike": 175,
+              "putIV": 0.4121762884521484,
+              "putOI": 5576,
+              "status": "Available"
+            },
+            {
+              "expiration": "2027-12-17T08:00:00.000Z",
+              "callStrike": 175,
+              "callIV": 0.4975941354370118,
+              "callOI": 6864,
+              "putStrike": 175,
+              "putIV": 0.3904785073852539,
+              "putOI": 11904,
+              "status": "Available"
+            }
+          ],
+          "summaryRows": 2,
+          "comparisonRows": 4
+        },
+        "strategies": {
+          "present": true,
+          "ticker": "NVDA",
+          "strategy": "Covered call",
+          "expiration": "2026-11-20",
+          "quoteRows": 176,
+          "chartTitles": [
+            "NVDA \u2014 strategy payoff"
+          ],
+          "formulaErrors": []
+        }
+      }
+    },
+    {
+      "step": "Final distribution template contains no configured keys",
+      "sourceHash": "5b13f50d1358",
+      "result": {
+        "ok": true,
+        "providers": [
+          {
+            "provider": "FINNHUB",
+            "configured": false
+          },
+          {
+            "provider": "ALPHA_VANTAGE",
+            "configured": false
+          },
+          {
+            "provider": "TWELVE_DATA",
+            "configured": false
+          },
+          {
+            "provider": "COINMARKET",
+            "configured": false
+          },
+          {
+            "provider": "FRED",
+            "configured": false
+          }
+        ],
+        "error": ""
+      }
+    }
+  ],
+  "metadata": {
+    "testedDate": "2026-11-11",
+    "runtime": "Google Apps Script bound to Google Sheets; no hosted server",
+    "finalBundleSourceHash": "5b13f50d1358",
+    "finalBundleSha256": "1c940fdb32cdab9029895caf9249b925b3a4d7208f12a9371107c45046ed5623",
+    "sourceModules": 23,
+    "localTests": {
+      "passed": 997,
+      "files": 30,
+      "lineCoveragePercent": 95.63,
+      "branchCoveragePercent": 88.15
+    },
+    "templateSharing": "Private; public sharing approval pending",
+    "notes": [
+      "Development failures and pre-fix results are retained with their step names.",
+      "Native requests and worksheet readbacks cover selected tickers and expirations, not all SMF functionality.",
+      "API keys, raw provider pages, cookies, crumbs and private document IDs are excluded."
+    ]
+  }
+}

@@ -22,8 +22,15 @@ export const SOURCE_FILES = Object.freeze([
     "CacheFinanceAnalysisFred.js",
     "CacheFinanceAnalysisOptions.js",
     "CacheFinanceAnalysisOptionModel.js",
+    "CacheFinanceSmfProviders.js",
+    "CacheFinanceResearchFunctions.js",
     "CacheFinanceAnalysisSheets.js",
     "CacheFinanceAnalysisCalculatorSheets.js",
+    "CacheFinanceAnalysisVisuals.js",
+    "CacheFinanceAnalysisStrategies.js",
+    "CacheFinanceAnalysisWatchlist.js",
+    "CacheFinanceFunctionExamples.js",
+    "CacheFinanceProviderImages.js",
     "CacheFinanceAnalysis.js",
     "CacheFinanceMenu.js"
 ]);

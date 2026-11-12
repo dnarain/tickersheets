@@ -9,7 +9,11 @@ The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDE
 The [one-ticker analysis guide](ANALYSIS.md) explains how to build the stock-analysis tabs directly in Apps Script.
 Change one ticker to refresh history, indicators, fundamentals, earnings and supported option data.
 FRED series use your private `FRED_API_KEY` setting.
+The [installation guide](INSTALL.md) explains the template and single-file installation.
+The [function reference](FUNCTIONS.md) covers reusable data formulas, option models and selected SMF field numbers.
+The research tabs add earnings comparisons, options across expirations, a watchlist and a journal of changes between refreshes.
 The [analysis test results](test-results/2026-11-11-google-apps-script/STOCK-ANALYSIS.md) record live ticker, expiration and FRED checks.
+The [research expansion results](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) cover the additional charts, strategies, provider fields, reusable formulas, watchlist and clean template.
 
 Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
 Reload the spreadsheet after installing the script.
@@ -43,7 +47,7 @@ The original CacheFinance documentation follows.
 * **CACHEFINANCE** is a custom function to supplement GOOGLEFINANCE.
   * Use this for ONE symbol and ONE attribute lookup.
 * **CACHEFINANCES** is a custom function similar to **CACHEFINANCE** except it is used to process a range of symbols.
-* Valid **STOCK** data is always available even when GOOGLEFINANCE refuses to work.
+* Cached stock data can remain available when GOOGLEFINANCE fails. Check its age and provider status.
 * **Warning!!!** When a stock/ETF switches to a new exchange and you do not update the exchange code, CACHEFINANCE will continue to report the LAST quote it was able to obtain for a very long period of time.  This of course leads to portfolio valuations to drift from actual as time goes by.  You therefore need to periodically manually inspect the CACHEFINANCE price versus a quote you would have with your broker.
 * GOOGLEFINANCE does not support all stock symbols.  Many unsupported google stocks can still get price/name/yield data (using web screen scraping).
 * GOOGLEFINANCE does not support all currency conversions.  CACHEFINANCE will lookup any failing currency conversions if GOOGLEFINANCE fails (strangely, I am pulling this data from the google finance web site - which works most of the time)
@@ -72,7 +76,7 @@ The original CacheFinance documentation follows.
     * Remove the default contents of the file **myFunction()** and paste in the new content you have copied from Github (Ctrl-v).
     * Click the little diskette icon to save.
     * Change to your spreadsheet screen and try typing in any cell
-    * ```=CACHEFINANCE()``` or ```=CACHEFINANCES()```.  The new function with online help should be available.
+    * ```=CACHEFINANCE("NASDAQ:NVDA","price")```.  The new function with online help should be available.
 
 
 # Using

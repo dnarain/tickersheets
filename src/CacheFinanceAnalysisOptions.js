@@ -122,6 +122,101 @@ class CFAnalysisOptions {
         return active.fetchChain(symbol, expiry.date);
     }
 
+    /** Select published expirations only; one loaded date and four calendar targets. */
+    static maturityDates_(published, selected, config = {}) {
+        if (!Array.isArray(published) || !config || typeof config !== "object" || Array.isArray(config)) return null;
+        const count = config.count === undefined ? 5 : config.count;
+        if (!Number.isInteger(count) || count < 3 || count > 5) return null;
+        const asOf = CFAnalysisOptions.expiration_(config.asOf === undefined ? new Date().toISOString().slice(0, 10) : config.asOf);
+        const parsed = published.map(date => typeof date === "string" ? CFAnalysisOptions.expiration_(date) : null);
+        if (!asOf || parsed.some(date => !date || !date.date)) return null;
+        const dates = [...new Set(parsed.map(date => date.date))].sort();
+        if (!dates.length) return [];
+        const chosen = new Set([dates.includes(selected) ? selected : dates[0]]);
+        const targets = count === 3 ? [90, 365] : count === 4 ? [30, 180, 365] : [30, 90, 180, 365];
+        for (const days of targets) {
+            const target = new Date((asOf.epoch + days * 86400) * 1000).toISOString().slice(0, 10);
+            chosen.add(dates.find(date => date >= target) || dates[dates.length - 1]);
+        }
+        for (const date of dates) { if (chosen.size >= count) break; chosen.add(date); }
+        return [...chosen].sort().slice(0, count);
+    }
+
+    static isoTime_(value) {
+        if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(value)) return null;
+        const date = new Date(value);
+        return Number.isFinite(date.getTime()) ? date.toISOString() : null;
+    }
+
+    static maturityLeg_(contract, symbol, expiration, type) {
+        if (!contract || typeof contract !== "object" || contract.expiration !== expiration || String(contract.type).toUpperCase() !== type) return null;
+        const id = typeof contract.contractSymbol === "string" ? contract.contractSymbol : "";
+        const occ = id.match(/^([A-Z0-9]{1,8})(\d{2})(\d{2})(\d{2})([CP])(\d{8})$/);
+        const strike = CFAnalysisOptions.number_(contract.strike);
+        if (!occ || occ[1] !== symbol.replace(/[^A-Z0-9]/g, "") || occ[5] !== (type === "CALL" ? "C" : "P")
+            || "20" + occ[2] + "-" + occ[3] + "-" + occ[4] !== expiration || strike === null || strike <= 0
+            || Math.abs(strike - Number(occ[6]) / 1000) > 1e-8) return null;
+        const bid = CFAnalysisOptions.number_(contract.bid), ask = CFAnalysisOptions.number_(contract.ask);
+        const usable = bid !== null && ask !== null && ask >= bid && ask > 0;
+        const iv = CFAnalysisOptions.number_(contract.iv);
+        return { strike, bid, ask, mid: usable ? (bid + ask) / 2 : null, iv: usable && iv !== null && iv > 0 ? iv : null,
+            spread: usable ? ask - bid : null, openInterest: CFAnalysisOptions.number_(contract.openInterest, true),
+            volume: CFAnalysisOptions.number_(contract.volume, true), contractSymbol: id, lastTrade: CFAnalysisOptions.isoTime_(contract.lastTrade) };
+    }
+
+    static maturityRow_(chain, symbol, expiration) {
+        const result = { expiration, underlyingPrice: null, call: null, put: null, atmIV: null, status: "Unavailable",
+            http: typeof chain?.http === "number" && Number.isFinite(chain.http) ? chain.http : 0, quoteTime: "Unknown",
+            error: "No usable ATM call and put quotes were returned.", source: CFAnalysisOptions.result_(symbol).source };
+        if (!chain || chain.ok !== true || chain.symbol !== symbol || !Array.isArray(chain.contracts)) return result;
+        const price = CFAnalysisOptions.number_(chain.underlyingPrice);
+        if (price === null || price <= 0) { result.error = "The option underlying price is unavailable."; return result; }
+        result.underlyingPrice = price;
+        result.quoteTime = CFAnalysisOptions.isoTime_(chain.quoteTime) || "Unknown";
+        const calls = chain.contracts.map(row => CFAnalysisOptions.maturityLeg_(row, symbol, expiration, "CALL")).filter(Boolean);
+        const puts = chain.contracts.map(row => CFAnalysisOptions.maturityLeg_(row, symbol, expiration, "PUT")).filter(Boolean);
+        const nearby = (left, right) => Math.abs(left.strike - price) - Math.abs(right.strike - price) || left.strike - right.strike;
+        const common = calls.filter(call => puts.some(put => put.strike === call.strike)).sort(nearby);
+        if (common.length) {
+            result.call = common[0]; result.put = puts.find(put => put.strike === common[0].strike);
+        } else {
+            result.call = calls.sort(nearby)[0] || null; result.put = puts.sort(nearby)[0] || null;
+        }
+        if (result.call?.iv !== null && result.call?.iv !== undefined && result.put?.iv !== null && result.put?.iv !== undefined && result.call.strike === result.put.strike) {
+            result.atmIV = (result.call.iv + result.put.iv) / 2; result.status = "Available"; result.error = "";
+        } else if (result.call?.mid !== null && result.call?.mid !== undefined || result.put?.mid !== null && result.put?.mid !== undefined) {
+            result.status = "Partial";
+            result.error = result.call && result.put && result.call.strike !== result.put.strike
+                ? "Call and put use different strikes; mean ATM IV is unavailable." : "ATM comparison data is incomplete for this expiration.";
+        }
+        return result;
+    }
+
+    /** Reuse the loaded chain and one anonymous session for up to four other dates. */
+    static fetchMaturities(yahooSymbol, selectedChain, fetch, session, config = {}) {
+        const symbol = CFAnalysisOptions.symbol_(yahooSymbol);
+        const result = { ok: false, symbol: symbol || "", rows: [], source: CFAnalysisOptions.result_(symbol).source, error: "Selected option data is unavailable." };
+        if (!symbol || !selectedChain || selectedChain.ok !== true || selectedChain.symbol !== symbol) return result;
+        const contracts = Array.isArray(selectedChain.contracts) ? selectedChain.contracts : [];
+        const selected = config?.selectedExpiration || contracts.find(row => CFAnalysisOptions.expiration_(row?.expiration)?.date)?.expiration || selectedChain.expirations?.[0] || "";
+        const dates = CFAnalysisOptions.maturityDates_(selectedChain.expirations, selected, config);
+        if (dates === null) { result.error = "Choose valid maturity comparison dates and a count from three to five."; return result; }
+        if (!dates.length) { result.error = "Yahoo returned no published option expirations."; return result; }
+        let active = session;
+        for (const date of dates) {
+            let chain = selectedChain;
+            if (date !== selected) {
+                if (!active) active = CFAnalysisOptions.createSession(fetch);
+                try { chain = CFAnalysisOptions.fetchChain(symbol, date, fetch, active); }
+                catch (_error) { chain = CFAnalysisOptions.result_(symbol, 0); }
+            }
+            result.rows.push(CFAnalysisOptions.maturityRow_(chain, symbol, date));
+        }
+        result.ok = result.rows.some(row => row.status !== "Unavailable");
+        result.error = result.ok ? "" : "No usable option maturity comparisons were returned.";
+        return result;
+    }
+
     static parseChain(body, yahooSymbol, expiration, http = 200) {
         const symbol = CFAnalysisOptions.symbol_(yahooSymbol), expiry = CFAnalysisOptions.expiration_(expiration);
         const result = CFAnalysisOptions.result_(symbol, http);

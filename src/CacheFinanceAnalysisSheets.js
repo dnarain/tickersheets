@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFAnalysisOptions } from "./CacheFinanceAnalysisOptions.js";
 export { CFAnalysisSheets };
 //  *** DEBUG END ***/
 
@@ -49,10 +50,14 @@ class CFAnalysisSheets {
         if (count > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), count - sheet.getMaxRows());
     }
 
-    static title_(sheet, ticker, subtitle) {
+    static title_(sheet, ticker, subtitle, formatting = true) {
         const label = sheet.getName() === "CF Analysis" ? "Stock analysis" : sheet.getName().replace(/^CF /, "");
-        sheet.getRange("A1").setValue(CFAnalysisSheets.safe_(ticker + " — " + label)).setFontSize(14).setFontWeight("bold").setFontColor("#17365D").setBackground(null);
-        sheet.getRange("A2").setValue(CFAnalysisSheets.safe_(subtitle || "Change the ticker on CF Analysis, then use Stock analysis → Refresh selected ticker.")).setFontColor("#596579").setFontSize(9);
+        const title = sheet.getRange("A1").setValue(CFAnalysisSheets.safe_(ticker + " — " + label));
+        const note = sheet.getRange("A2").setValue(CFAnalysisSheets.safe_(subtitle || "Change the ticker on CF Analysis, then use Stock analysis → Refresh selected ticker."));
+        if (formatting) {
+            title.setFontSize(14).setFontWeight("bold").setFontColor("#17365D").setBackground(null);
+            note.setFontColor("#596579").setFontSize(9);
+        }
     }
 
     static base_(sheet, ticker, subtitle) {
@@ -116,10 +121,15 @@ class CFAnalysisSheets {
     }
 
     static clear_(sheet, formatting = false) {
-        const height = Math.max((formatting ? sheet.getMaxRows() : sheet.getLastRow()) - 2, 1);
-        const range = sheet.getRange(3, 1, height, 25);
-        if (formatting) { range.breakApart().clear(); sheet.setRowHeights(3, height, 21); }
-        else range.clearContent();
+        const last = Math.max(formatting ? sheet.getMaxRows() : sheet.getLastRow(), 5);
+        const input = ["CF Analysis", "CF Options"].includes(sheet.getName());
+        const areas = input ? ["A3:Y3", "A4", "C4:Y4", "A5:Y" + last] : ["A3:Y" + last];
+        if (formatting) sheet.getRange(3, 1, last - 2, 25).breakApart();
+        const list = typeof sheet.getRangeList === "function" ? sheet.getRangeList(areas) : null;
+        const method = formatting ? "clear" : "clearContent";
+        if (list && typeof list[method] === "function") list[method]();
+        else for (const area of areas) sheet.getRange(area)[method]();
+        if (formatting) sheet.setRowHeights(3, last - 2, 21);
         if (sheet.getName() === "CF Options") sheet.getRange("B4").clearDataValidations();
         for (const chart of sheet.getCharts()) sheet.removeChart(chart);
     }
@@ -130,17 +140,20 @@ class CFAnalysisSheets {
         if (!main) return;
         const input = CFAnalysisSheets.readInput(book);
         const source = book.getSheetByName("CF Sources");
-        const loaded = source ? String(source.getRange("B3").getValue() || "").trim().toUpperCase() : "";
-        const expiration = loaded !== input.ticker ? "" : input.expiration;
-        for (const name of CF_ANALYSIS_SHEET_NAMES_) {
-            const sheet = book.getSheetByName(name);
-            if (sheet) { CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason); }
-        }
-        main.getRange("A4").setValue("Ticker"); CFAnalysisSheets.input_(main, "B4", input.ticker);
-        main.getRange("G4").setValue("Status"); main.getRange("H4").setValue(CFAnalysisSheets.safe_(reason));
+        const expiration = input.loadedTicker !== input.ticker ? "" : input.expiration;
+        if (source) source.getRange("B3").setValue("");
+        CFAnalysisSheets.clear_(main);
+        CFAnalysisSheets.title_(main, input.ticker, reason, false);
+        main.getRange("A4").setValue("Ticker");
+        main.getRange("G4:H4").setValues([["Status", CFAnalysisSheets.safe_(reason)]]);
         const options = book.getSheetByName("CF Options");
-        if (options) { options.getRange("A4").setValue("Expiration"); CFAnalysisSheets.input_(options, "B4", expiration); }
-        if (source) { source.getRange("A3").setValue("Loaded ticker"); source.getRange("B3").setValue(""); CFAnalysisSheets.guide_(source, 8); }
+        if (options && input.loadedTicker !== input.ticker) options.getRange("B4").setValue(expiration);
+        for (const name of CF_ANALYSIS_SHEET_NAMES_.filter(name => name !== "CF Analysis")) {
+            const sheet = book.getSheetByName(name);
+            if (sheet) { CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason, false); }
+        }
+        if (options) options.getRange("A4").setValue("Expiration");
+        if (source) source.getRange("A3").setValue("Loaded ticker");
     }
 
     static invalidateOptions(book, reason) {
@@ -148,8 +161,8 @@ class CFAnalysisSheets {
         const sheet = book.getSheetByName("CF Options");
         if (!sheet) return;
         const input = CFAnalysisSheets.readInput(book);
-        CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason);
-        sheet.getRange("A4").setValue("Expiration"); CFAnalysisSheets.input_(sheet, "B4", input.expiration);
+        CFAnalysisSheets.clear_(sheet); CFAnalysisSheets.title_(sheet, input.ticker, reason, false);
+        sheet.getRange("A4").setValue("Expiration");
         sheet.getRange("A6").setValue(CFAnalysisSheets.safe_(reason));
     }
 
@@ -224,9 +237,8 @@ class CFAnalysisSheets {
             : typeof chart.price === "number" && Number.isFinite(chart.price) && chart.price > 0 ? chart.price : null;
         const nearest = selectedContracts.slice().sort((left, right) => (spot === null ? 0 : Math.abs(left.strike - spot) - Math.abs(right.strike - spot)) || left.strike - right.strike || String(left.type).localeCompare(String(right.type)));
         const contracts = nearest.slice(0, 200).sort((left, right) => left.strike - right.strike || String(left.type).localeCompare(String(right.type)));
-        const atmStrike = optionData.ok && spot !== null && nearest.length ? nearest[0].strike : null;
-        const atmQuotes = atmStrike === null ? [] : selectedContracts.filter(row => row.strike === atmStrike && typeof row.iv === "number" && Number.isFinite(row.iv) && row.iv >= 0);
-        const atmIv = atmQuotes.length ? atmQuotes.reduce((sum, row) => sum + row.iv, 0) / atmQuotes.length : null;
+        const atm = CFAnalysisOptions.maturityRow_(optionData, snapshot.symbol || ticker, selectedExpiry);
+        const atmIv = atm.atmIV;
         main.getRange("A4").setValue("Ticker"); CFAnalysisSheets.input_(main, "B4", ticker);
         main.getRange("D4").setValue("Last refresh"); main.getRange("E4").setValue(CFAnalysisSheets.date_(snapshot.fetchedAt, book) || "N/A").setNumberFormat("mmm d, hh:mm");
         main.getRange("G4").setValue("Status"); main.getRange("H4").setValue(snapshot.ok === false ? "No matching quote data. Check the ticker and CF Sources." : "Updated; see CF Sources for provider results."); main.setColumnWidth(8, 260);
@@ -258,7 +270,7 @@ class CFAnalysisSheets {
             ["Next earnings", CFAnalysisSheets.date_(nextDate, book) || nextDate, nextEarnings.estimated === true ? "Estimated" : nextEarnings.estimated === false ? "Provider marks confirmed" : "Date status not supplied"],
             ["Loaded option contracts", optionData.ok ? selectedContracts.length : null, "Selected expiration; " + contracts.length + " shown"],
             ["Nearest expiration", optionData.ok ? CFAnalysisSheets.date_(expirations[0], book) : null, "Earliest published expiration"],
-            ["ATM IV", atmIv, atmStrike === null ? "No accepted ATM quote" : selectedExpiry + "; strike " + atmStrike + "; mean IV"]
+            ["ATM IV", atmIv, atmIv === null ? "No accepted same-strike call/put IV" : selectedExpiry + "; strike " + atm.call.strike + "; call/put mean"]
         ];
         CFAnalysisSheets.table_(main, 15, 4, ["Metric", "Value", "Basis"], companyRows); main.getRange("D16:D24").setWrap(true);
         main.getRange("E16:E24").setNumberFormat("#,##0.00"); main.getRangeList(["E19", "E24"]).setNumberFormat("0.00%");

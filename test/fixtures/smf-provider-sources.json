@@ -1,0 +1,33 @@
+{
+  "purpose": "Small public financial-data excerpts for parser tests. Values are saved observations, not ongoing quote guarantees.",
+  "fixtures": [
+    {
+      "file": "smf-gurufocus-nvda-faq.html",
+      "source": "https://www.gurufocus.com/stock/NVDA/dividend",
+      "retrievedDate": "2026-11-11",
+      "kind": "Current native Apps Script public text with controlled HTML wrapper",
+      "note": "The summary, yield labels, FAQ heading, question and answer are public text from a successful native Apps Script request. The HTML tags, title and source link are controlled test inputs; this is not a raw HTML capture."
+    },
+    {
+      "file": "smf-finviz-nvda.html",
+      "source": "https://finviz.com/quote.ashx?t=NVDA&p=d",
+      "retrievedDate": "2026-11-11",
+      "kind": "Minimized current public HTML",
+      "note": "Title, primary ticker, snapshot labels and cell contents came from the public page. The fixture combines the separate snapshot tables and omits unrelated page content."
+    },
+    {
+      "file": "smf-gurufocus-msft.html",
+      "source": "https://www.gurufocus.com/stock/MSFT/dividend",
+      "capturedDate": "2026-11-08",
+      "kind": "Captured SMF recipe excerpt with controlled identity wrapper",
+      "note": "The percentage divs and Dividend Yield heading come from the SMF port's public provider_recipe_fixtures/2727-MSFT.html. The title, primary heading and source link are controlled test inputs. A direct November 11 download returned an access challenge."
+    },
+    {
+      "file": "smf-zacks-aapl.html",
+      "source": "https://www.zacks.com/stock/research/AAPL/price-target-stock-forecast",
+      "capturedDate": "2026-11-08",
+      "kind": "Captured SMF recipe excerpt with controlled identity wrapper",
+      "note": "The target table comes from the SMF port's public provider_recipe_fixtures/849-AAPL.html. The title, primary heading, source link and unrelated-price paragraph are controlled test inputs. A direct November 11 download returned an access challenge."
+    }
+  ]
+}

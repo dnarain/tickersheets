@@ -5,11 +5,36 @@ import { CFAnalysisFred } from "./CacheFinanceAnalysisFred.js";
 import { CFAnalysisOptions } from "./CacheFinanceAnalysisOptions.js";
 import { CFAnalysisSheets } from "./CacheFinanceAnalysisSheets.js";
 import { GoogleWebSiteFinance, GlobeAndMail, YahooFinance } from "./CacheFinanceWebSites.js";
-export { CFAnalysisService, CFBuildAnalysis, CFRefreshAnalysis, CFCheckAnalysisSources, CFInspectAnalysis, CFAnalysisMenu_, CFAnalysisHandleEdit_ };
+export { CFAnalysisService, CFBuildAnalysis, CFRefreshAnalysis, CFCheckAnalysisSources, CFInspectAnalysis, CFInspectWorkspace, CFCheckTemplateKeys, CFCheckExpandedSources, CFAnalysisMenu_, CFAnalysisHandleEdit_ };
 //  *** DEBUG END ***/
 
 /** Menu-driven requests have Apps Script's normal execution limit, not a custom function's 30 seconds. */
 class CFAnalysisService {
+    /** Put owned research tabs first without changing the order or contents of other tabs. */
+    static arrange(book) {
+        if (!book || typeof book.getSheetByName !== "function" || typeof book.setActiveSheet !== "function" || typeof book.moveActiveSheet !== "function") return [];
+        const base = "CACHEFINANCE_ANALYSIS_V1";
+        const order = [
+            ["CF Analysis", base], ["CF Research", "CACHEFINANCE_RESEARCH_V1"], ["CF Options", base],
+            ["CF Strategies", "CACHEFINANCE_STRATEGIES_V1"], ["CF Watchlist", "CACHEFINANCE_WATCHLIST_V1"],
+            ["CF Journal", "CACHEFINANCE_JOURNAL_V1"], ["CF Fundamentals", base], ["CF Earnings", base],
+            ["CF Macro", base], ["CF Formulas", "CACHEFINANCE_FUNCTIONS_V1"], ["CF Price history", base],
+            ["CF Sources", base], ["CF Images", "CACHEFINANCE_IMAGES_V1"]
+        ];
+        const owned = order.flatMap(([name, marker]) => {
+            const sheet = book.getSheetByName(name);
+            return sheet && sheet.getRange("Z1").getValue() === marker ? [{ name, sheet }] : [];
+        });
+        owned.forEach(({ sheet }, index) => { book.setActiveSheet(sheet); book.moveActiveSheet(index + 1); });
+        const main = owned.find(row => row.name === "CF Analysis");
+        if (main) {
+            book.setActiveSheet(main.sheet);
+            const input = main.sheet.getRange("B4");
+            if (typeof input.activate === "function") input.activate();
+        }
+        return owned.map(row => row.name);
+    }
+
     static chartUrl(symbol) {
         return "https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(symbol)
             + "?range=2y&interval=1d&events=div%2Csplits&includeAdjustedClose=true";
@@ -49,7 +74,7 @@ class CFAnalysisService {
         const technical = CFAnalysisData.calculate(chart.history || []);
         const snapshot = { ok: chart.ok || details.ok || statistics.ok, ticker: normalized.input, symbol,
             cacheSymbol: chart.cacheSymbol || normalized.cacheSymbol || null, fetchedAt: new Date(clock()).toISOString(), chart,
-            technical, statistics, details, benchmarks: {}, quoteSources: [], options: { ok: false, symbol, http: null, expirations: [], contracts: [], error: "No option data returned." }, fred: [], sources };
+            technical, statistics, details, benchmarks: {}, quoteSources: [], options: { ok: false, symbol, http: null, expirations: [], contracts: [], error: "No option data returned." }, optionMaturities: { ok: false, symbol, rows: [] }, additionalProviders: [], fred: [], sources };
         if (!snapshot.ok) return snapshot;
 
         snapshot.quoteSources.push({ provider: "Yahoo Chart", price: chart.price ?? null, yieldFraction: null,
@@ -84,13 +109,39 @@ class CFAnalysisService {
             }
         }
 
-        try { snapshot.options = CFAnalysisOptions.fetchChain(symbol, expiration || null, fetch); }
+        let optionSession;
+        try {
+            optionSession = CFAnalysisOptions.createSession(fetch);
+            snapshot.options = CFAnalysisOptions.fetchChain(symbol, expiration || null, fetch, optionSession);
+        }
         catch { snapshot.options = { ok: false, symbol, http: null, expirations: [], contracts: [], error: "Yahoo options request could not be completed." }; }
+        if (snapshot.options.ok && dependencies.includeMaturities !== false && typeof CFAnalysisOptions.fetchMaturities === "function") {
+            try { snapshot.optionMaturities = CFAnalysisOptions.fetchMaturities(symbol, snapshot.options, fetch, optionSession, { asOf: new Date(clock()).toISOString().slice(0, 10), count: 5 }); }
+            catch { snapshot.optionMaturities = { ok: false, symbol, rows: [], error: "Options maturity comparison unavailable." }; }
+        }
         sources.push({ provider: "Yahoo options", scope: "Expiration dates and selected option chain", http: snapshot.options.http ?? null,
             status: snapshot.options.ok ? "Available" : "Data unavailable", identity: snapshot.options.ok ? "Matched" : "Unknown",
             retrievedAt: new Date(clock()).toISOString(), quoteTime: snapshot.options.quoteTime || null,
             note: snapshot.options.ok ? "Anonymous Yahoo session, as used by the SMF Mac port." : snapshot.options.error,
             source: "https://query1.finance.yahoo.com/v7/finance/options/" + encodeURIComponent(symbol) });
+
+        const loadedExpiry = snapshot.options.contracts?.[0]?.expiration;
+        for (const row of snapshot.optionMaturities.rows || []) {
+            if (row.expiration === loadedExpiry) continue;
+            sources.push({ provider: "Yahoo options", scope: "ATM comparison: " + row.expiration, http: row.http ?? null,
+                status: row.status || "Data unavailable", identity: row.status === "Available" ? "Matched" : "Unknown",
+                retrievedAt: new Date(clock()).toISOString(), quoteTime: row.quoteTime === "Unknown" ? null : row.quoteTime,
+                note: row.error || "One shared anonymous Yahoo session; missing legs and IV remain unavailable.", source: row.source });
+        }
+
+        if (dependencies.includeProviders !== false && typeof CFSmfProviders !== "undefined") {
+            for (const provider of CFSmfProviders.registry()) {
+                const data = CFSmfProviders.fetch(provider.provider, symbol, { fetch, clock });
+                snapshot.additionalProviders.push(data);
+                sources.push({ provider: provider.label, scope: "Selected SMF fields", http: data.http, status: data.status, identity: data.identity,
+                    retrievedAt: data.retrievedAt, quoteTime: data.quoteTime, note: data.error || "Fields keep their provider units and labels.", source: data.source });
+            }
+        }
 
         const fredKey = typeof dependencies.fredKey === "string" ? dependencies.fredKey.trim() : "";
         for (const series of CFAnalysisFred.registry()) {
@@ -117,6 +168,8 @@ class CFAnalysisService {
         return { ok: snapshot.ok, ticker: snapshot.ticker, symbol: snapshot.symbol, historyRows: snapshot.chart.history?.length || 0,
             fundamentalFields: Object.keys(snapshot.details.fields || {}).length, earningsRows: snapshot.details.earnings?.length || 0,
             estimateRows: snapshot.details.estimates?.length || 0, optionContracts: snapshot.options.contracts?.length || 0,
+            optionMaturities: (snapshot.optionMaturities?.rows || []).map(row => ({ expiration: row.expiration, status: row.status, http: row.http, atmIV: row.atmIV })),
+            additionalProviders: (snapshot.additionalProviders || []).map(row => ({ provider: row.provider, status: row.status, http: row.http, availableFields: Object.values(row.fields || {}).filter(field => field.value !== null && field.value !== undefined).length })),
             fredAvailable: snapshot.fred.filter(row => row.ok).map(row => row.seriesId),
             sources: snapshot.sources.map(row => ({ provider: row.provider, scope: row.scope, status: row.status, http: row.http })) };
     }
@@ -126,15 +179,28 @@ function CFAnalysisMenu_() {
     SpreadsheetApp.getUi().createMenu("Stock analysis")
         .addItem("Build analysis sheets", "CFBuildAnalysis")
         .addItem("Refresh selected ticker", "CFRefreshAnalysis")
+        .addSeparator().addItem("Build watchlist", "CFBuildWatchlist").addItem("Refresh watchlist", "CFRefreshWatchlist")
+        .addItem("Build formula examples", "CFBuildFormulaExamples").addItem("Refresh formula examples", "CFRefreshFormulaExamples")
+        .addItem("Provider chart links", "CFLoadProviderImages")
         .addSeparator().addItem("Check provider data", "CFCheckAnalysisSources")
-        .addItem("Check analysis sheets", "CFInspectAnalysis").addToUi();
+        .addItem("Check additional SMF sources", "CFCheckExpandedSources")
+        .addItem("Check analysis sheets", "CFInspectAnalysis").addItem("Check all research sheets", "CFInspectWorkspace").addToUi();
 }
 
 function CFBuildAnalysis() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the spreadsheet before building the analysis.");
+    if (typeof CFAnalysisSheets.check_ === "function") CFAnalysisSheets.check_(book);
+    if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.check(book, false);
+    if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.check(book);
+    if (typeof CFWatchlist !== "undefined") CFWatchlist.check(book);
+    if (typeof CFFunctionExamples !== "undefined") CFFunctionExamples.check(book);
     CFAnalysisSheets.build(book);
-    return CFRefreshAnalysis();
+    if (typeof CFWatchlist !== "undefined") CFWatchlist.build(book);
+    if (typeof CFFunctionExamples !== "undefined") CFFunctionExamples.build(book);
+    const result = CFRefreshAnalysis();
+    CFAnalysisService.arrange(book);
+    return result;
 }
 
 function CFRefreshAnalysis() {
@@ -145,9 +211,14 @@ function CFRefreshAnalysis() {
     let phase = "read inputs";
     try {
         const input = CFAnalysisSheets.readInput(book);
+        if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.check(book);
+        if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.check(book);
+        if (typeof CFWatchlist !== "undefined") CFWatchlist.check(book);
         const requestedExpiration = input.loadedTicker !== undefined && input.loadedTicker !== input.ticker ? "" : input.expiration;
         phase = "clear prior data";
         CFAnalysisSheets.invalidate(book, "Refreshing " + String(input.ticker).trim().toUpperCase() + "…");
+        if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.invalidate(book, "Refreshing selected ticker…");
+        if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.invalidate(book, "Refreshing selected ticker…");
         SpreadsheetApp.flush();
         phase = "fetch data";
         const snapshot = CFAnalysisService.collect(input.ticker, requestedExpiration,
@@ -164,6 +235,9 @@ function CFRefreshAnalysis() {
         phase = "write analysis";
         CFAnalysisSheets.render(book, snapshot);
         if (typeof CFAnalysisCalculatorSheets !== "undefined") CFAnalysisCalculatorSheets.render(book, snapshot);
+        if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.render(book, snapshot);
+        if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.render(book, snapshot);
+        if (typeof CFWatchlist !== "undefined") CFWatchlist.record(book, snapshot);
         SpreadsheetApp.flush();
         const summary = CFAnalysisService.summary(snapshot);
         console.log("CF_ANALYSIS_REFRESH " + JSON.stringify(summary));
@@ -188,16 +262,75 @@ function CFCheckAnalysisSources() {
 
 function CFInspectAnalysis() {
     const report = CFAnalysisSheets.inspect(SpreadsheetApp.getActiveSpreadsheet());
+    const book = SpreadsheetApp.getActiveSpreadsheet();
+    if (typeof CFAnalysisVisuals !== "undefined") report.research = CFAnalysisVisuals.inspect(book);
+    if (typeof CFAnalysisStrategies !== "undefined" && typeof CFAnalysisStrategies.inspect === "function") report.strategies = CFAnalysisStrategies.inspect(book);
     console.log("CF_ANALYSIS_CHECK " + JSON.stringify(report));
     return report;
+}
+
+/** Direct public-source probes. No saved credentials are read and no provider bodies are logged. */
+function CFCheckExpandedSources() {
+    const rows = [];
+    if (typeof CFSmfProviders !== "undefined") for (const ticker of ["NVDA", "AAPL", "ZZZZCFINVALID20261111"]) {
+        for (const provider of CFSmfProviders.registry()) {
+            const result = CFSmfProviders.fetch(provider.provider, ticker, { fetch: (url, options) => UrlFetchApp.fetch(url, options), clock: Date.now });
+            rows.push({ ticker, provider: result.provider, ok: result.ok, status: result.status, http: result.http, identity: result.identity,
+                fields: Object.entries(result.fields).filter(([, field]) => field.value !== null && field.value !== undefined).map(([id, field]) => ({ id, value: field.value, unit: field.unit })) });
+        }
+    }
+    console.log("CF_EXPANDED_SOURCES " + JSON.stringify(rows));
+    return rows;
+}
+
+/** Read actual worksheet results after custom functions finish. This method sends no requests. */
+function CFInspectWorkspace() {
+    const book = SpreadsheetApp.getActiveSpreadsheet(), analysis = CFAnalysisSheets.inspect(book);
+    const report = { analysis, functions: null, watchlist: [], journalRows: 0, images: 0, formulaErrors: [] };
+    if (typeof CFAnalysisVisuals !== "undefined") report.research = CFAnalysisVisuals.inspect(book);
+    if (typeof CFAnalysisStrategies !== "undefined" && typeof CFAnalysisStrategies.inspect === "function") report.strategies = CFAnalysisStrategies.inspect(book);
+    const formulas = book.getSheetByName("CF Formulas");
+    if (formulas && formulas.getRange("Z1").getValue() === "CACHEFINANCE_FUNCTIONS_V1") {
+        report.functions = { ticker: formulas.getRange("B4").getValue(), refresh: formulas.getRange("E4").getValue(), samples: formulas.getRange("A23:B30").getValues(),
+            firstHistory: formulas.getRange("G35:M35").getValues()[0], firstExpiration: formulas.getRange("O35").getValue(),
+            firstOption: formulas.getRange("A111:L111").getValues()[0], firstFred: formulas.getRange("Q35:U35").getValues()[0] };
+        for (const address of ["B23:B30", "A34:E100", "G34:M100", "O34:O100", "Q34:U100", "A110:L130"]) {
+            formulas.getRange(address).getValues().forEach((line, row) => line.forEach((value, col) => {
+                if (typeof value === "string" && /^#(?:REF!|ERROR!|NAME\?|VALUE!|NUM!|DIV\/0!|N\/A)/.test(value)) report.formulaErrors.push({ sheet: "CF Formulas", range: address, row, col, value });
+            }));
+        }
+    }
+    const watch = book.getSheetByName("CF Watchlist"), journal = book.getSheetByName("CF Journal"), images = book.getSheetByName("CF Images");
+    if (watch?.getRange("Z1").getValue() === "CACHEFINANCE_WATCHLIST_V1") report.watchlist = watch.getRange("A8:D27").getValues().filter(row => row[0]).map(row => ({ ticker: row[0], status: row[1], price: row[2], currency: row[3] }));
+    if (journal?.getRange("Z1").getValue() === "CACHEFINANCE_JOURNAL_V1") report.journalRows = Math.max(0, journal.getLastRow() - 7);
+    if (images?.getRange("Z1").getValue() === "CACHEFINANCE_IMAGES_V1") report.images = images.getImages().length;
+    console.log("CF_WORKSPACE_CHECK " + JSON.stringify(report)); return report;
+}
+
+/** Presence flags only. The clean distribution template must contain no saved provider keys. */
+function CFCheckTemplateKeys() {
+    const status = CFGetApiKeyStatus();
+    const result = { ok: status.ok === true && status.providers.length === 5 && status.providers.every(row => row.configured === false),
+        providers: status.ok ? status.providers.map(row => ({ provider: row.id, configured: row.configured })) : [],
+        error: status.ok ? "" : "Unable to check provider key settings" };
+    console.log("CF_TEMPLATE_KEY_CHECK " + JSON.stringify(result)); return result;
 }
 
 /** Simple onEdit only clears stale data; menu refresh performs authorized requests. */
 function CFAnalysisHandleEdit_(event) {
     if (!event?.range) return;
+    if (typeof CFWatchlist !== "undefined") CFWatchlist.edit(event);
     const range = event.range;
     const sheet = range.getSheet();
     if (range.getRow() > 4 || range.getLastRow() < 4 || range.getColumn() > 2 || range.getLastColumn() < 2) return;
-    if (sheet.getName() === "CF Analysis") CFAnalysisSheets.invalidate(event.source, "Ticker changed. Choose Stock analysis → Refresh selected ticker.");
-    else if (sheet.getName() === "CF Options" && typeof CFAnalysisSheets.invalidateOptions === "function") CFAnalysisSheets.invalidateOptions(event.source, "Expiration changed. Refresh the selected ticker.");
+    if (sheet.getName() === "CF Analysis") {
+        CFAnalysisSheets.invalidate(event.source, "Ticker changed. Choose Stock analysis → Refresh selected ticker.");
+        if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.invalidate(event.source, "Ticker changed. Refresh the selected ticker.");
+        if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.invalidate(event.source, "Ticker changed. Refresh the selected ticker.");
+        if (typeof CFProviderImages !== "undefined") CFProviderImages.invalidate(event.source);
+    } else if (sheet.getName() === "CF Options" && typeof CFAnalysisSheets.invalidateOptions === "function") {
+        CFAnalysisSheets.invalidateOptions(event.source, "Expiration changed. Refresh the selected ticker.");
+        if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.invalidate(event.source, "Expiration changed. Refresh the selected ticker.");
+        if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.invalidate(event.source, "Expiration changed. Refresh the selected ticker.");
+    }
 }

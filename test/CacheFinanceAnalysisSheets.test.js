@@ -9,10 +9,10 @@ class Range {
     each(fn){for(let i=0;i<this.height;i++)for(let j=0;j<this.width;j++)fn(this.row+i,this.col+j);return this;}
     setValues(values){expect(values).toHaveLength(this.height);values.forEach(row=>expect(row).toHaveLength(this.width));values.forEach((row,i)=>row.forEach((v,j)=>this.sheet.cells.set(`${this.row+i},${this.col+j}`,v)));this.sheet.events.push({kind:"values",row:this.row,col:this.col,height:this.height,width:this.width});return this;}
     getValues(){return Array.from({length:this.height},(_,i)=>Array.from({length:this.width},(_,j)=>this.sheet.cells.get(`${this.row+i},${this.col+j}`)??""));}
-    setValue(value){return this.each((r,c)=>this.sheet.cells.set(`${r},${c}`,value));}
+    setValue(value){this.each((r,c)=>this.sheet.cells.set(`${r},${c}`,value));this.sheet.onValue?.(this,value);return this;}
     getValue(){return this.getValues()[0][0];}
-    clear(){return this.each((r,c)=>{this.sheet.cells.delete(`${r},${c}`);this.sheet.styles.delete(`${r},${c}`);});}
-    clearContent(){return this.each((r,c)=>this.sheet.cells.delete(`${r},${c}`));}
+    clear(){this.each((r,c)=>{this.sheet.cells.delete(`${r},${c}`);this.sheet.styles.delete(`${r},${c}`);});this.sheet.onClear?.(this);return this;}
+    clearContent(){this.each((r,c)=>this.sheet.cells.delete(`${r},${c}`));this.sheet.onClear?.(this);return this;}
     setDataValidation(rule){return this.each((r,c)=>this.sheet.validations.set(`${r},${c}`,rule));}
     getDataValidation(){return this.sheet.validations.get(`${this.row},${this.col}`)||null;}
     clearDataValidations(){return this.each((r,c)=>this.sheet.validations.delete(`${r},${c}`));}
@@ -27,7 +27,7 @@ class Sheet {
     getName(){return this.name;}getMaxRows(){return this.maxRows;}getMaxColumns(){return this.maxCols;}
     getLastRow(){return Math.max(0,...[...this.cells].filter(([,v])=>v!=="").map(([key])=>Number(key.split(",")[0])));}
     getRange(a,b,h=1,w=1){if(typeof a==="number")return new Range(this,a,b,h,w);const m=a.match(/^([A-Z]+)(\d+)(?::([A-Z]+)(\d+))?$/);if(!m)throw new Error("Unsupported test range:"+a);return new Range(this,Number(m[2]),column(m[1]),m[4]?Number(m[4])-Number(m[2])+1:1,m[3]?column(m[3])-column(m[1])+1:1);}
-    getRangeList(ranges){return {setNumberFormat:value=>ranges.forEach(range=>this.getRange(range).setNumberFormat(value))};}
+    getRangeList(ranges){return {setNumberFormat:value=>ranges.forEach(range=>this.getRange(range).setNumberFormat(value)),clear:()=>ranges.forEach(range=>this.getRange(range).clear()),clearContent:()=>ranges.forEach(range=>this.getRange(range).clearContent())};}
     insertRowsAfter(_row,count){this.maxRows+=count;this.insertedRows+=count;return this;}
     insertColumnsAfter(_column,count){this.maxCols+=count;return this;}
     setHiddenGridlines(value){this.gridHidden=value;return this;}setFrozenRows(value){this.frozen=value;return this;}
@@ -51,6 +51,48 @@ afterEach(()=>vi.unstubAllGlobals());
 function snapshot(ticker="NVDA",length=260){const series=Array.from({length},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),close:100+i,adjustedClose:100+i,open:99+i,high:102+i,low:98+i,volume:1000+i,sma50:i>=49?100+i-24.5:null,sma200:i>=199?100+i-99.5:null,rsi14:i>14?55:null}));return {ticker,symbol:ticker,cacheSymbol:"NASDAQ:"+ticker,fetchedAt:"2026-11-11T23:00:00Z",chart:{name:ticker+" Corporation",currency:"USD",price:359,quoteTime:"2026-11-11T22:00:00Z",history:series,events:{dividends:[{date:"2026-01-01",amount:.01,source:"Yahoo Chart API"}],splits:[]}},technical:{series,summary:{historyEnd:series.at(-1)?.date,price:359,barCount:length,rsi14:55,return1d:.01,sma50:334.5,sma200:259.5}},benchmarks:{SPY:{chart:{history:series.map(r=>({...r,adjustedClose:r.adjustedClose*2}))}},QQQ:{chart:{history:series.map(r=>({...r,adjustedClose:r.adjustedClose*3}))}}},statistics:{fields:{trailing_pe:{label:"P/E",value:20,unit:"ratio",source:"Yahoo Finance website",field:"PE Ratio (TTM)"},dividend_yield:{label:"Yield",value:.01,unit:"fraction",source:"Yahoo Finance website",field:"Yield"}}},details:{name:ticker+" Corp",fields:{market_cap:{label:"Market cap",value:1e12,unit:"currency",source:"https://finance.yahoo.com/quote/"+ticker+"/",field:"price.marketCap.raw"}},earnings:[{period:"Q1 2026",basis:"GAAP",actual:1.25,estimate:1,reportedDate:"2026-02-01",periodEnd:"2026-01-31",currency:"USD",source:"Yahoo Finance website"}],financials:[{period:"2025",frequency:"Annual",basis:"GAAP",revenue:1000,netIncome:200,profitMargin:.2,currency:"USD",source:"Yahoo Finance website"}],estimates:[{period:"Next quarter",basis:"GAAP",epsAverage:1.5,currency:"USD",source:"Yahoo Finance website"}],nextEarnings:{dates:["2026-11-17"],estimated:true}},quoteSources:[{provider:"Google",price:359,yieldFraction:.01,identity:"Matched",quoteTime:null,status:"Available"}],options:{ok:false,error:"Public options endpoint returned HTTP 401.",expirations:[],contracts:[]},fred:[{seriesId:"DGS10",label:"10-year Treasury yield",unit:"Percent",ok:false,status:"KEY_REQUIRED",error:"FRED key required.",observations:[]}],sources:[{provider:"Yahoo Chart",scope:"History",http:200,status:"Available",identity:"Matched",retrievedAt:"2026-11-11T23:00:00Z",quoteTime:"2026-11-11T22:00:00Z",source:"https://query1.finance.yahoo.com/v8/finance/chart/"+ticker,note:"Selected ticker"},{provider:"Options",scope:"Chain",http:401,status:"HTTP_ERROR",note:"No accepted chain.",source:"https://query2.finance.yahoo.com/v7/finance/options/"+ticker}]};}
 
 describe("managed analysis tabs",()=>{
+    it("never clears either editable B4 during content or formatting cleanup", () => {
+        S.build(book);
+        const main = book.getSheetByName("CF Analysis"), options = book.getSheetByName("CF Options");
+        main.getRange("B4").setValue("AAPL"); options.getRange("B4").setValue("2026-12-18");
+        const observed = [];
+        for (const sheet of [main, options]) sheet.onClear = () => {
+            observed.push([main.getRange("B4").getValue(), options.getRange("B4").getValue()]);
+            expect(observed.at(-1)).toEqual(["AAPL", "2026-12-18"]);
+        };
+        for (const formatting of [false, true]) for (const sheet of [main, options]) S.clear_(sheet, formatting);
+        expect(observed).toHaveLength(16);
+        expect(main.getRange("Z1").getValue()).toBe(marker); expect(options.getRange("Z1").getValue()).toBe(marker);
+    });
+    it("clears the loaded ticker first and resets an old expiration only once before clearing other tabs", () => {
+        S.build(book); S.render(book, snapshot());
+        const main = book.getSheetByName("CF Analysis"), options = book.getSheetByName("CF Options"), source = book.getSheetByName("CF Sources");
+        options.getRange("B4").setValue("2026-12-18"); main.getRange("B4").setValue("AAPL");
+        const writes = [], states = [], guide = vi.spyOn(S, "guide_");
+        options.onValue = (range, value) => { if (range.row === 4 && range.col === 2) writes.push(value); };
+        for (const name of names) book.getSheetByName(name).onClear = () => {
+            expect(main.getRange("B4").getValue()).toBe("AAPL"); expect(source.getRange("B3").getValue()).toBe("");
+            if (name !== "CF Analysis") expect(main.getRange("H4").getValue()).toBe("Ticker changed");
+            states.push({ name, expiration: options.getRange("B4").getValue() });
+        };
+        S.invalidate(book, "Ticker changed");
+        expect(writes).toEqual([""]); expect(states.filter(row => row.name === "CF Analysis").every(row => row.expiration === "2026-12-18")).toBe(true);
+        expect(states.filter(row => row.name !== "CF Analysis").every(row => row.expiration === "")).toBe(true);
+        expect(guide).not.toHaveBeenCalled(); guide.mockRestore();
+        expect(S.inspect(book)).toMatchObject({ ticker: "", inputTicker: "AAPL", historyRows: 0, earningsRows: 0, fundamentalRows: 0, optionRows: 0, chartTitles: [] });
+    });
+    it("preserves the same ticker's selected expiration throughout both invalidation paths", () => {
+        S.build(book); S.render(book, snapshot());
+        const main = book.getSheetByName("CF Analysis"), options = book.getSheetByName("CF Options");
+        options.getRange("B4").setValue("2026-12-18");
+        const writes = [];
+        options.onValue = (range, value) => { if (range.row === 4 && range.col === 2) writes.push(value); };
+        for (const name of names) book.getSheetByName(name).onClear = () => {
+            expect(main.getRange("B4").getValue()).toBe("NVDA"); expect(options.getRange("B4").getValue()).toBe("2026-12-18");
+        };
+        S.invalidate(book, "Refreshing"); S.invalidateOptions(book, "Expiration changed");
+        expect(writes).toEqual([]); expect(options.charts).toEqual([]);
+    });
     it("creates seven marked tabs, one ticker input and only hides column Z",()=>{const r=S.build(book);expect(r.created).toEqual(names);for(const name of names){const sheet=book.getSheetByName(name);expect(sheet.getRange("Z1").getValue()).toBe(marker);expect(sheet.hidden).toEqual([26]);expect(sheet.gridHidden).toBe(true);}expect(S.readInput(book)).toEqual({ticker:"NVDA",expiration:"",loadedTicker:""});});
     it("preflights every conflicting name before creating or changing any tab",()=>{const user=book.insertSheet("CF Macro");user.getRange("A1").setValue("User data");const initial=[...book.inserted];expect(()=>S.build(book)).toThrow(/not an analysis tab/);expect(book.inserted).toEqual(initial);expect(user.getRange("A1").getValue()).toBe("User data");});
     it("never changes an unrelated sheet",()=>{const user=book.insertSheet("Portfolio");user.getRange("A1").setValue("Private values");S.build(book);S.render(book,snapshot());S.invalidate(book,"Refresh");expect(user.getRange("A1").getValue()).toBe("Private values");expect(user.charts).toEqual([]);});
@@ -58,7 +100,42 @@ describe("managed analysis tabs",()=>{
     it("refuses a stale snapshot before clearing current data",()=>{S.build(book);const main=book.getSheetByName("CF Analysis");main.getRange("B4").setValue("AAPL");main.getRange("B9").setValue(123);expect(()=>S.render(book,snapshot("NVDA"))).toThrow(/ticker changed/);expect(main.getRange("B9").getValue()).toBe(123);});
 });
 
+function atmOptions(legs = [{ type: "Call", iv: .4 }, { type: "Put", iv: .6 }]) {
+    return { ok: true, symbol: "NVDA", underlyingPrice: 359, expirations: ["2026-11-20", "2026-12-18"], contracts: legs.map(leg => {
+        const expiration = leg.expiration || "2026-11-20", strike = leg.strike ?? 360;
+        return { expiration, type: leg.type, strike, bid: 1, ask: 2,
+            contractSymbol: "NVDA" + expiration.slice(2).replace(/-/g, "") + (leg.type.toUpperCase() === "CALL" ? "C" : "P") + String(strike * 1000).padStart(8, "0"), ...leg };
+    }) };
+}
+
 describe("analysis rendering",()=>{
+    it.each([
+        ["zero IV", [{ type: "Call", iv: 0 }, { type: "Put", iv: .6 }]],
+        ["crossed bid/ask", [{ type: "Call", iv: .4, bid: 3, ask: 2 }, { type: "Put", iv: .6 }]],
+        ["zero ask", [{ type: "Call", iv: .4, bid: 0, ask: 0 }, { type: "Put", iv: .6 }]],
+        ["missing bid", [{ type: "Call", iv: .4, bid: null }, { type: "Put", iv: .6 }]],
+        ["missing put", [{ type: "Call", iv: .4 }]],
+        ["different strikes", [{ type: "Call", iv: .4 }, { type: "Put", strike: 365, iv: .6 }]],
+        ["different expiration", [{ type: "Call", iv: .4 }, { type: "Put", expiration: "2026-12-18", iv: .6 }]],
+        ["wrong contract identity", [{ type: "Call", iv: .4, contractSymbol: "AAPL261120C00360000" }, { type: "Put", iv: .6 }]]
+    ])("keeps overview ATM IV unavailable for %s", (_reason, legs) => {
+        S.build(book); const data = snapshot(); data.options = atmOptions(legs); S.render(book, data);
+        const main = book.getSheetByName("CF Analysis");
+        expect(main.getRange("E24").getValue()).toBe("N/A");
+        expect(main.getRange("F24").getValue()).toBe("No accepted same-strike call/put IV");
+    });
+    it("accepts positive paired IV with zero bid and positive ask", () => {
+        S.build(book); const data = snapshot();
+        data.options = atmOptions([{ type: "Call", iv: .4, bid: 0, ask: 1 }, { type: "Put", iv: .6 }]);
+        S.render(book, data);
+        expect(book.getSheetByName("CF Analysis").getRange("E24").getValue()).toBe(.5);
+        expect(book.getSheetByName("CF Analysis").getRange("F24").getValue()).toBe("2026-11-20; strike 360; call/put mean");
+    });
+    it("does not substitute a stock quote when the option underlying price is unavailable", () => {
+        S.build(book); const data = snapshot(); data.options = atmOptions(); data.options.underlyingPrice = null;
+        S.render(book, data);
+        expect(book.getSheetByName("CF Analysis").getRange("E24").getValue()).toBe("N/A");
+    });
     it("shows a failed quote refresh without a success status", () => {
         S.build(book);
         const data = snapshot(); data.ok = false;
@@ -86,9 +163,9 @@ describe("analysis rendering",()=>{
     it("leaves missing FRED observations blank and keeps rate levels as published percentages",()=>{S.build(book);const data=snapshot();data.fred=[{seriesId:"DGS10",label:"10-year Treasury yield",unit:"Percent",ok:true,status:"Available",latest:{date:"2026-11-10",value:4.25},change:.02,observations:[{date:"2026-11-09",value:null},{date:"2026-11-10",value:4.25}],source:"https://fred.stlouisfed.org/series/DGS10"}];S.render(book,data);const macro=book.getSheetByName("CF Macro");expect(macro.getRange("D8").getValue()).toBe(4.25);expect(macro.getRange("B16").getValue()).toBe("N/A");expect(macro.getRange("B17").getValue()).toBe(4.25);});
     it("grows source sheets for four macro histories without touching ownership markers",()=>{S.build(book);const data=snapshot();data.fred=Array.from({length:4},(_,i)=>({seriesId:String(i),label:"Series "+i,unit:"Index",observations:Array.from({length:400},()=>({date:"2026-01-01",value:1}))}));S.render(book,data);const macro=book.getSheetByName("CF Macro");expect(macro.insertedRows).toBeGreaterThan(0);expect(macro.getRange("Z1").getValue()).toBe(marker);});
     it("reports status without reading keys or requesting any external service",()=>{S.build(book);S.status(book,"Waiting");expect(book.getSheetByName("CF Analysis").getRange("H4").getValue()).toBe("Waiting");});
-    it("shows company fields, an estimated earnings date and same-strike mean ATM IV without inventing missing metrics",()=>{S.build(book);const data=snapshot();data.options={ok:true,underlyingPrice:359,expirations:["2026-11-20","2026-12-18"],contracts:[{expiration:"2026-11-20",type:"Call",strike:360,iv:.4},{expiration:"2026-11-20",type:"Put",strike:360,iv:.6},{expiration:"2026-11-20",type:"Call",strike:100,iv:.99}]};S.render(book,data);const main=book.getSheetByName("CF Analysis");expect(main.getRange("E16").getValue()).toBe(1e12);expect(main.getRange("E17").getValue()).toBe(20);expect(main.getRange("E18").getValue()).toBe("N/A");expect(main.getRange("E19").getValue()).toBe(.01);expect(main.getRange("E20").getValue()).toBe("N/A");expect(main.getRange("E21").getValue()).toBeInstanceOf(Date);expect(main.getRange("F21").getValue()).toBe("Estimated");expect(main.getRange("E22").getValue()).toBe(3);expect(main.getRange("E23").getValue()).toBeInstanceOf(Date);expect(main.getRange("E24").getValue()).toBe(.5);expect(main.formats.some(f=>f.row===4&&f.col===5&&f.value==="mmm d, hh:mm")).toBe(true);});
+    it("shows company fields, an estimated earnings date and same-strike mean ATM IV without inventing missing metrics",()=>{S.build(book);const data=snapshot();data.options=atmOptions([{type:"Call",strike:360,iv:.4},{type:"Put",strike:360,iv:.6},{type:"Call",strike:100,iv:.99}]);S.render(book,data);const main=book.getSheetByName("CF Analysis");expect(main.getRange("E16").getValue()).toBe(1e12);expect(main.getRange("E17").getValue()).toBe(20);expect(main.getRange("E18").getValue()).toBe("N/A");expect(main.getRange("E19").getValue()).toBe(.01);expect(main.getRange("E20").getValue()).toBe("N/A");expect(main.getRange("E21").getValue()).toBeInstanceOf(Date);expect(main.getRange("F21").getValue()).toBe("Estimated");expect(main.getRange("E22").getValue()).toBe(3);expect(main.getRange("E23").getValue()).toBeInstanceOf(Date);expect(main.getRange("E24").getValue()).toBe(.5);expect(main.formats.some(f=>f.row===4&&f.col===5&&f.value==="mmm d, hh:mm")).toBe(true);});
     it("selects the nearest two hundred contracts, then displays them in strike order for one expiry",()=>{S.build(book);const data=snapshot();data.options={ok:true,underlyingPrice:300,expirations:["2026-11-20","2026-12-18"],contracts:[...Array.from({length:400},(_,i)=>({expiration:"2026-11-20",type:i%2?"Call":"Put",strike:i+1,iv:.5})),{expiration:"2026-12-18",type:"Call",strike:300,iv:.99}]};S.render(book,data);const option=book.getSheetByName("CF Options");const strikes=option.getRange(9,3,200,1).getValues().flat();expect(strikes[0]).toBe(200);expect(strikes.at(-1)).toBe(399);expect(strikes).toEqual([...strikes].sort((a,b)=>a-b));expect(option.getRange("A6").getValue()).toContain("Showing 200 of 400 contracts for selected expiry 2026-11-20");expect(book.getSheetByName("CF Analysis").getRange("E22").getValue()).toBe(400);expect(S.inspect(book).optionRows).toBe(200);});
-    it("keeps ATM IV missing when the nearest strike has no IV and labels local-currency benchmark growth",()=>{S.build(book);const data=snapshot();data.chart.currency="CAD";data.options={ok:true,underlyingPrice:359,expirations:["2026-11-20"],contracts:[{expiration:"2026-11-20",type:"Call",strike:360,iv:null},{expiration:"2026-11-20",type:"Call",strike:100,iv:.9}]};const result=S.render(book,data);expect(book.getSheetByName("CF Analysis").getRange("E24").getValue()).toBe("N/A");expect(result.chartTitles.some(title=>title.includes("adjusted growth (local currencies)"))).toBe(true);expect([...book.getSheetByName("CF Sources").cells.values()].some(value=>typeof value==="string"&&value.includes("No FX conversion is applied"))).toBe(true);});
+    it("keeps ATM IV missing when the nearest strike has no IV and labels local-currency benchmark growth",()=>{S.build(book);const data=snapshot();data.chart.currency="CAD";data.options=atmOptions([{type:"Call",strike:360,iv:null},{type:"Put",strike:360,iv:.6},{type:"Call",strike:100,iv:.9},{type:"Put",strike:100,iv:.9}]);const result=S.render(book,data);expect(book.getSheetByName("CF Analysis").getRange("E24").getValue()).toBe("N/A");expect(result.chartTitles.some(title=>title.includes("adjusted growth (local currencies)"))).toBe(true);expect([...book.getSheetByName("CF Sources").cells.values()].some(value=>typeof value==="string"&&value.includes("No FX conversion is applied"))).toBe(true);});
     it("publishes an actual expiration dropdown, preserves the selected date and keeps row four compact",()=>{S.build(book);const data=snapshot();const dates=["2026-11-20","2026-12-18"];data.options={ok:true,expirations:dates,contracts:[]};const options=book.getSheetByName("CF Options");options.getRange("B4").setValue(dates[1]);S.render(book,data);const cell=options.getRange("B4"),rule=cell.getDataValidation();expect(rule.getCriteriaValues()).toEqual([dates]);expect(rule.getCriteriaType()).toBe("VALUE_IN_LIST");expect(rule.dropdown).toBe(true);expect(rule.allowInvalid).toBe(false);expect(cell.getValue()).toBe(dates[1]);expect(options.getRange("D4").getValue()).toBe("Dates available");expect(options.getRange("E4").getValue()).toBe(2);expect(options.rowHeights.get(4)).toBe(24);expect(options.formats.some(f=>f.row===4&&f.col===2&&f.value==="@")).toBe(true);});
     it("clears stale expiration validation when no dates are available or ticker data is invalidated",()=>{S.build(book);const data=snapshot();data.options={ok:true,expirations:["2026-11-20"],contracts:[]};S.render(book,data);const cell=book.getSheetByName("CF Options").getRange("B4");expect(cell.getDataValidation()).not.toBeNull();S.invalidateOptions(book,"Changed expiry");expect(cell.getDataValidation()).toBeNull();S.render(book,data);expect(cell.getDataValidation()).not.toBeNull();data.options={ok:false,expirations:[],contracts:[]};S.render(book,data);expect(cell.getDataValidation()).toBeNull();expect(cell.getValue()).toBe("");});
     it("removes old moving headers and tall rows after invalidation shrinks the populated range",()=>{S.build(book);const empty=snapshot();empty.details={fields:{},earnings:[],financials:[],estimates:[]};empty.chart.events={dividends:[],splits:[]};S.render(book,empty);const earnings=book.getSheetByName("CF Earnings");expect(earnings.styles.get("10,1").background).toBe("#17365D");earnings.setRowHeight(10,60);S.invalidate(book,"Retry");expect(earnings.getLastRow()).toBe(2);const data=snapshot();data.details.earnings=Array.from({length:8},(_,i)=>({...data.details.earnings[0],period:"Q"+i}));S.render(book,data);expect(earnings.getRange("A10").getValue()).toBe("Q2");expect(earnings.styles.get("10,1")?.background).not.toBe("#17365D");expect(earnings.styles.get("10,1")?.color).not.toBe("#FFFFFF");expect(earnings.styles.get("10,1")?.weight).not.toBe("bold");expect(earnings.rowHeights.get(10)).toBe(21);expect(earnings.getRange("Z1").getValue()).toBe(marker);expect(book.getSheetByName("CF Options").frozen).toBe(8);expect(book.getSheetByName("CF Analysis").frozen).toBe(8);});

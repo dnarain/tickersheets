@@ -46,7 +46,7 @@ describe("cachefinance bundle", () => {
     it("builds a valid Apps Script bundle", () => {
         const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
 
-        expect(sectionCount).toBe(16);
+        expect(sectionCount).toBe(23);
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);
         expect(bundle).toContain(`Source hash: ${sourceHash}`);
         expect(bundle).toContain("function CACHEFINANCE");
@@ -54,6 +54,10 @@ describe("cachefinance bundle", () => {
         expect(bundle).toContain("function CFShowApiKeySettings");
         expect(bundle).toContain("function CFOPTIONMODEL");
         expect(bundle).toContain("function CFBuildAnalysis");
+        expect(bundle).toContain("function CFQUOTE");
+        expect(bundle).toContain("function CFSTRATEGY");
+        expect(bundle).toContain("function CFRefreshWatchlist");
+        expect(bundle).toContain("class CFAnalysisVisuals");
         expect(bundle.match(/function onOpen\(/g)).toHaveLength(1);
         expect(() => validateBundleContent(bundle)).not.toThrow();
     });
