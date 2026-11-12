@@ -1,7 +1,7 @@
 /*  *** DEBUG START ***
 import { CFRSITARGETS, CFRsiTargets } from "./CacheFinanceRsiTargets.js";
 import { CFFREDVALUE } from "./CacheFinanceFredValue.js";
-import { CFFRED, CFFIELD } from "./CacheFinanceResearchFunctions.js";
+import { CFFRED } from "./CacheFinanceResearchFunctions.js";
 export { CFLookupChecks, CFBuildLookupChecks, CFInspectLookupChecks };
 //  *** DEBUG END ***/
 
@@ -27,10 +27,7 @@ class CFLookupChecks {
             { id: "fred_reference_match", description: "Exact-date lookup matches the table row", kind: "compare", dependencies: ["fred_iso", "fred_reference"], expected: "TRUE, with both inputs numeric" },
             { id: "fred_weekend", description: "No earlier-day fallback for a DGS10 weekend", kind: "negative", series: "DGS10", date: "2026-11-07", formula: '=CFFREDVALUE("DGS10","2026-11-07",$B$4)', expected: "N/A: no observation for November 7" },
             { id: "fred_monthly_nonperiod", description: "Monthly UNRATE has no October 2 observation", kind: "negative", series: "UNRATE", date: "2026-10-02", formula: '=CFFREDVALUE("UNRATE","2026-10-02",$B$4)', expected: "N/A: no observation for October 2" },
-            { id: "fred_invalid_date", description: "Reject an invalid calendar date", kind: "invalidDate", series: "DGS10", date: "2026-02-30", formula: '=CFFREDVALUE("DGS10","2026-02-30",$B$4)', expected: "N/A: invalid date input, without a provider lookup" },
-            { id: "advfn_aapl", description: "ADVFN AAPL annual year end, ID 5196", kind: "advfn", ticker: "NASDAQ:AAPL", field: 5196, formula: '=CFFIELD("ADVFN","NASDAQ:AAPL",5196,$B$4)', expected: "Valid YYYY-MM-DD date text from the annual header" },
-            { id: "advfn_nvda", description: "ADVFN NVDA annual year end, ID 5196", kind: "advfn", ticker: "NASDAQ:NVDA", field: 5196, formula: '=CFFIELD("ADVFN","NASDAQ:NVDA",5196,$B$4)', expected: "Valid YYYY-MM-DD date text from the annual header" },
-            { id: "advfn_aapl_named", description: "ADVFN named-field alias", kind: "advfn", ticker: "NASDAQ:AAPL", field: "year_end_date", formula: '=CFFIELD("ADVFN","NASDAQ:AAPL","year_end_date",$B$4)', expected: "Same date as numeric ID 5196" });
+            { id: "fred_invalid_date", description: "Reject an invalid calendar date", kind: "invalidDate", series: "DGS10", date: "2026-02-30", formula: '=CFFREDVALUE("DGS10","2026-02-30",$B$4)', expected: "N/A: invalid date input, without a provider lookup" });
         cases.forEach((row, i) => { row.row = i + 8; row.anchor = row.anchor || "D" + row.row; row.range = row.range || row.anchor; });
         const positions = Object.fromEntries(cases.map(row => [row.id, row.row]));
         for (const row of cases.filter(row => row.kind === "compare")) {
@@ -53,7 +50,7 @@ class CFLookupChecks {
         if (sheet.getMaxRows() < 100) sheet.insertRowsAfter(sheet.getMaxRows(), 100 - sheet.getMaxRows());
         sheet.getRange(1, 1, sheet.getMaxRows(), 25).breakApart().clear();
         sheet.setHiddenGridlines(true); sheet.setFrozenRows(7); sheet.setFrozenColumns(0); sheet.setColumnWidths(1, 18, 110);
-        sheet.getRange("A1:R1").merge().setValue("RSI2, exact-date FRED and ADVFN worksheet checks").setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
+        sheet.getRange("A1:R1").merge().setValue("RSI2 and exact-date FRED worksheet checks").setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2:R2").merge().setValue("Run CFInspectLookupChecks after formulas finish. Missing keys or blocked providers remain BLOCKED. PASS does not independently verify financial accuracy.").setWrap(true);
         sheet.getRange("A4").setValue("Refresh number"); sheet.getRange("B4").setValue(refresh).setBackground("#FFF2CC").setFontColor("#0000FF");
         sheet.getRange("D4").setValue("Last inspection"); sheet.getRange("E4").setValue("Not inspected");
@@ -65,7 +62,6 @@ class CFLookupChecks {
             sheet.getRange(row.row, 1, 1, 3).setValues([[row.id, row.description, row.expected]]);
             sheet.getRange(row.row, 5, 1, 3).setValues([["PENDING", "Waiting for Google Sheets calculation and inspection", "'" + row.formula]]);
             if (row.range !== "D" + row.row) sheet.getRange(row.row, 4).setValue(row.range);
-            if (row.kind === "advfn") sheet.getRange(row.anchor).setNumberFormat("@");
         }
         for (const [address, label] of [["A44", "NVDA: full twelve-field array"], ["A49", "AAPL: full twelve-field array"], ["A54", "Headers only; no market request"], ["N59", "DGS10: 30-observation reference table"]]) sheet.getRange(address).setValue(label).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A45:L55").setNumberFormat("0.00000000"); sheet.getRange("N60:R90").setNumberFormat("@"); sheet.getRange("O61:O90").setNumberFormat("0.00000000");
@@ -102,7 +98,7 @@ class CFLookupChecks {
         const sheet = CFLookupChecks.check(book);
         if (!sheet) throw new Error("Build CF Lookup tests before inspecting lookup checks.");
         const calls = { rsi: overrides.rsi || (typeof CFRSITARGETS === "function" ? CFRSITARGETS : null), fredValue: overrides.fredValue || (typeof CFFREDVALUE === "function" ? CFFREDVALUE : null),
-            fred: overrides.fred || (typeof CFFRED === "function" ? CFFRED : null), field: overrides.field || (typeof CFFIELD === "function" ? CFFIELD : null) };
+            fred: overrides.fred || (typeof CFFRED === "function" ? CFFRED : null) };
         const definitions = CFLookupChecks.cases(), refresh = sheet.getRange("B4").getValue(), inputs = new Map(), results = new Map();
         for (const row of definitions) inputs.set(row.id, { formula: sheet.getRange(row.anchor).getFormula(), actual: sheet.getRange(row.range).getValues() });
         const numeric = value => CFLookupChecks.number_(value), target = value => CFLookupChecks.number_(value, true) || value === "N/A";
@@ -119,14 +115,12 @@ class CFLookupChecks {
                     const invoke = (name, ...args) => typeof calls[name] === "function" ? calls[name](...args) : "N/A: Required test counterpart is unavailable";
                     if (["rsi", "target", "rsiAll", "headers"].includes(row.kind)) counterpart = invoke("rsi", row.ticker, 20, 80, row.field, refresh);
                     else if (["fred", "negative", "invalidDate"].includes(row.kind)) counterpart = invoke("fredValue", row.series || "DGS10", row.date, refresh);
-                    else if (row.kind === "advfn") counterpart = invoke("field", "ADVFN", row.ticker, row.field, refresh);
                     else if (row.kind === "fredRecent") counterpart = invoke("fred", "DGS10", 30, refresh);
                     if (CFLookupChecks.blocked_(counterpart)) { status = "BLOCKED"; reason = "Direct counterpart: " + counterpart; }
                     else if (counterpart === "N/A: Required test counterpart is unavailable") { status = "BLOCKED"; reason = counterpart; }
                     else if (row.kind === "rsi" && !(numeric(actual) && actual >= 0 && actual <= 100)) { status = "FAIL"; reason = "Expected a numeric RSI index from 0 to 100"; }
                     else if (row.kind === "target" && !target(actual)) { status = "FAIL"; reason = "Expected a positive target or an explicit unavailable target"; }
                     else if (row.kind === "fred" && !numeric(actual)) { status = "FAIL"; reason = "Expected a numeric exact-date FRED observation"; }
-                    else if (row.kind === "advfn" && !CFLookupChecks.date_(actual)) { status = "FAIL"; reason = "Expected valid YYYY-MM-DD date text"; }
                     else if (row.kind === "negative") {
                         const pattern = new RegExp("^N/A: FRED (?:has no observation|observation missing) on " + row.date.replaceAll("-", "\\-") + "\\.$");
                         if (!pattern.test(actual)) { status = "FAIL"; reason = "Expected the requested date's no-observation result, not another error"; }

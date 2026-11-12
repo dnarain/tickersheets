@@ -42,8 +42,7 @@ const CF_SMF_PROVIDER_FIELDS_ = Object.freeze({
     GURUFOCUS: Object.freeze([
         ["forward_dividend_yield", "Forward dividend yield", "fraction", 2727, "Dividend Yield (Forward)", "percent"],
         ["trailing_dividend_yield", "Trailing dividend yield", "fraction", null, "Dividend Yield (Trailing)", "percent"]
-    ].map(row => Object.freeze(row))),
-    ADVFN: Object.freeze([["year_end_date", "Latest annual year-end date", "date text", 5196, "Year End", "annual_date"]].map(row => Object.freeze(row)))
+    ].map(row => Object.freeze(row)))
 });
 
 class CFSmfProviders {
@@ -60,16 +59,9 @@ class CFSmfProviders {
         return /^[A-Z][A-Z0-9]{0,34}(?:[.-][AB])?$/.test(symbol) ? symbol : "";
     }
 
-    /** ADVFN accepts a qualified exchange:symbol, so its prefix must survive normalization. */
-    static advfnSymbol_(value) {
-        if (typeof value !== "string") return "";
-        const symbol = value.trim().toUpperCase();
-        return /^(?:(?:NASDAQ|NYSE|AMEX|NYSEAMERICAN|NYSEARCA|BATS):)?[A-Z][A-Z0-9]{0,34}(?:[.-][AB])?$/.test(symbol) ? symbol : "";
-    }
-
     static registry() {
         return Object.entries(CF_SMF_PROVIDER_FIELDS_).map(([provider, rows]) => ({ provider,
-            label: ({ FINVIZ: "Finviz", ZACKS: "Zacks", GURUFOCUS: "GuruFocus", ADVFN: "ADVFN" })[provider],
+            label: ({ FINVIZ: "Finviz", ZACKS: "Zacks", GURUFOCUS: "GuruFocus" })[provider],
             fields: rows.map(([id, label, unit, smfId, field]) => ({ id, label, unit, smfId, field })) }));
     }
 
@@ -80,17 +72,16 @@ class CFSmfProviders {
     }
 
     static buildUrl(provider, ticker) {
-        const type = CFSmfProviders.provider_(provider), symbol = type === "ADVFN" ? CFSmfProviders.advfnSymbol_(ticker) : CFSmfProviders.symbol_(ticker);
+        const type = CFSmfProviders.provider_(provider), symbol = CFSmfProviders.symbol_(ticker);
         if (!type || !symbol) return null;
         const urls = { FINVIZ: "https://finviz.com/quote.ashx?t=" + encodeURIComponent(symbol) + "&p=d",
             ZACKS: "https://www.zacks.com/stock/research/" + encodeURIComponent(symbol) + "/price-target-stock-forecast",
-            GURUFOCUS: "https://www.gurufocus.com/stock/" + encodeURIComponent(symbol) + "/dividend",
-            ADVFN: "https://www.advfn.com/p.php?pid=financials&symbol=" + symbol };
+            GURUFOCUS: "https://www.gurufocus.com/stock/" + encodeURIComponent(symbol) + "/dividend" };
         return urls[type];
     }
 
     static result_(provider, ticker) {
-        const type = CFSmfProviders.provider_(provider), symbol = type === "ADVFN" ? CFSmfProviders.advfnSymbol_(ticker) : CFSmfProviders.symbol_(ticker), source = CFSmfProviders.buildUrl(type, symbol) || "";
+        const type = CFSmfProviders.provider_(provider), symbol = CFSmfProviders.symbol_(ticker), source = CFSmfProviders.buildUrl(type, symbol) || "";
         const result = { ok: false, provider: type || "", symbol, status: type ? symbol ? "Data unavailable" : "Unsupported ticker" : "Not Supported",
             http: null, identity: "Unknown", source, retrievedAt: null, quoteTime: null, fields: {}, error: "" };
         for (const [id, label, unit, smfId, field] of CF_SMF_PROVIDER_FIELDS_[type] || []) {
@@ -112,7 +103,6 @@ class CFSmfProviders {
     static clean_(html) { return html.replace(/<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>|<!--[\s\S]*?-->/gi, " "); }
 
     static identity_(provider, html, symbol) {
-        if (provider === "ADVFN") return CFSmfProviders.advfnIdentity_(html, symbol);
         const title = CFSmfProviders.text_(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "");
         const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const startsWithSymbol = new RegExp("^" + escaped + "(?:\\s*[-:]|\\s+(?:Stock|Dividend)\\b)", "i");
@@ -135,70 +125,6 @@ class CFSmfProviders {
         }
         const primary = html.match(/<h1\b[^>]*\bdata-ticker\s*=\s*(["'])(.*?)\1/i);
         return !primary || primary[2].trim().toUpperCase() === symbol;
-    }
-
-    static advfnIdentity_(html, wanted) {
-        const parts = wanted.split(":"), wantedTicker = parts[parts.length - 1], wantedExchange = parts.length === 2 ? parts[0] : "";
-        const matches = value => {
-            const symbol = CFSmfProviders.advfnSymbol_(value), tokens = symbol.split(":");
-            return Boolean(symbol) && tokens[tokens.length - 1] === wantedTicker && (!wantedExchange || tokens.length === 2 && tokens[0] === wantedExchange);
-        };
-        const primaryUrls = [];
-        for (const tag of html.matchAll(/<(?:link|meta)\b[^>]*>/gi)) {
-            if (/^<link/i.test(tag[0]) && /\brel\s*=\s*(["'])canonical\1/i.test(tag[0])) primaryUrls.push(tag[0].match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2] || "");
-            if (/^<meta/i.test(tag[0]) && /\bproperty\s*=\s*(["'])og:url\1/i.test(tag[0])) primaryUrls.push(tag[0].match(/\bcontent\s*=\s*(["'])(.*?)\1/i)?.[2] || "");
-        }
-        for (const raw of primaryUrls) {
-            const url = CFSmfProviders.text_(raw);
-            const path = url.match(/^https:\/\/(?:www|ca|uk)\.advfn\.com\/stock-market\/([A-Z0-9-]+)\/([^/?#]+)\/financials\/?(?:[?#]|$)/i);
-            const query = url.match(/^https:\/\/(?:www|ca|uk)\.advfn\.com\/p\.php\?([^#]*)$/i);
-            if (path) { if (!matches(path[1].toUpperCase() + ":" + decodeURIComponent(path[2]).toUpperCase())) return false; }
-            else if (query) {
-                const params = query[1].split("&"), pid = params.find(value => /^pid=/i.test(value)), symbol = params.filter(value => /^symbol=/i.test(value));
-                if (pid !== "pid=financials" || symbol.length !== 1 || !matches(decodeURIComponent(symbol[0].slice(7)).toUpperCase())) return false;
-            } else return false;
-        }
-        const title = CFSmfProviders.text_(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "");
-        const titleSymbol = /\bFinancial(?:s| Statements| Results)?\b/i.test(title) ?
-            title.match(/\(((?:[A-Z]+:)?[A-Z][A-Z0-9.-]*)\)/i)?.[1] || title.match(/^((?:[A-Z]+:)?[A-Z][A-Z0-9.-]*)\s+(?:Financials?|Annual Reports)\b/i)?.[1] : "";
-        if (titleSymbol && !matches(titleSymbol.toUpperCase()) && !(primaryUrls.length && !titleSymbol.includes(":") && titleSymbol.toUpperCase() === wantedTicker)) return false;
-        // A matching primary URL identifies the instrument even when the page title has no symbol.
-        return primaryUrls.length > 0 || Boolean(titleSymbol && matches(titleSymbol.toUpperCase()));
-    }
-
-    static advfnYearEnd_(text) {
-        const match = text.match(/^Year End(?: Date)?\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:,)?\s+(\d{4})$/i);
-        if (!match) return null;
-        const month = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"].indexOf(match[1].toLowerCase());
-        const year = Number(match[3]), day = Number(match[2]), date = new Date(Date.UTC(year, month, day));
-        return year >= 100 && date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day ? date.toISOString().slice(0, 10) : null;
-    }
-
-    static advfn_(result, html) {
-        const dates = [], displays = [];
-        for (const section of html.matchAll(/<div\b[^>]*\bid\s*=\s*(["'])(annualIncomeStatement|annualBalanceSheet|annualCashFlow)\1[^>]*>/gi)) {
-            const tags = /<\/?div\b[^>]*>/gi; tags.lastIndex = section.index + section[0].length;
-            let depth = 1, end = -1, tag;
-            while ((tag = tags.exec(html))) {
-                depth += /^<\//.test(tag[0]) ? -1 : 1;
-                if (depth === 0) { end = tag.index; break; }
-            }
-            if (end < 0) continue;
-            const body = html.slice(section.index + section[0].length, end);
-            const header = body.match(/<(thead|tdead)\b[^>]*>([\s\S]*?)<\/\1\s*>/i)?.[2];
-            if (!header) continue;
-            const cells = [...header.matchAll(/<(?:td|th)\b[^>]*>([\s\S]*?)<\/(?:td|th)>/gi)].map(cell => CFSmfProviders.text_(cell[1]));
-            if (!/^Year End\b/i.test(cells[0] || "")) continue;
-            const date = CFSmfProviders.advfnYearEnd_(cells[0]), years = cells.slice(1).filter(Boolean);
-            if (!date || !years.length || years.some((year, index) => !/^\d{4}$/.test(year) || index > 0 && Number(year) <= Number(years[index - 1])) || Number(years[years.length - 1]) !== Number(date.slice(0, 4))) {
-                result.fields.year_end_date.status = "Invalid annual header"; result.fields.year_end_date.display = "Annual date and fiscal years do not agree"; return;
-            }
-            dates.push(date); displays.push(cells[0]);
-        }
-        const field = result.fields.year_end_date;
-        if (!dates.length) return;
-        if (dates.some(date => date !== dates[0])) { field.status = "Conflicting values"; field.display = "Annual sections report conflicting year-end dates"; return; }
-        field.value = dates[0]; field.display = displays[0]; field.status = "Available";
     }
 
     static number_(value, rule = "number") {
@@ -336,7 +262,6 @@ class CFSmfProviders {
             if (result.provider === "FINVIZ") CFSmfProviders.finviz_(result, html);
             else if (result.provider === "ZACKS") CFSmfProviders.zacks_(result, html);
             else if (result.provider === "GURUFOCUS") CFSmfProviders.gurufocus_(result, html);
-            else CFSmfProviders.advfn_(result, html);
             result.ok = Object.values(result.fields).some(field => field.value !== null);
             result.status = result.ok ? "Available" : "Data unavailable";
             if (!result.ok) result.error = "The matching page supplied no accepted fields.";

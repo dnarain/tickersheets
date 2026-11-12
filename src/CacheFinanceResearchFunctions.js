@@ -155,8 +155,7 @@ class CFPublicData {
     }
 
     static provider(provider, input, overrides = {}, refresh = "") {
-        const normalized = CFAnalysisData.normalizeTicker(input), id = String(provider || "").trim().toUpperCase();
-        const symbol = id === "ADVFN" ? normalized.cacheSymbol || normalized.yahooSymbol : normalized.yahooSymbol;
+        const symbol = CFAnalysisData.normalizeTicker(input).yahooSymbol, id = String(provider || "").trim().toUpperCase();
         if (typeof CFSmfProviders === "undefined") return CFPublicData.failure("Provider adapter unavailable.");
         return CFPublicData.cached("provider", id + ":" + symbol, 300, deps => CFSmfProviders.fetch(id, symbol, deps), overrides, refresh);
     }

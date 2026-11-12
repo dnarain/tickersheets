@@ -122,7 +122,7 @@ class CFAnalysisService {
         sources.push({ provider: "Yahoo options", scope: "Expiration dates and selected option chain", http: snapshot.options.http ?? null,
             status: snapshot.options.ok ? "Available" : "Data unavailable", identity: snapshot.options.ok ? "Matched" : "Unknown",
             retrievedAt: new Date(clock()).toISOString(), quoteTime: snapshot.options.quoteTime || null,
-            note: snapshot.options.ok ? "Anonymous Yahoo session, as used by the SMF Mac port." : snapshot.options.error,
+            note: snapshot.options.ok ? "Anonymous Yahoo session; no personal login required." : snapshot.options.error,
             source: "https://query1.finance.yahoo.com/v7/finance/options/" + encodeURIComponent(symbol) });
 
         const loadedExpiry = snapshot.options.contracts?.[0]?.expiration;
@@ -136,10 +136,9 @@ class CFAnalysisService {
 
         if (dependencies.includeProviders !== false && typeof CFSmfProviders !== "undefined") {
             for (const provider of CFSmfProviders.registry()) {
-                const providerSymbol = provider.provider === "ADVFN" ? snapshot.cacheSymbol || symbol : symbol;
-                const data = CFSmfProviders.fetch(provider.provider, providerSymbol, { fetch, clock });
+                const data = CFSmfProviders.fetch(provider.provider, symbol, { fetch, clock });
                 snapshot.additionalProviders.push(data);
-                sources.push({ provider: provider.label, scope: "Selected SMF fields", http: data.http, status: data.status, identity: data.identity,
+                sources.push({ provider: provider.label, scope: "Selected provider fields", http: data.http, status: data.status, identity: data.identity,
                     retrievedAt: data.retrievedAt, quoteTime: data.quoteTime, note: data.error || "Fields keep their provider units and labels.", source: data.source });
             }
         }
@@ -185,7 +184,7 @@ function CFAnalysisMenu_() {
         .addItem("Build formula examples", "CFBuildFormulaExamples").addItem("Refresh formula examples", "CFRefreshFormulaExamples")
         .addItem("Provider chart links", "CFLoadProviderImages")
         .addSeparator().addItem("Check provider data", "CFCheckAnalysisSources")
-        .addItem("Check additional SMF sources", "CFCheckExpandedSources")
+        .addItem("Check additional providers", "CFCheckExpandedSources")
         .addItem("Build lookup checks", "CFBuildLookupChecks").addItem("Inspect lookup checks", "CFInspectLookupChecks")
         .addItem("Check analysis sheets", "CFInspectAnalysis").addItem("Check all research sheets", "CFInspectWorkspace").addToUi();
 }
@@ -295,10 +294,10 @@ function CFInspectWorkspace() {
     const formulas = book.getSheetByName("CF Formulas");
     if (formulas && formulas.getRange("Z1").getValue() === "CACHEFINANCE_FUNCTIONS_V1") {
         report.functions = { ticker: formulas.getRange("B4").getValue(), refresh: formulas.getRange("E4").getValue(), samples: formulas.getRange("A23:B30").getValues(),
-            lookupSamples: formulas.getRange("G23:H30").getValues(), rsiTargets: formulas.getRange("A135:L136").getValues(),
+            lookupSamples: formulas.getRange("G23:H29").getValues(), rsiTargets: formulas.getRange("A135:L136").getValues(),
             firstHistory: formulas.getRange("G35:M35").getValues()[0], firstExpiration: formulas.getRange("O35").getValue(),
             firstOption: formulas.getRange("A111:L111").getValues()[0], firstFred: formulas.getRange("Q35:U35").getValues()[0] };
-        for (const address of ["B23:B30", "H23:H30", "A135:L136", "A34:E100", "G34:M100", "O34:O100", "Q34:U100", "A110:L130"]) {
+        for (const address of ["B23:B30", "H23:H29", "A135:L136", "A34:E100", "G34:M100", "O34:O100", "Q34:U100", "A110:L130"]) {
             formulas.getRange(address).getValues().forEach((line, row) => line.forEach((value, col) => {
                 if (typeof value === "string" && /^#(?:REF!|ERROR!|NAME\?|VALUE!|NUM!|DIV\/0!|N\/A)/.test(value)) report.formulaErrors.push({ sheet: "CF Formulas", range: address, row, col, value });
             }));

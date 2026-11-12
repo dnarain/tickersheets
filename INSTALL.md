@@ -207,7 +207,7 @@ The builder creates these tabs:
 | **CF Options** | Selected-expiration chain and option model |
 | **CF Macro** | Four FRED series, with your key |
 | **CF Sources** | Provider statuses, timestamps and usage notes |
-| **CF Research** | Additional charts, earnings summary and selected Finviz, Zacks, GuruFocus and ADVFN fields |
+| **CF Research** | Additional charts, earnings summary and selected Finviz, Zacks and GuruFocus fields |
 | **CF Watchlist** | Up to 20 ticker inputs and summary values |
 | **CF Journal** | Public snapshots and changes between refreshes |
 | **CF Formulas** | Function reference and live formula examples |
@@ -265,10 +265,7 @@ Its reference comparison requires `2026-11-05` to remain in the latest 30 DGS10 
 After that date leaves the window, a failed reference comparison does not establish an exact-date lookup defect.
 The fixed weekend and monthly-period cases also refer to their documented dates.
 
-The November 11, 2026 Google Sheets requests for ADVFN AAPL and NVDA returned **HTTP 403**.
-The annual year-end parser passes its controlled fixtures, but those live lookups remain blocked.
-The ADVFN adapter uses a public page and does not accept ADVFN account credentials.
-The [saved Google Sheets test results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) record the accepted values and blocked requests.
+The [provider guide](PROVIDERS.md#testing-process) explains the tests, statuses and limits.
 
 ## Read statuses and dates
 

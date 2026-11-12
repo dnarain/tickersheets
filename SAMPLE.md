@@ -170,8 +170,7 @@ Watchlist tickers remain separate from the single-stock ticker input.
 ## Reusable functions
 
 `CFQUOTE`, `CFHISTORY`, `CFFUNDAMENTALS`, `CFOPTIONS`, `CFEXPIRATIONS`, `CFFRED`, `CFFREDVALUE`, `CFRSITARGETS` and `CFFIELD` work in user worksheets.
-The formula tab includes RSI2 targets, exact-date FRED examples and the ADVFN year-end request.
-ADVFN returned HTTP 403 in the live Apps Script checks, so its date remains unavailable.
+The formula tab includes RSI2 targets, exact-date FRED examples and separate regular-session and after-hours quotes.
 The [build-your-own guide](BUILD-YOUR-OWN.md) gives recipes for separate custom tabs.
 `CFDATASTATUS` returns source times and cache status for the corresponding dataset.
 `CFOPTIONMODEL` and `CFSTRATEGY` calculate from their entered assumptions.
@@ -215,14 +214,12 @@ FRED observation dates identify periods, not publication times. A `.` observatio
 
 The analysis uses Yahoo Chart history, Yahoo quote-page details and the existing Google/Globe comparison adapters.
 The additional adapters cover 32 Finviz fields, the Zacks average price target and two GuruFocus dividend-yield fields.
-The ADVFN adapter adds one latest annual year-end field, but the November 11 Apps Script requests returned HTTP 403.
-The live year-end value remains unverified.
 Each field keeps its source and units.
 The source table reports blocked or missing provider results without replacing them with another provider's value.
 Stock dividend yields can use different provider definitions, including forward and trailing yield.
 The source columns retain the provider field and EPS basis.
 Availability in one ticker does not establish every ticker or data field.
-The [lookup and quote test report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) records the latest checks and remaining gaps.
+The [provider guide](PROVIDERS.md#providers) records the dated checks and remaining gaps.
 
 The **Check provider data** menu fetches a safe count/status summary without writing the analysis tabs.
 **Check analysis sheets** reads the rendered tables and chart titles without making provider requests.

@@ -244,21 +244,14 @@ Enter these labels in column A and formulas in column B:
 | B2 | Finviz price | `=CFFIELD("FINVIZ",Setup!$B$2,4074,Setup!$B$3)` |
 | B3 | Zacks average price target | `=CFFIELD("ZACKS",Setup!$B$2,849,Setup!$B$3)` |
 | B4 | GuruFocus forward yield | `=CFFIELD("GURUFOCUS",Setup!$B$2,2727,Setup!$B$3)` |
-| B5 | ADVFN latest annual year-end | `=CFFIELD("ADVFN",Setup!$B$2,5196,Setup!$B$3)` |
 
 Format **B4** as a percentage.
-If ADVFN supplies an accepted page, the formula returns a `YYYY-MM-DD` date string.
-The ADVFN route also accepts a qualified ticker such as `NASDAQ:AAPL`.
-
-**ADVFN currently returns HTTP 403 in our live Apps Script checks.**
-Its formula returns explanatory `N/A` text under that condition.
-Controlled tests cover the annual-date parser, but we did not verify a live year-end value from Google Sheets.
-Keep this lookup optional until the provider accepts the request.
 
 Provider fields retain their own source and meaning.
 An analyst target and a current price are different values.
 Forward and trailing dividend yields also use different bases.
 The [function reference](FUNCTIONS.md#cffield) lists the supported fields and units.
+The [provider guide](PROVIDERS.md#providers) describes source access and dated test results.
 
 ## 8. Read statuses and maintain the workbook
 
@@ -271,7 +264,6 @@ Enter each formula in the listed cell, with the surrounding output area empty:
 | A5 | `=CFDATASTATUS(Setup!$B$2,"history","",Setup!$B$3)` |
 | A9 | `=CFDATASTATUS(Setup!$B$2,"options",Setup!$B$4,Setup!$B$3)` |
 | A13 | `=CFDATASTATUS(Setup!$B$2,"provider","FINVIZ",Setup!$B$3)` |
-| A17 | `=CFDATASTATUS(Setup!$B$2,"provider","ADVFN",Setup!$B$3)` |
 
 Each status table occupies five columns and two rows.
 It shows the status, retrieval time, quote time, cache flag and source.

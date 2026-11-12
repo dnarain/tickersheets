@@ -10,7 +10,7 @@ const response = (body, http = 200) => ({ getResponseCode: () => http, getConten
 
 describe("selected SMF provider registry and public URLs", () => {
     it("exposes supported named fields and selected SMF identifiers", () => {
-        expect(P.registry().map(row => row.provider)).toEqual(["FINVIZ", "ZACKS", "GURUFOCUS", "ADVFN"]);
+        expect(P.registry().map(row => row.provider)).toEqual(["FINVIZ", "ZACKS", "GURUFOCUS"]);
         expect(P.resolveField("Finviz", 4074)).toBe("price");
         expect(P.resolveField("finviz", "4072")).toBe("earnings_date");
         expect(P.resolveField("zacks", 849)).toBe("target_price");
@@ -42,6 +42,16 @@ describe("selected SMF provider registry and public URLs", () => {
 
     it.each(["MSN", "Reuters", "YQL", "", null])("rejects unimplemented or retired provider names without a request: %s", provider => {
         const fetch = vi.fn(); expect(P.fetch(provider, "NVDA", { fetch }).status).toBe("Not Supported"); expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("rejects an unknown provider and numeric field without making HTTP requests", () => {
+        const fetch = vi.fn();
+        expect(P.resolveField("UNKNOWN_PROVIDER", "price")).toBeNull();
+        expect(P.buildUrl("UNKNOWN_PROVIDER", "NASDAQ:AAPL")).toBeNull();
+        expect(P.fetch("UNKNOWN_PROVIDER", "NASDAQ:AAPL", { fetch })).toMatchObject({
+            ok: false, provider: "", status: "Not Supported", source: "", http: null, fields: {}
+        });
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     it("allows a syntactically valid nonexistent ticker for negative provider tests", () => {

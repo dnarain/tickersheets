@@ -2,6 +2,7 @@
 
 This reference covers 14 worksheet functions: twelve `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
 All requests run in Google Apps Script. No hosted server is required.
+The [provider guide](PROVIDERS.md#providers) lists data sources, API key requirements and dated test results.
 
 See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the analysis tabs and charts.
 The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
@@ -30,8 +31,7 @@ The research functions accept Yahoo symbols and supported exchange prefixes:
 | `NYSE:BRK.B` | `BRK-B` |
 
 Bare US tickers do not imply a particular exchange. The quote response identifies the exchange.
-The selected Finviz, Zacks, GuruFocus and ADVFN routes support US symbols only.
-ADVFN preserves a supported exchange prefix, such as `NASDAQ:AAPL`, in its request.
+The selected Finviz, Zacks and GuruFocus routes support US symbols only.
 
 Most request functions have an optional `refresh` argument.
 This argument accepts a whole number from `0` through `2147483647`, or an empty value.
@@ -78,7 +78,7 @@ An occupied output cell causes a spreadsheet error.
 | `CFFRED` | Economic series observations | FRED API, with your key |
 | `CFFREDVALUE` | One exact-date economic observation | FRED API, with your key |
 | `CFRSITARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask |
-| `CFFIELD` | Selected provider field or field table | Finviz, Zacks, GuruFocus or ADVFN |
+| `CFFIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus |
 | `CFDATASTATUS` | Request status and timestamps | The selected request |
 | `CFOPTIONMODEL` | Theoretical option price or Greek | European Black–Scholes calculation |
 | `CFSTRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions |
@@ -104,7 +104,6 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 | `CFFIELD("FINVIZ",...,"all",...)` | `33 × 5` |
 | `CFFIELD("ZACKS",...,"all",...)` | `2 × 5` |
 | `CFFIELD("GURUFOCUS",...,"all",...)` | `3 × 5` |
-| `CFFIELD("ADVFN",...,"all",...)` | `2 × 5` when the provider accepts the request |
 | `CFDATASTATUS` | `2 × 5`: headers, then status |
 | `CACHEFINANCE` quote mode | `1 × 1` |
 | `CACHEFINANCES` with a ticker column | One output column, with no header |
@@ -472,13 +471,13 @@ Examples:
 =CFFIELD("FINVIZ",$B$1,"all",$B$2)
 ```
 
-Provider names are `FINVIZ`, `ZACKS`, `GURUFOCUS` and `ADVFN`.
+Provider names are `FINVIZ`, `ZACKS` and `GURUFOCUS`.
 Provider and field names are case-insensitive.
 `GURUDIV` is an alias for `GURUFOCUS`.
 `field` accepts a field name or one of the numeric IDs listed below.
 `all` returns the five-column field table, including unavailable values.
 
-The adapters define 36 selected fields. Thirty-five fields also accept a numeric ID.
+The three providers expose 35 selected fields. Thirty-four fields also accept a numeric ID.
 GuruFocus trailing yield accepts its field name only.
 For example, `=CFFIELD("FINVIZ",$B$1,4054,$B$2)` is an optional shortcut for the `rsi14` example above.
 These public routes do not use saved website credentials.
@@ -534,25 +533,6 @@ A blocked page, changed page or unavailable field remains unavailable.
 | `forward_dividend_yield` | 2727 | Fraction |
 | `trailing_dividend_yield` | Name only | Fraction |
 
-### ADVFN: one field
-
-| Field | Numeric ID | Unit |
-|---|---|---|
-| `year_end_date` | 5196 | `YYYY-MM-DD` date text |
-
-```excel
-=CFFIELD("ADVFN","NASDAQ:AAPL","year_end_date",$B$2)
-=CFFIELD("ADVFN",$B$1,"year_end_date",$B$2)
-```
-
-The parser accepts only the latest annual year-end date from a matching financials page.
-It validates the annual table, date and fiscal-year order.
-It does not implement earlier periods, quarterly dates or other ADVFN statement fields.
-The live Google Apps Script requests returned HTTP 403 from ADVFN during these checks.
-The parser has controlled tests, but live data remains unavailable from this Google environment.
-The function reports that provider failure and does not substitute a Yahoo date.
-An HTTP 403 result does not establish that a subscription will resolve the block.
-
 ## CFDATASTATUS
 
 ```text
@@ -567,7 +547,6 @@ Examples:
 =CFDATASTATUS($B$1,"options",D2,$B$2)
 =CFDATASTATUS("DGS10","fred",252,$B$2)
 =CFDATASTATUS($B$1,"provider","FINVIZ",$B$2)
-=CFDATASTATUS("NASDAQ:AAPL","provider","ADVFN",$B$2)
 ```
 
 | Dataset | Meaning of `ticker` | Meaning of `argument` |
@@ -607,7 +586,7 @@ Successful public responses use these cache periods:
 | Fundamentals | 15 minutes |
 | Option chain | 60 seconds |
 | FRED recent observations and exact-date values | 1 hour |
-| Finviz, Zacks, GuruFocus and ADVFN fields | 5 minutes |
+| Finviz, Zacks and GuruFocus fields | 5 minutes |
 
 Failed requests do not enter this cache.
 Google can remove a cache entry before its expiry.

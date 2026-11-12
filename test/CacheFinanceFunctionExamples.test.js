@@ -30,6 +30,18 @@ describe("formula example sheet", () => {
         const main = book.insertSheet("CF Analysis"); main.getRange("B4").setValue("AAPL"); E.build(book);
         expect(book.getSheetByName("CF Formulas").getRange("B4").getValue()).toBe("='CF Analysis'!B4");
     });
+    it("places seven added lookups with matching labels and units", () => {
+        E.build(book); const sheet = book.getSheetByName("CF Formulas");
+        expect(sheet.getRange("G23:G29").getValues()).toEqual([["Current regular-session RSI2"], ["RSI2 buy trigger target"], ["RSI2 sell trigger target"], ["FRED exact observation date"], ["DGS10 weekend: expected N/A"], ["Last published after-hours price"], ["Session for the displayed price"]]);
+        expect(sheet.getRange("H26").getValue()).toBe('=CFFREDVALUE($K$24,$K$25,$E$4)');
+        expect(sheet.getRange("H27").getValue()).toBe('=CFFREDVALUE("DGS10","2026-11-07",$E$4)');
+        expect(sheet.getRange("H28").getValue()).toBe('=CFQUOTE($B$4,"post_market_price",$E$4)');
+        expect(sheet.getRange("H29").getValue()).toBe('=CFQUOTE($B$4,"price_session",$E$4)');
+        expect(sheet.getRange("I26").getValue()).toBe("Series units; date is an observation period");
+        expect(sheet.getRange("I27").getValue()).toBe("No fallback to a prior business day");
+        expect(sheet.formatAt(26, 8)).toBe("0.00"); expect(sheet.formatAt(29, 8)).toBe("@");
+        expect(sheet.getRange("G30:I30").getValues()).toEqual([["", "", ""]]);
+    });
     it("does not change an unrelated sheet or replace a conflicting name", () => {
         const other = book.insertSheet("My Notes"); other.getRange("A1").setValue("Keep");
         const conflict = book.insertSheet("CF Formulas"); conflict.getRange("A1").setValue("User data");
@@ -42,6 +54,13 @@ describe("formula example sheet", () => {
     it("preserves a valid refresh number and clears previous spill output on rebuild", () => {
         E.build(book); const sheet = book.getSheetByName("CF Formulas"); sheet.getRange("E4").setValue(12); sheet.getRange("A90").setValue("Old spill"); E.build(book);
         expect(sheet.getRange("E4").getValue()).toBe(12); expect(sheet.getRange("A90").getValue()).toBe(""); expect(sheet.getRange("Z1").getValue()).toBe("CACHEFINANCE_FUNCTIONS_V1");
+    });
+    it("clears the previous lookup footer and resets its former date format on rebuild", () => {
+        E.build(book); const sheet = book.getSheetByName("CF Formulas");
+        sheet.getRange("G30:I30").setValue("Previous example"); sheet.getRange("H30").setFormula('="Previous formula"'); sheet.getRange("H26").setNumberFormat("@");
+        E.build(book);
+        expect(sheet.getRange("G30:I30").getValues()).toEqual([["", "", ""]]); expect(sheet.formulas.has("30:8")).toBe(false);
+        expect(sheet.formatAt(26, 8)).toBe("0.00"); expect(sheet.getRange("H26").getValue()).toBe('=CFFREDVALUE($K$24,$K$25,$E$4)');
     });
     it.each([-1, 1.5, 2147483648, NaN, Infinity, "10", true])("resets an invalid saved refresh number on rebuild (%s)", value => {
         E.build(book); const sheet = book.getSheetByName("CF Formulas"); sheet.getRange("E4").setValue(value); E.build(book); expect(sheet.getRange("E4").getValue()).toBe(1);
@@ -59,6 +78,7 @@ describe("formula example sheet", () => {
     it("keeps original and new custom functions in the reference catalog", () => {
         const names = E.catalog().map(row => row[0]); expect(names).toContain("CACHEFINANCE"); expect(names).toContain("CACHEFINANCES"); expect(names).toContain("CFSTRATEGY"); expect(names).toContain("CFFRED");
         expect(E.catalog().find(row => row[0] === "CFOPTIONS")[3]).toMatch(/IV fraction/);
+        expect(E.catalog().find(row => row[0] === "CFFIELD")[2]).toBe("Finviz, Zacks or GuruFocus; field name or numeric ID");
     });
     it.each(["B27", "B28", "B30", "A110"])("keeps a missing key or source result explicit in %s instead of an INDEX error", address => {
         E.build(book); const formula = book.getSheetByName("CF Formulas").getRange(address).getValue();

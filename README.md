@@ -13,6 +13,7 @@ You can also create your own spreadsheet with the same functions.
 | [INSTALL.md](INSTALL.md) | Copy the template or install the script, authorize requests and save API keys |
 | [FUNCTIONS.md](FUNCTIONS.md) | Find formula arguments, output columns, units, sources and limits |
 | [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) | Create custom tabs with one ticker input and copyable formulas |
+| [PROVIDERS.md](PROVIDERS.md) | Review data sources, API keys, dated results and testing instructions |
 
 Quotes can include regular, pre-market and after-hours prices, each with its own timestamp.
 Data updates when you request a refresh. The functions do not stream prices continuously.
@@ -23,8 +24,7 @@ Choose **CacheFinance → API keys…** in your private copy to save them outsid
 Blank fields preserve existing keys. The form shows whether a key is saved and never displays its value.
 Other editors of the same spreadsheet can access its script settings, so keep copies with personal keys private.
 
-Developers can use [PROVIDER-TESTING.md](PROVIDER-TESTING.md) to run the provider checks.
-The [latest Google Sheets test results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) record passing checks and unavailable data.
+[PROVIDERS.md](PROVIDERS.md) lists the providers, dated results, API key requirements and testing instructions.
 
 The original CacheFinance documentation follows.
 
@@ -85,12 +85,12 @@ The original CacheFinance documentation follows.
 
 # Using
 * After adding the script, it will require new permissions.
-* To authorize, run any function from the Apps Script editor **Run** menu that calls `CACHEFINANCE` (for example, paste `src/CacheFinanceAppScriptTests.js` into a second script file and run `testYieldPct`), or trigger the function from a sheet cell.
+* Complete the [menu-based authorization steps](INSTALL.md#initial-authorization) before using cell formulas.
 * **Fast REST API Websites**
   * Reload the spreadsheet, then select **CacheFinance → API keys…** to save keys without opening Apps Script.
   * Free plans have request limits and may supply end-of-day prices. Check each provider's plan before relying on its data.
   * Obtain keys from [Finnhub](https://finnhub.io/), [Alpha Vantage](https://www.alphavantage.co/), [Twelve Data](https://twelvedata.com/) or [CoinMarketCap](https://coinmarketcap.com/api/).
-  * Existing keys in Script Properties continue to work. See [PROVIDER-TESTING.md](PROVIDER-TESTING.md#supply-optional-api-keys) for property names and removal instructions.
+  * Existing keys in Script Properties continue to work. See [PROVIDERS.md](PROVIDERS.md#api-keys) for property names and removal instructions.
 * Canadian Mutual Funds.
   * GOOGLEFINANCE does not support (the one I have anyway) Canadian mutual fund codes.
   * I use the Globe and Mail web site to extract the data.
@@ -205,65 +205,7 @@ The original CacheFinance documentation follows.
 
 # Development
 
-This repository includes a Node.js toolchain for building, testing, and validating the Apps Script bundle.
-
-## Project layout
-
-| Path | Purpose |
-| --- | --- |
-| `src/` | Source modules edited during development |
-| `dist/CacheFinance.js` | Single-file Apps Script bundle (generated) |
-| `scripts/` | Build utilities (`gas-source.mjs`, `build-cachefinance.mjs`) |
-| `test/` | Vitest unit tests |
-| `src/GasMocks.js` | Google Apps Script service mocks (tests only) |
-| `src/CacheFinanceAppScriptTests.js` | Optional manual GAS test runners (not bundled) |
-
-Each file in `src/` contains a `DEBUG` block at the top for Node.js imports during testing. That block is stripped automatically when building `dist/CacheFinance.js`.
-
-## Prerequisites
-
-* [Node.js](https://nodejs.org/) 22 or later
-* npm
-
-## Setup
-
-```bash
-npm ci
-```
-
-## Build
-
-Generate or refresh `dist/CacheFinance.js` from `src/`:
-
-```bash
-npm run build
-```
-
-Verify the committed bundle is up to date (used in CI):
-
-```bash
-npm run build:check
-```
-
-The build only rewrites `dist/CacheFinance.js` when the output changes. The bundle header includes a source hash so unchanged sources produce an identical file.
-
-## Test
-
-```bash
-npm test              # run unit tests
-npm run test:watch    # watch mode
-npm run test:coverage # tests with coverage report
-npm run validate      # build:check + coverage (CI command)
-```
-
-Coverage reports are written to `coverage/` (HTML report: `coverage/index.html`).
-
-## Contributing changes
-
-1. Edit files in `src/`.
-2. Run `npm run build` to regenerate `dist/CacheFinance.js`.
-3. Run `npm run validate` before opening a pull request.
-4. Commit both `src/` and `dist/` changes.
+See [PROVIDERS.md](PROVIDERS.md#testing-process) for builds, local tests, Google Sheets provider checks and contributor instructions.
 
 # Roll Your Own Web Site Scraper
 

@@ -13,7 +13,7 @@ class CFFunctionExamples {
             ["CFFRED", 'CFFRED(seriesId,observations,refresh)', '1–1000 levels; key comes from settings', "Published units, dates and source"],
             ["CFFREDVALUE", 'CFFREDVALUE(seriesId,date,refresh)', 'Exact observation date; no earlier-date fallback', "Published units; key comes from settings"],
             ["CFRSITARGETS", 'CFRSITARGETS(ticker,lowTrigger,highTrigger,field,refresh)', 'RSI2 targets; named field, all or headers', "Quoted regular session; 21 completed prior closes"],
-            ["CFFIELD", 'CFFIELD(provider,ticker,field,refresh)', 'Finviz, Zacks, GuruFocus or ADVFN; field name or mapped SMF ID', "Selected provider fields; see CFFIELD all"],
+            ["CFFIELD", 'CFFIELD(provider,ticker,field,refresh)', 'Finviz, Zacks or GuruFocus; field name or numeric ID', "Selected provider fields; see CFFIELD all"],
             ["CFDATASTATUS", 'CFDATASTATUS(ticker,dataset,argument,refresh)', 'quote/history/fundamentals/options/fred/provider', "Retrieval time, quote time and cache flag"],
             ["CFOPTIONMODEL", 'CFOPTIONMODEL(spot,strike,days,iv,rate,yield,type,metric)', 'European Black–Scholes premium and Greeks', "Annual fractions; theta/day; vega/rho per point"],
             ["CFSTRATEGY", 'CFSTRATEGY(strategy,spot,longStrike,longPremium,shortStrike,shortPremium,contracts,multiplier,expiration,metric,stockAtExpiry)', 'Covered call, cash-secured put, call/put vertical', "Whole-position cash amounts"],
@@ -50,13 +50,14 @@ class CFFunctionExamples {
         sheet.getRange(23, 1, examples.length, 1).setValues(examples.map(row => [row[0]])); sheet.getRange(23, 2, examples.length, 1).setFormulas(examples.map(row => [row[1]]));
         const lookupExamples = [["Current regular-session RSI2", '=CFRSITARGETS($B$4,20,80,"rsi2",$E$4)'],
             ["RSI2 buy trigger target", '=CFRSITARGETS($B$4,20,80,"buy_target",$E$4)'], ["RSI2 sell trigger target", '=CFRSITARGETS($B$4,20,80,"sell_target",$E$4)'],
-            ["ADVFN latest annual year-end", '=CFFIELD("ADVFN",$B$4,5196,$E$4)'], ["FRED exact observation date", '=CFFREDVALUE($K$24,$K$25,$E$4)'],
+            ["FRED exact observation date", '=CFFREDVALUE($K$24,$K$25,$E$4)'],
             ["DGS10 weekend: expected N/A", '=CFFREDVALUE("DGS10","2026-11-07",$E$4)'], ["Last published after-hours price", '=CFQUOTE($B$4,"post_market_price",$E$4)'],
             ["Session for the displayed price", '=CFQUOTE($B$4,"price_session",$E$4)']];
         sheet.getRange("G22:I22").setValues([["Added lookups", "Result", "Basis"]]).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold");
-        sheet.getRange("G23:G30").setValues(lookupExamples.map(row => [row[0]])).setWrap(true); sheet.getRange("H23:H30").setNumberFormat("0.00"); sheet.getRange("H26").setNumberFormat("@");
-        sheet.getRange("H23:H30").setFormulas(lookupExamples.map(row => [row[1]]));
-        sheet.getRange("I23:I30").setValues([["RSI scale 0–100"], ["Price per share; unavailable targets stay N/A"], ["Price per share; unavailable targets stay N/A"], ["ADVFN provider access required"], ["Series units; date is an observation period"], ["No fallback to a prior business day"], ["Source timestamp is available through CFQUOTE"], ["Regular, pre-market or after-hours"]]).setWrap(true);
+        sheet.getRange(23, 7, lookupExamples.length, 1).setValues(lookupExamples.map(row => [row[0]])).setWrap(true);
+        sheet.getRange(23, 8, lookupExamples.length, 1).setNumberFormat("0.00"); sheet.getRange("H29").setNumberFormat("@");
+        sheet.getRange(23, 8, lookupExamples.length, 1).setFormulas(lookupExamples.map(row => [row[1]]));
+        sheet.getRange(23, 9, lookupExamples.length, 1).setValues([["RSI scale 0–100"], ["Price per share; unavailable targets stay N/A"], ["Price per share; unavailable targets stay N/A"], ["Series units; date is an observation period"], ["No fallback to a prior business day"], ["Source timestamp is available through CFQUOTE"], ["Regular, pre-market or after-hours"]]).setWrap(true);
         sheet.getRange("J24").setValue("FRED series"); sheet.getRange("K24").setNumberFormat("@").setValue("DGS10").setBackground("#FFF2CC");
         sheet.getRange("J25").setValue("Observation date"); sheet.getRange("K25").setNumberFormat("@").setValue("2026-11-05").setBackground("#FFF2CC");
         for (const [cell, label] of [["A33", "Fundamentals with field names and units"], ["G33", "Most recent 60 daily bars"], ["O33", "Published expiration dates"], ["Q33", "DGS10: 12 observations"], ["A109", "First 20 standard option contracts for the earliest expiration"]]) sheet.getRange(cell).setValue(label).setFontWeight("bold").setFontColor("#17365D");
