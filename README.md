@@ -10,6 +10,10 @@ It requires no hosted server.
 The **Single Stock Analysis** sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
 You can also create your own spreadsheet with the same functions.
 
+[![NVDA sample showing quotes, fundamentals, options and a price trend chart](img/tickersheets-sample-analysis.jpg)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
+
+*NVDA example with saved results from November 12, 2026. Refresh your own copy to request newer data.*
+
 | Guide | Purpose |
 |---|---|
 | [SAMPLE.md](SAMPLE.md) | Explore the sample spreadsheet and its controls, tabs and charts |
@@ -29,5 +33,10 @@ Other editors of the same spreadsheet can access its script settings, so keep co
 
 [PROVIDERS.md](PROVIDERS.md) lists the providers, dated results, API key requirements and testing instructions.
 
+## Acknowledgments
+
 This application builds on [CacheFinance](https://github.com/demmings/cachefinance), which supplies the original caching functions and quote adapters.
 See [UPSTREAM.md](UPSTREAM.md) for its attribution and preserved reference documentation.
+
+We also used ideas from [SMF (Stock Market Functions)](https://climbermel.github.io/SMF_Add-in/) for provider lookups, research formulas and example workbooks.
+SMF is an Excel add-in that retrieves web data into spreadsheet cells.

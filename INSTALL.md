@@ -40,7 +40,7 @@ No command line, local build or developer account is required.
 1. Create a blank Google spreadsheet in your chosen account.
 2. Choose **Extensions → Apps Script**.
 3. Open the default `Code.gs` file.
-4. Open [dist/TickerSheets.js on this branch](https://github.com/dnarain/tickersheets/blob/dnarain/provider-tests/dist/TickerSheets.js).
+4. Open [dist/TickerSheets.js on main](https://github.com/dnarain/tickersheets/blob/main/dist/TickerSheets.js).
 5. Click **Copy raw file** in GitHub.
 6. Replace the default contents of `Code.gs` with the copied file.
 7. Save the Apps Script project.
