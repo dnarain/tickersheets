@@ -4,7 +4,7 @@ We ran the analysis in a private Google spreadsheet and its bound Apps Script pr
 All provider requests ran from Apps Script.
 The analysis uses no hosted server.
 
-The [analysis guide](../../ANALYSIS.md) explains installation, inputs, data sources and calculation limits.
+The [sample guide](../../SAMPLE.md) explains installation, inputs, data sources and calculation limits.
 The [native results](stock-analysis-native-results.json) contain sanitized count, status and worksheet reports.
 The results contain no API keys, anonymous session values or private Google document identifiers.
 

@@ -1,7 +1,7 @@
 # Test providers from Google Sheets
 
 This fork tests and repairs selected CacheFinance providers from Google Apps Script.
-It does not add SMF functions or require a hosted server.
+It requires no hosted server.
 Each user runs the script in their own Google account.
 
 The upstream source starts at commit `8f84e202e0c5d56f27b2bf000bb86817c3503894`.

@@ -3,7 +3,7 @@
 This reference covers 14 worksheet functions: twelve `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
 All requests run in Google Apps Script. No hosted server is required.
 
-See [INSTALL.md](INSTALL.md) for installation and API key settings. See [ANALYSIS.md](ANALYSIS.md) for the analysis tabs and charts.
+See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the analysis tabs and charts.
 The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
 
 ## Start with the menu
@@ -390,7 +390,7 @@ An invalid calendar date, such as `2026-02-30`, returns an input error before a 
 The function uses the same private `FRED_API_KEY` setting as `CFFRED`.
 It caches accepted public values for up to one hour. The refresh number can request a new result.
 Missing keys, provider failures and absent observations remain explanatory text results.
-This function does not implement all metadata labels from SMF's `smfGetEconData`.
+This function returns one observation value. It does not return series titles, releases or other metadata selectors.
 
 ## CFRSITARGETS
 
@@ -409,8 +409,7 @@ Examples:
 =CFRSITARGETS($B$1,20,80,"headers",$B$2)
 ```
 
-The calculation follows the repaired SMF Mac RSI2 calculation.
-It seeds Wilder's two-period averages from 21 completed sessions before the quoted regular session.
+The function seeds Wilder's two-period averages from 21 completed sessions before the quoted regular session.
 It excludes that quoted session's daily bar and applies the regular-session quote to the previous averages.
 The output describes that quoted session. It does not forecast the next trading day's price.
 
@@ -458,8 +457,6 @@ Optional bid/ask results use a separate cache of up to 60 seconds.
 The function recalculates the target from the accepted snapshot after a trigger change.
 Increase the refresh number to request another snapshot.
 
-This interface uses named fields. It does not implement SMF's original two-digit item selectors or function name.
-
 ## CFFIELD
 
 ```text
@@ -470,7 +467,6 @@ Examples:
 
 ```excel
 =CFFIELD("FINVIZ",$B$1,"rsi14",$B$2)
-=CFFIELD("FINVIZ",$B$1,4054,$B$2)
 =CFFIELD("ZACKS",$B$1,"target_price",$B$2)
 =CFFIELD("GURUFOCUS",$B$1,"forward_dividend_yield",$B$2)
 =CFFIELD("FINVIZ",$B$1,"all",$B$2)
@@ -479,19 +475,18 @@ Examples:
 Provider names are `FINVIZ`, `ZACKS`, `GURUFOCUS` and `ADVFN`.
 Provider and field names are case-insensitive.
 `GURUDIV` is an alias for `GURUFOCUS`.
-`field` accepts a field name or a mapped SMF field number.
+`field` accepts a field name or one of the numeric IDs listed below.
 `all` returns the five-column field table, including unavailable values.
 
-The registry in [src/CacheFinanceSmfProviders.js](src/CacheFinanceSmfProviders.js) defines 36 selected fields, including the ADVFN parser.
-There are 35 numeric SMF aliases. GuruFocus trailing yield has no mapped numeric ID.
-This registry does not cover every SMF field or function.
-The [SMF coverage checklist](SMF-COVERAGE.md) lists the mapped IDs, partial replacements and remaining gaps.
+The adapters define 36 selected fields. Thirty-five fields also accept a numeric ID.
+GuruFocus trailing yield accepts its field name only.
+For example, `=CFFIELD("FINVIZ",$B$1,4054,$B$2)` is an optional shortcut for the `rsi14` example above.
 These public routes do not use saved website credentials.
 A blocked page, changed page or unavailable field remains unavailable.
 
 ### Finviz: 32 fields
 
-| Field | SMF ID | Unit |
+| Field | Numeric ID | Unit |
 | --- | --- | --- |
 | `price` | 4074 | Currency per share |
 | `earnings_date` | 4072 | Date text |
@@ -528,25 +523,25 @@ A blocked page, changed page or unavailable field remains unavailable.
 
 ### Zacks: one field
 
-| Field | SMF ID | Unit |
+| Field | Numeric ID | Unit |
 | --- | --- | --- |
 | `target_price` | 849 | Currency per share |
 
 ### GuruFocus: two fields
 
-| Field | SMF ID | Unit |
+| Field | Numeric ID | Unit |
 | --- | --- | --- |
 | `forward_dividend_yield` | 2727 | Fraction |
-| `trailing_dividend_yield` | No mapped ID | Fraction |
+| `trailing_dividend_yield` | Name only | Fraction |
 
 ### ADVFN: one field
 
-| Field | SMF ID | Unit |
+| Field | Numeric ID | Unit |
 |---|---|---|
 | `year_end_date` | 5196 | `YYYY-MM-DD` date text |
 
 ```excel
-=CFFIELD("ADVFN","NASDAQ:AAPL",5196,$B$2)
+=CFFIELD("ADVFN","NASDAQ:AAPL","year_end_date",$B$2)
 =CFFIELD("ADVFN",$B$1,"year_end_date",$B$2)
 ```
 

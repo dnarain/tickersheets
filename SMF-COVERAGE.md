@@ -1,5 +1,8 @@
 # SMF coverage checklist for Google Sheets
 
+This file tracks development work against an earlier Excel add-in.
+The user guides are [SAMPLE.md](SAMPLE.md), [INSTALL.md](INSTALL.md), [FUNCTIONS.md](FUNCTIONS.md) and [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md).
+
 Reviewed November 11, 2026, against tested CacheFinance source hash `a3b6d07b2943` on `dnarain/provider-tests` and SMF Mac source commit `60014079`.
 The initial CacheFinance implementation audit used commit `8842b97`; the first coverage checklist used `126fa72`.
 The source hash identifies the tested bundle. Branch links can advance.

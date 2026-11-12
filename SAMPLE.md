@@ -1,4 +1,4 @@
-# One-ticker stock analysis in Google Sheets
+# Sample stock research spreadsheet
 
 This guide explains the [CacheFinance Research Template sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
 You can view the public sample without editing it.
@@ -9,30 +9,29 @@ It contains no saved API keys.
 Your copy requests new data when you run a refresh.
 FRED requires your own key in your copy.
 
-This guide describes the generated workbook on this fork's `dnarain/provider-tests` branch.
-The original CacheFinance project does not include these analysis tabs.
 The analysis runs in the spreadsheet owner's Apps Script project.
 The script creates the tabs and charts and downloads provider data when you refresh.
 The [installation guide](INSTALL.md) includes the template workflow.
 The [function reference](FUNCTIONS.md) lists reusable formulas and supported provider fields.
 The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs from those formulas.
 
-## Install
+## What the sample demonstrates
 
-1. Create a private Google spreadsheet.
-2. Open **Extensions → Apps Script**.
-3. Replace the contents of `Code.gs` with [dist/CacheFinance.js](dist/CacheFinance.js).
-4. Save the script and reload the spreadsheet.
-5. Choose **Stock analysis → Build analysis sheets**.
-6. Review Google's permission request. The script uses the current spreadsheet, external requests and a settings sidebar.
+- One ticker input updates the company name, prices, tables and chart titles.
+- Price history and numeric charts show trends, returns and indicators.
+- Earnings, fundamentals and published option chains provide more detail when their providers supply it.
+- A watchlist, option calculators and economic series show other ways to use the functions.
 
-The same file contains the existing `CACHEFINANCE` and `CACHEFINANCES` functions.
-Install the generated file once. Do not add a second copy alongside an older bundle.
-If the project already has custom `onOpen` or `onEdit` functions, combine their calls with the supplied handlers.
+## Try the sample
 
-The builder writes only its marked `CF` tabs.
-It refuses to replace an existing tab with the same name unless that tab has its ownership marker.
-It leaves other tabs alone.
+1. Make your own copy with the link at the top of this page.
+2. Choose **Stock analysis → Refresh selected ticker** in your copy.
+3. Complete Google's authorization steps for your copy.
+4. If the refresh does not start, choose **Refresh selected ticker** again.
+
+The [installation guide](INSTALL.md) covers permissions, API keys and installation into a blank spreadsheet.
+The sample's generated tabs show one possible workbook layout.
+You can add your own tabs with the formulas in [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md).
 
 ## Change the stock
 
@@ -112,14 +111,8 @@ Indicators with insufficient history remain unavailable.
 
 ## Options
 
-The options adapter ports the anonymous Yahoo session used by the SMF Mac helper:
-
-1. Obtain an anonymous Yahoo cookie from `fc.yahoo.com`.
-2. Obtain the associated crumb from Yahoo's `getcrumb` endpoint.
-3. Request the selected ticker's option chain with that temporary session.
-
-This flow uses no personal Yahoo login.
-Cookies and crumbs stay in server-side memory and are excluded from results, logs and worksheets.
+The sample requests published Yahoo option chains through an anonymous session.
+It requires no personal Yahoo login.
 The parser checks the underlying ticker, expiration, option type, strike and standard OCC contract identifier.
 Nonstandard or mismatched contracts are excluded.
 
@@ -202,7 +195,7 @@ It belongs outside worksheet cells and Git commits.
 People who can edit this spreadsheet or script can access its Script Properties.
 Use your own private copy and key.
 
-The macro tab uses the same official FRED observations API as the repaired SMF Mac function.
+The macro tab requests economic series from the official FRED observations API.
 The reusable `CFFRED` function also accepts other FRED series IDs and validates their metadata before it returns observations.
 Its default series are:
 
@@ -231,23 +224,5 @@ The source columns retain the provider field and EPS basis.
 Availability in one ticker does not establish every ticker or data field.
 The [lookup and quote test report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) records the latest checks and remaining gaps.
 
-This builds selected stock-analysis features on CacheFinance.
-It does not port every SMF function or retired source.
-The SMF provider audit supplies the starting point for additional ports.
-Further ports should retain their working endpoint, arguments, units and missing-data behavior.
-
-## Local development
-
-```sh
-npm ci --ignore-scripts
-npm run build
-npm run build:provider-tests
-npm run test:coverage
-npm run build:check
-npm run build:provider-tests:check
-```
-
-Local tests use controlled responses and public excerpts.
-Run the builder and refresh in Google Sheets to verify provider access from Google's network.
 The **Check provider data** menu fetches a safe count/status summary without writing the analysis tabs.
 **Check analysis sheets** reads the rendered tables and chart titles without making provider requests.

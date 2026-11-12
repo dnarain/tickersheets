@@ -339,5 +339,4 @@ For your own calculations, replace the entered assumptions with references to nu
 Neither function accepts the data-request refresh number.
 See [option model arguments](FUNCTIONS.md#cfoptionmodel) and [strategy arguments](FUNCTIONS.md#cfstrategy) for other metrics and limitations.
 
-See [FUNCTIONS.md](FUNCTIONS.md) for every public argument and [SMF-COVERAGE.md](SMF-COVERAGE.md) for remaining SMF gaps.
-The original SMF function names and argument lists are not compatibility aliases in this fork.
+See [FUNCTIONS.md](FUNCTIONS.md) for every public argument.

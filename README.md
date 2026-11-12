@@ -1,42 +1,30 @@
-## This fork
+# CacheFinance for Google Sheets
 
-This fork tests and repairs selected providers from Google Sheets and Apps Script.
-It does not require a hosted server.
-The following guides describe this fork's `dnarain/provider-tests` branch:
+CacheFinance provides formulas for stock quotes, daily history, fundamentals, options, technical indicators and economic series.
+It runs in your spreadsheet's Apps Script project and requires no hosted server.
+
+[View the sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
+The sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
+You can also create your own spreadsheet with the same functions.
 
 | Guide | Purpose |
 |---|---|
+| [SAMPLE.md](SAMPLE.md) | Explore the sample spreadsheet and its controls, tabs and charts |
 | [INSTALL.md](INSTALL.md) | Copy the template or install the script, authorize requests and save API keys |
 | [FUNCTIONS.md](FUNCTIONS.md) | Find formula arguments, output columns, units, sources and limits |
 | [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) | Create custom tabs with one ticker input and copyable formulas |
-| [ANALYSIS.md](ANALYSIS.md) | Use the generated analysis tabs, charts, options and watchlist |
 
-[Make your own copy of the research template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy), then follow the [installation guide](INSTALL.md).
-See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
-The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
-The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDER-FIXES.md) include Google price/yield repairs, Yahoo yield repairs and Globe ticker checks.
+Quotes can include regular, pre-market and after-hours prices, each with its own timestamp.
+Data updates when you request a refresh. The functions do not stream prices continuously.
+Provider availability varies by ticker and field. The function reference explains the current limits.
 
-The [one-ticker analysis guide](ANALYSIS.md) explains how to build the stock-analysis tabs directly in Apps Script.
-Change one ticker to refresh history, indicators, fundamentals, earnings and supported option data.
-FRED series use your private `FRED_API_KEY` setting.
-The [installation guide](INSTALL.md) explains the template and single-file installation.
-The [function reference](FUNCTIONS.md) covers reusable data formulas, option models and selected SMF field numbers.
-The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and copyable formulas for a custom workbook.
-Current-session quotes include accepted pre-market and after-hours prices with their own timestamps.
-`CFRSITARGETS` adds RSI2 targets, and `CFFREDVALUE` adds exact-date observations.
-The ADVFN year-end parser is implemented, but its live Apps Script requests returned HTTP 403.
-The [SMF coverage checklist](SMF-COVERAGE.md) compares all 121 public functions and 11,892 numbered definitions with this fork.
-The research tabs add earnings comparisons, options across expirations, a watchlist and a journal of changes between refreshes.
-The [analysis test results](test-results/2026-11-11-google-apps-script/STOCK-ANALYSIS.md) record live ticker, expiration and FRED checks.
-The [research expansion results](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) cover the additional charts, strategies, provider fields, reusable formulas, watchlist and clean template.
-The [lookup and quote results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) cover RSI2, exact-date FRED, blocked ADVFN calls and after-hours prices.
+FRED requires your own API key. Finnhub, Alpha Vantage, Twelve Data and CoinMarketCap also accept provider keys.
+Choose **CacheFinance → API keys…** in your private copy to save them outside worksheet cells.
+Blank fields preserve existing keys. The form shows whether a key is saved and never displays its value.
+Other editors of the same spreadsheet can access its script settings, so keep copies with personal keys private.
 
-Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
-Reload the spreadsheet after installing the script.
-Enter keys in that sidebar and click **Save keys**.
-Blank fields keep existing keys; **Remove saved key** deletes the selected key when you save.
-The sidebar shows whether a key is saved and never displays its value.
-Each user should use a private copy. Other editors of the same script can access its Script Properties.
+Developers can use [PROVIDER-TESTING.md](PROVIDER-TESTING.md) to run the provider checks.
+The [latest Google Sheets test results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) record passing checks and unavailable data.
 
 The original CacheFinance documentation follows.
 

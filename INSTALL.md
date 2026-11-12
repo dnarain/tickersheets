@@ -1,7 +1,7 @@
 # Install CacheFinance for Google Sheets
 
-This fork runs in a spreadsheet's Google Apps Script project.
-It does not require a hosted server, Excel or Windows.
+CacheFinance runs in a spreadsheet's Google Apps Script project.
+Apps Script requests the provider data directly, without a hosted server.
 Each user uses a private spreadsheet copy and their own API keys.
 
 This guide installs the script and generated analysis tabs.
@@ -141,13 +141,13 @@ The research charts also sample several available maturities.
 Some tickers have no supported options.
 A returned chain can also lack usable ATM quotes, implied volatility or premiums.
 Without valid calculator inputs, the model shows `n.a.` and the payoff table uses intentional `#N/A` gaps.
-The [analysis guide](ANALYSIS.md#options) explains these inputs and limits.
+The [sample spreadsheet guide](SAMPLE.md#options) explains these inputs and limits.
 
 ## Save API keys
 
 Yahoo quote, history, fundamentals and anonymous option requests do not require your personal API key in this script.
 FRED requires your own key.
-The original CacheFinance providers also support optional Finnhub, Alpha Vantage, Twelve Data and CoinMarketCap keys.
+To use Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap, save that provider's key.
 
 1. Choose **CacheFinance → API keys…**.
 2. Enter your key in the matching provider field.
@@ -175,7 +175,6 @@ It does not test the key or the provider connection.
 3. Choose **Stock analysis → Refresh selected ticker**.
 
 The settings menu uses the Script Property `FRED_API_KEY`.
-Google Sheets does not read the Excel port's `smf-FRED-API-Key.txt` file.
 A missing key leaves FRED values unavailable.
 The script does not substitute zero values for missing economic data.
 
@@ -208,7 +207,7 @@ The builder creates these tabs:
 | **CF Options** | Selected-expiration chain and option model |
 | **CF Macro** | Four FRED series, with your key |
 | **CF Sources** | Provider statuses, timestamps and usage notes |
-| **CF Research** | Additional charts, earnings summary and selected SMF provider fields |
+| **CF Research** | Additional charts, earnings summary and selected Finviz, Zacks, GuruFocus and ADVFN fields |
 | **CF Watchlist** | Up to 20 ticker inputs and summary values |
 | **CF Journal** | Public snapshots and changes between refreshes |
 | **CF Formulas** | Function reference and live formula examples |
@@ -269,7 +268,7 @@ The fixed weekend and monthly-period cases also refer to their documented dates.
 The November 11, 2026 Google Sheets requests for ADVFN AAPL and NVDA returned **HTTP 403**.
 The annual year-end parser passes its controlled fixtures, but those live lookups remain blocked.
 The ADVFN adapter uses a public page and does not accept ADVFN account credentials.
-The [coverage checklist](SMF-COVERAGE.md) records these limits separately from implemented parsing code.
+The [saved Google Sheets test results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) record the accepted values and blocked requests.
 
 ## Read statuses and dates
 

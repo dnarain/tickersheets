@@ -147,5 +147,5 @@ Worksheet/direct-function agreement does not independently reconcile every finan
 - [INSTALL.md](../../INSTALL.md): installation, authorization and API keys.
 - [FUNCTIONS.md](../../FUNCTIONS.md): all 14 worksheet functions, outputs, units and limits.
 - [BUILD-YOUR-OWN.md](../../BUILD-YOUR-OWN.md): custom tabs with one ticker input.
-- [ANALYSIS.md](../../ANALYSIS.md): the public sample and generated workbook.
+- [SAMPLE.md](../../SAMPLE.md): the public sample and generated workbook.
 - [SMF-COVERAGE.md](../../SMF-COVERAGE.md): implemented portions and remaining SMF gaps.
