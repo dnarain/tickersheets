@@ -90,7 +90,7 @@ class CFAnalysisStrategies {
     static check(book) {
         CFWorkbookNames.migrate(book);
         const sheet = book.getSheetByName("Strategies");
-        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_STRATEGIES_V1") throw new Error("The existing Strategies tab is not a CacheFinance strategy tab. Rename it before building the analysis.");
+        if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_STRATEGIES_V1") throw new Error("The existing Strategies tab is not a TickerSheets strategy tab. Rename it before building the analysis.");
         return sheet;
     }
     static clear_(sheet) {

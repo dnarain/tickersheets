@@ -56,7 +56,7 @@ describe("manual provider chart links", () => {
     });
     it("requires marked analysis tabs before creating provider links", () => {
         main.getRange("Z1").setValue("other");
-        expect(() => Images.load(book, fetch)).toThrow(/not managed by Single Stock Analysis/);
+        expect(() => Images.load(book, fetch)).toThrow(/not managed by TickerSheets/);
         expect(book.getSheetByName("Chart links")).toBeNull(); expect(fetch).not.toHaveBeenCalled();
     });
     it("removes legacy pictures and clears their old metadata", () => {

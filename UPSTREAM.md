@@ -1,6 +1,6 @@
 # CacheFinance upstream reference
 
-Single Stock Analysis builds on the open-source [CacheFinance project](https://github.com/demmings/cachefinance).
+TickerSheets builds on the open-source [CacheFinance project](https://github.com/demmings/cachefinance).
 This file preserves the existing CacheFinance documentation, attribution and project badges.
 The badges below describe the upstream repository.
 See [INSTALL.md](INSTALL.md) for this application and [FUNCTIONS.md](FUNCTIONS.md) for its current formulas.
@@ -44,7 +44,7 @@ See [INSTALL.md](INSTALL.md) for this application and [FUNCTIONS.md](FUNCTIONS.m
 
 * Google's guide to adding custom functions: [Google Help](https://developers.google.com/apps-script/guides/sheets/functions#creating_a_custom_function)
 * The `./dist` folder contains the single file used by Google Sheets.
-    * [CacheFinance.js](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/dist/CacheFinance.js)
+    * [TickerSheets.js](https://github.com/dnarain/tickersheets/blob/dnarain/provider-tests/dist/TickerSheets.js)
       * Caches GOOGLEFINANCE results AND does 3rd party website lookups when all else fails.
       * This file is built automatically from the modules in the **`/src`** folder.
       * Do **not** copy individual files from `/src` into Apps Script.
@@ -52,7 +52,7 @@ See [INSTALL.md](INSTALL.md) for this application and [FUNCTIONS.md](FUNCTIONS.m
     * From your sheets Select **Extensions** and then **Apps Script**
     * Ensure that Editor is selected.  It is the **< >**
     * Click the PLUS sign beside **File** and then select **Script**
-    * Click on [CacheFinance.js](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/dist/CacheFinance.js), and then click on **Copy Raw Contents** which puts the file into your copy buffer.
+    * Click on [TickerSheets.js](https://github.com/dnarain/tickersheets/blob/dnarain/provider-tests/dist/TickerSheets.js), and then click on **Copy Raw Contents** which puts the file into your copy buffer.
     * Back in your Google Project, rename **Untitled** to the file name you just selected in Github.  It is not necessary to enter the .gs extension.
     * Remove the default contents of the file **myFunction()** and paste in the new content you have copied from Github (Ctrl-v).
     * Click the little diskette icon to save.

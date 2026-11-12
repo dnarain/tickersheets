@@ -1,6 +1,6 @@
 # Build your own Google Sheets research workbook
 
-These recipes use the Single Stock Analysis functions in your spreadsheet's bound Apps Script project.
+These recipes use the TickerSheets functions in your spreadsheet's bound Apps Script project.
 You write normal cell formulas after installation.
 The formulas require the current bundle, including `CFRSITARGETS` and `CFFREDVALUE`.
 The examples use English function names and comma separators.

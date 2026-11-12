@@ -45,7 +45,7 @@ describe("formula example sheet", () => {
     it("does not change an unrelated sheet or replace a conflicting name", () => {
         const other = book.insertSheet("My Notes"); other.getRange("A1").setValue("Keep");
         const conflict = book.insertSheet("Formulas"); conflict.getRange("A1").setValue("User data");
-        expect(() => E.build(book)).toThrow(/not managed by Single Stock Analysis/); expect(conflict.getRange("A1").getValue()).toBe("User data"); expect(other.getRange("A1").getValue()).toBe("Keep");
+        expect(() => E.build(book)).toThrow(/not managed by TickerSheets/); expect(conflict.getRange("A1").getValue()).toBe("User data"); expect(other.getRange("A1").getValue()).toBe("Keep");
     });
     it("grows a short owned sheet before writing its lower spill examples", () => {
         const sheet = book.insertSheet("Formulas"); sheet.getRange("Z1").setValue("CACHEFINANCE_FUNCTIONS_V1"); sheet.maxRows = 80; sheet.maxCols = 20;

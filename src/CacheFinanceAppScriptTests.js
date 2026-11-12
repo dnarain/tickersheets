@@ -1,6 +1,6 @@
 /**
  * Optional Apps Script helpers for manual authorization and debugging.
- * Not included in dist/CacheFinance.js — paste into a separate script file in your
+ * Not included in dist/TickerSheets.js — paste into a separate script file in your
  * Google Sheets project if you want Run-menu test entry points.
  */
 

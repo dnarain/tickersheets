@@ -22,7 +22,7 @@ function CFSettingsMenu_() {
 function CFEnterFredKey() {
     const ui = SpreadsheetApp.getUi();
     try {
-        const reply = ui.prompt("Single Stock Analysis: FRED key", "Paste your existing FRED key. Google's standard prompt shows the text you type. The key is saved in this private script's properties, outside worksheet cells. Blank keeps the existing key.", ui.ButtonSet.OK_CANCEL);
+        const reply = ui.prompt("TickerSheets: FRED key", "Paste your existing FRED key. Google's standard prompt shows the text you type. The key is saved in this private script's properties, outside worksheet cells. Blank keeps the existing key.", ui.ButtonSet.OK_CANCEL);
         if (reply.getSelectedButton() !== ui.Button.OK) return { ok: false, cancelled: true };
         const value = reply.getResponseText().trim();
         if (!value) { ui.alert("No key changed."); return { ok: true, changed: false }; }
@@ -36,7 +36,7 @@ function CFEnterFredKey() {
 /** Open a sidebar. Saved keys are never included in its HTML. */
 function CFShowApiKeySettings() {
     try {
-        const output = HtmlService.createHtmlOutput(CF_API_KEYS_HTML_).setTitle("Single Stock Analysis: API keys");
+        const output = HtmlService.createHtmlOutput(CF_API_KEYS_HTML_).setTitle("TickerSheets: API keys");
         SpreadsheetApp.getUi().showSidebar(output);
     } catch (_error) {
         SpreadsheetApp.getUi().alert("Unable to open API key settings. Reload the spreadsheet and try again.");
@@ -135,7 +135,7 @@ input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
 .remove{font-size:12px;display:block}button{padding:8px 12px;margin:8px 8px 0 0;cursor:pointer}
 #message{min-height:36px}button:disabled{cursor:default}#privacy{font-size:12px;color:#5f6368}
 </style></head><body>
-<h2>Single Stock Analysis</h2>
+<h2>TickerSheets</h2>
 <p>API keys</p>
 <p>Enter a new key to save or replace it. Leave a field blank to keep its saved key. Select Remove to delete a saved key.</p>
 <form id="settings"><div id="providers"></div>

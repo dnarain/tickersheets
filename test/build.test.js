@@ -42,7 +42,7 @@ class Widget {}`;
     });
 });
 
-describe("cachefinance bundle", () => {
+describe("TickerSheets bundle", () => {
     it.each(["||=", "&&=", "??="])("rejects %s before upload because Apps Script rejects logical assignment", operator => {
         expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nlet value; value " + operator + " 1;")).toThrow(/logical assignment/);
     });
@@ -50,6 +50,8 @@ describe("cachefinance bundle", () => {
         const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
 
         expect(sectionCount).toBe(27);
+        expect(paths.dist).toMatch(/\/dist\/TickerSheets\.js$/);
+        expect(bundle).toContain("TickerSheets Apps Script bundle.");
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);
         expect(bundle).toContain(`Source hash: ${sourceHash}`);
         expect(bundle).toContain("function CACHEFINANCE");
@@ -73,7 +75,7 @@ describe("cachefinance bundle", () => {
         expect(bundle).not.toContain("function testUpdateMaster");
     });
 
-    it("writes dist/CacheFinance.js only when content changes", () => {
+    it("writes dist/TickerSheets.js only when content changes", () => {
         const first = writeCacheFinanceBundle();
         const second = writeCacheFinanceBundle();
 

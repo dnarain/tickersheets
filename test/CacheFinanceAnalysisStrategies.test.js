@@ -101,8 +101,8 @@ afterEach(() => vi.unstubAllGlobals());
 describe("editable strategy tab", () => {
     it("rejects an unmarked user tab and a changed ticker before writes", () => {
         const own = new Sheet("Strategies"); own.getRange("A1").setValue("personal sheet"); own.mutations = 0; sheets.set("Strategies", own);
-        expect(() => Strategies.render(book, snapshot())).toThrow("not managed by Single Stock Analysis"); expect(own.mutations).toBe(0);
-        expect(() => Strategies.invalidate(book, "changed")).toThrow("not managed by Single Stock Analysis"); expect(own.getRange("A1").getValue()).toBe("personal sheet");
+        expect(() => Strategies.render(book, snapshot())).toThrow("not managed by TickerSheets"); expect(own.mutations).toBe(0);
+        expect(() => Strategies.invalidate(book, "changed")).toThrow("not managed by TickerSheets"); expect(own.getRange("A1").getValue()).toBe("personal sheet");
         sheets.delete("Strategies"); sheets.get("Analysis").getRange("B4").setValue("AAPL");
         expect(() => Strategies.render(book, snapshot())).toThrow("ticker changed"); expect(sheets.has("Strategies")).toBe(false);
     });

@@ -1,4 +1,4 @@
-# Single Stock Analysis functions
+# TickerSheets functions
 
 This reference covers 14 worksheet functions: twelve `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
 All requests run in Google Apps Script. No hosted server is required.

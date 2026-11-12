@@ -1,6 +1,6 @@
-# Install Single Stock Analysis
+# Install TickerSheets
 
-Single Stock Analysis runs in a spreadsheet's Google Apps Script project.
+TickerSheets runs in a spreadsheet's Google Apps Script project.
 Apps Script requests the provider data directly, without a hosted server.
 Each user uses a private spreadsheet copy and their own API keys.
 
@@ -10,7 +10,7 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and formulas 
 
 ## Option 1: Copy the template
 
-[Make your own copy of the Single Stock Analysis](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
+[Copy the Single Stock Analysis sample](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
 
 1. Open the copy link while signed in to your chosen Google account.
 2. Click **Make a copy** in Google's copy dialog.
@@ -40,7 +40,7 @@ No command line, local build or developer account is required.
 1. Create a blank Google spreadsheet in your chosen account.
 2. Choose **Extensions → Apps Script**.
 3. Open the default `Code.gs` file.
-4. Open [dist/CacheFinance.js on this branch](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/dist/CacheFinance.js).
+4. Open [dist/TickerSheets.js on this branch](https://github.com/dnarain/tickersheets/blob/dnarain/provider-tests/dist/TickerSheets.js).
 5. Click **Copy raw file** in GitHub.
 6. Replace the default contents of `Code.gs` with the copied file.
 7. Save the Apps Script project.
@@ -56,9 +56,9 @@ The first refresh can take longer than later refreshes.
 
 Copy the bundle **once** into the project.
 Do not add individual files from `src/` beside it.
-Do not add `dist/CacheFinanceProviderTests.js` beside it.
+Do not add `dist/TickerSheetsProviderTests.js` beside it.
 Those files contain duplicate function names.
-The normal `dist/CacheFinance.js` bundle includes the settings menu, research functions and sheet builders.
+The normal `dist/TickerSheets.js` bundle includes the settings menu, research functions and sheet builders.
 
 ## Initial authorization
 
@@ -293,7 +293,7 @@ Replace the code inside the existing bound project to keep its Script Properties
 
 1. Open **Extensions → Apps Script** in your private copy.
 2. Open the file that contains the installed application bundle.
-3. Replace that file's contents with the new `dist/CacheFinance.js` contents.
+3. Replace that file's contents with the new `dist/TickerSheets.js` contents.
 4. Save the project.
 5. Reload the spreadsheet.
 6. Choose **Stock analysis → Refresh selected ticker**.

@@ -242,7 +242,7 @@ describe("metadata and secret handling", () => {
         expect(D.unsupported("GOOGLEWEBSITEFINANCE", "NASDAQ:AAPL", "YIELDPCT")).toBe("UNSUPPORTED_ATTRIBUTE");
     });
     it("builds a standalone current-document diagnostic bundle with no upstream raw logging", () => {
-        const bundle = fs.readFileSync(new URL("../dist/CacheFinanceProviderTests.js", import.meta.url), "utf8");
+        const bundle = fs.readFileSync(new URL("../dist/TickerSheetsProviderTests.js", import.meta.url), "utf8");
         expect(bundle).toContain("@OnlyCurrentDoc"); expect(bundle).toContain("function RunProviderTests()"); expect(bundle).toContain(upstream);
         expect(bundle).not.toMatch(/\bLogger\.log\(/); expect(bundle).not.toMatch(/^\s*(import|export)\s/m);
         expect(bundle).not.toContain("SpreadsheetApp.create("); expect(bundle).not.toContain("DriveApp");

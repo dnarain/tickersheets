@@ -1,11 +1,13 @@
-# Single Stock Analysis
+# TickerSheets
 
-Single Stock Analysis is our Google Sheets application for researching one stock, its options and economic context.
+Open-source stock and options research for Google Sheets.
+
+TickerSheets is our Google Sheets application for researching one stock, its options and economic context.
 It creates analysis tabs, charts, earnings tables, a watchlist and reusable formulas in your spreadsheet's Apps Script project.
 It requires no hosted server.
 
 [View the sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
-The sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
+The **Single Stock Analysis** sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
 You can also create your own spreadsheet with the same functions.
 
 | Guide | Purpose |

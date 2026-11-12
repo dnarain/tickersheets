@@ -50,7 +50,7 @@ class CFWorkbookNames {
             const previous = book.getSheetByName(from), current = book.getSheetByName(to);
             if (previous && current && previous !== current) throw new Error("Both " + from + " and " + to + " tabs exist. Rename one before upgrading the tabs.");
             for (const sheet of [previous, current]) {
-                if (sheet && sheet.getRange(markerCell).getValue() !== marker) throw new Error("The existing " + sheet.getName() + " tab is not managed by Single Stock Analysis. Rename it before upgrading the tabs.");
+                if (sheet && sheet.getRange(markerCell).getValue() !== marker) throw new Error("The existing " + sheet.getName() + " tab is not managed by TickerSheets. Rename it before upgrading the tabs.");
             }
             if (previous || current) sheets.push(previous || current);
             if (previous) pending.push({ from, to, sheet: previous });

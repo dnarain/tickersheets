@@ -1,6 +1,6 @@
 # Single Stock Analysis sample
 
-This guide explains the [Single Stock Analysis sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
+This guide explains [Single Stock Analysis](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit), the TickerSheets sample workbook.
 You can view the public sample without editing it.
 [Make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy) to change the ticker and refresh its data.
 

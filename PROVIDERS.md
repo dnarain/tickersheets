@@ -1,6 +1,6 @@
 # Data providers and testing
 
-Single Stock Analysis requests data from Google Apps Script. No hosted server is required.
+TickerSheets requests data from Google Apps Script. No hosted server is required.
 The table lists the fields this project reads and selected Google Sheets results from **November 11–12, 2026, Pacific time**.
 Those saved results do not guarantee access today, every ticker or every feature of a provider.
 
@@ -47,7 +47,7 @@ Inspect a mismatch and its source times before deciding whether the calculation 
 Worksheet/function agreement does not independently reconcile financial values against exchange data or company filings.
 
 We also verified the November 12 upgrade of 14 application tabs in the private workbook and 13 in the public sample.
-Both workbooks and their Apps Script projects use the title **Single Stock Analysis**.
+Both workbooks use the sample title **Single Stock Analysis**.
 Ticker/expiration inputs, strategy assumptions, watchlist tickers and journal rows remained unchanged during the rename.
 Both workbook inspections reported zero formula errors and retained their charts and models.
 We have not verified installation and authorization from a new Google account.
@@ -84,7 +84,7 @@ Use a **separate private spreadsheet** for the diagnostic bundle.
 Do not add it beside the normal bundle; both bundles define the same functions.
 
 1. Create a blank Google spreadsheet and open **Extensions → Apps Script**.
-2. Replace `Code.gs` with [dist/CacheFinanceProviderTests.js](dist/CacheFinanceProviderTests.js).
+2. Replace `Code.gs` with [dist/TickerSheetsProviderTests.js](dist/TickerSheetsProviderTests.js).
 3. Save the project. Use the [supplied manifest](apps-script/provider-tests/appsscript.json) if setting scopes explicitly.
 4. Select `RunProviderTests` in Apps Script and click **Run**. Complete Google's authorization steps.
 5. Reload the spreadsheet. Save any provider keys through **Data settings → API keys…**.

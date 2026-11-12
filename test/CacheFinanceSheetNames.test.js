@@ -56,13 +56,13 @@ describe("managed tab name upgrade", () => {
     ("refuses an unmarked %s tab before any other rename", (name, markerCell) => {
         const book = new ManagedBook(); owned(book, "CF Analysis", "CACHEFINANCE_ANALYSIS_V1");
         book.insertSheet(name).getRange(markerCell).setValue("User content"); const unchanged = before(book);
-        expect(() => Names.migrate(book)).toThrow("The existing " + name + " tab is not managed by Single Stock Analysis");
+        expect(() => Names.migrate(book)).toThrow("The existing " + name + " tab is not managed by TickerSheets");
         expect(before(book)).toEqual(unchanged);
     });
 
     it("rejects the wrong ownership marker even when another managed tab uses that marker", () => {
         const book = new ManagedBook(); owned(book, "CF Research", "CACHEFINANCE_ANALYSIS_V1"); const unchanged = before(book);
-        expect(() => Names.migrate(book)).toThrow(/not managed by Single Stock Analysis/); expect(before(book)).toEqual(unchanged);
+        expect(() => Names.migrate(book)).toThrow(/not managed by TickerSheets/); expect(before(book)).toEqual(unchanged);
     });
 
     it("leaves an empty workbook and unrelated tabs unchanged", () => {

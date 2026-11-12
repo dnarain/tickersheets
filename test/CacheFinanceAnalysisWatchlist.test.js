@@ -28,7 +28,7 @@ describe("watchlist tab ownership and ticker inputs", () => {
     });
     it.each(["Watchlist", "Journal"])("checks ownership before mutating any tab when %s exists", name => {
         const conflict = book.insertSheet(name); conflict.getRange("A1").setValue("User data"); const count = book.sheets.size;
-        expect(() => W.build(book)).toThrow(/not managed by Single Stock Analysis/); expect(conflict.getRange("A1").getValue()).toBe("User data"); expect(book.sheets.size).toBe(count);
+        expect(() => W.build(book)).toThrow(/not managed by TickerSheets/); expect(conflict.getRange("A1").getValue()).toBe("User data"); expect(book.sheets.size).toBe(count);
     });
     it("normalizes ticker text and preserves non-string invalid inputs for explicit errors", () => {
         singleTicker(" aapl "); book.getSheetByName("Watchlist").getRange("A9").setValue(123);

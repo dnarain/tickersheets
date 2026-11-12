@@ -227,7 +227,7 @@ describe("API key menu and sidebar", () => {
         values.set("FINNHUB_API_KEY", "never-in-html</script>");
         CFShowApiKeySettings();
         expect(ui.showSidebar).toHaveBeenCalledWith(output);
-        expect(output.setTitle).toHaveBeenCalledWith("Single Stock Analysis: API keys");
+        expect(output.setTitle).toHaveBeenCalledWith("TickerSheets: API keys");
         expect(properties.getProperty).not.toHaveBeenCalled();
         expect(html).not.toContain("never-in-html");
         expect(html).toContain("People who can edit this script can access its keys.");

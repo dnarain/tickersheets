@@ -27,11 +27,11 @@ function main() {
     if (checkOnly) {
         if (isCacheFinanceBundleCurrent()) {
             // skipcq: JS-0002
-            console.log(`dist/CacheFinance.js is up to date (${SOURCE_FILES.length} source files)`);
+            console.log(`dist/TickerSheets.js is up to date (${SOURCE_FILES.length} source files)`);
             return;
         }
 
-        console.error("dist/CacheFinance.js is out of date. Run: npm run build");
+        console.error("dist/TickerSheets.js is out of date. Run: npm run build");
         process.exit(1);
     }
 
@@ -48,7 +48,7 @@ function main() {
 
     // skipcq: JS-0002
     console.log(
-        `dist/CacheFinance.js is up to date (${formatBytes(result.bytes)}, hash ${result.sourceHash})`
+        `dist/TickerSheets.js is up to date (${formatBytes(result.bytes)}, hash ${result.sourceHash})`
     );
 }
 

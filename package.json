@@ -1,11 +1,11 @@
 {
-  "name": "cachefinance",
+  "name": "tickersheets",
   "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-cachefinance.mjs",
-    "build:check": "node scripts/build-cachefinance.mjs --check",
+    "build": "node scripts/build-tickersheets.mjs",
+    "build:check": "node scripts/build-tickersheets.mjs --check",
     "build:provider-tests": "node scripts/build-provider-tests.mjs",
     "build:provider-tests:check": "node scripts/build-provider-tests.mjs --check",
     "validate": "npm run build:check && npm run test:coverage",
