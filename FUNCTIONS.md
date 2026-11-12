@@ -314,6 +314,7 @@ Provider names are `FINVIZ`, `ZACKS` and `GURUFOCUS`.
 
 The registry in [src/CacheFinanceSmfProviders.js](src/CacheFinanceSmfProviders.js) defines these 35 selected fields.
 This registry does not cover every SMF field or function.
+The [SMF coverage checklist](SMF-COVERAGE.md) lists the mapped IDs, partial replacements and remaining gaps.
 These public routes do not use saved website credentials.
 A blocked page, changed page or unavailable field remains unavailable.
 

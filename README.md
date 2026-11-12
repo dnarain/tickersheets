@@ -12,6 +12,7 @@ Change one ticker to refresh history, indicators, fundamentals, earnings and sup
 FRED series use your private `FRED_API_KEY` setting.
 The [installation guide](INSTALL.md) explains the template and single-file installation.
 The [function reference](FUNCTIONS.md) covers reusable data formulas, option models and selected SMF field numbers.
+The [SMF coverage checklist](SMF-COVERAGE.md) compares all 121 public functions and 11,892 numbered definitions with this fork.
 The research tabs add earnings comparisons, options across expirations, a watchlist and a journal of changes between refreshes.
 The [analysis test results](test-results/2026-11-11-google-apps-script/STOCK-ANALYSIS.md) record live ticker, expiration and FRED checks.
 The [research expansion results](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) cover the additional charts, strategies, provider fields, reusable formulas, watchlist and clean template.
