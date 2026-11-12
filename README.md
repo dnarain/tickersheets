@@ -2,6 +2,7 @@
 
 This fork tests and repairs selected providers from Google Sheets and Apps Script.
 It does not require a hosted server.
+[Make your own copy of the research template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy), then follow the [installation guide](INSTALL.md).
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
 The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
 The [provider repair results](test-results/2026-11-11-google-apps-script/PROVIDER-FIXES.md) include Google price/yield repairs, Yahoo yield repairs and Globe ticker checks.

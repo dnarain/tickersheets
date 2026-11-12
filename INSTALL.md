@@ -6,18 +6,18 @@ Each user uses a private spreadsheet copy and their own API keys.
 
 ## Option 1: Copy the template
 
-The clean template passed the native worksheet checks.
-It remains private pending the owner's sharing approval.
-The instructions in Option 2 install the same script directly from GitHub.
+[Make your own copy of the CacheFinance Research Template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
 
-After a public template link becomes available:
+1. Open the copy link while signed in to your chosen Google account.
+2. Click **Make a copy** in Google's copy dialog.
+3. Open your copy. If the custom menus are missing, reload it once.
+4. Choose **Stock analysis → Refresh selected ticker**.
+5. Complete Google's authorization steps for your copy.
+6. If the refresh does not run after authorization, choose **Refresh selected ticker** again.
 
-1. Open the template while signed in to your chosen Google account.
-2. Choose **File → Make a copy**.
-3. Give the copy a name.
-4. Open your copy.
-5. Choose **Stock analysis → Refresh selected ticker**.
-6. Complete Google's authorization steps for your copy.
+The public template is read-only.
+Google copies its attached Apps Script into your spreadsheet.
+The template passed the native worksheet checks.
 
 The clean template uses a new, separate Apps Script project with no saved credentials.
 Your copy does not include another user's API keys.

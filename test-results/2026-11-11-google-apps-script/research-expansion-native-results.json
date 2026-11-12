@@ -5552,6 +5552,48 @@
         ],
         "error": ""
       }
+    },
+    {
+      "step": "Key presence check immediately before approved public sharing",
+      "sourceHash": "5b13f50d1358",
+      "result": {
+        "ok": true,
+        "providers": [
+          {
+            "provider": "FINNHUB",
+            "configured": false
+          },
+          {
+            "provider": "ALPHA_VANTAGE",
+            "configured": false
+          },
+          {
+            "provider": "TWELVE_DATA",
+            "configured": false
+          },
+          {
+            "provider": "COINMARKET",
+            "configured": false
+          },
+          {
+            "provider": "FRED",
+            "configured": false
+          }
+        ]
+      },
+      "clientTime": "2026-11-11 20:20 America/Los_Angeles"
+    },
+    {
+      "step": "Approved public read-only template sharing and copy page",
+      "sourceHash": "5b13f50d1358",
+      "passed": true,
+      "access": "Anyone with the link",
+      "role": "Viewer",
+      "copyPage": "Copy document; attached Apps Script file and functionality will also be copied",
+      "templateUrl": "https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit",
+      "copyUrl": "https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy",
+      "confirmation": "Google sharing dialog showed Access updated and Anyone on the internet with the link can view.",
+      "viewerCopyPermissionEnabled": true
     }
   ],
   "metadata": {
@@ -5566,11 +5608,13 @@
       "lineCoveragePercent": 95.63,
       "branchCoveragePercent": 88.15
     },
-    "templateSharing": "Private; public sharing approval pending",
+    "templateSharing": "Anyone with the link; Viewer; explicitly approved by owner",
     "notes": [
       "Development failures and pre-fix results are retained with their step names.",
       "Native requests and worksheet readbacks cover selected tickers and expirations, not all SMF functionality.",
       "API keys, raw provider pages, cookies, crumbs and private document IDs are excluded."
-    ]
+    ],
+    "templateUrl": "https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit",
+    "templateCopyUrl": "https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy"
   }
 }

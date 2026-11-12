@@ -3,7 +3,10 @@
 We ran the expanded analysis in Google Sheets and its bound Apps Script project.
 We also built a separate template project without saved API keys.
 All provider requests ran in Apps Script.
-The clean template remains private pending explicit sharing approval.
+The owner approved read-only sharing of the [clean template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
+We confirmed **Anyone with the link → Viewer** and the copy page's attached Apps Script notice.
+All five API-key presence flags were false immediately before sharing.
+The sharing settings also allow commenters and viewers to download, copy and print.
 
 ## Source and local checks
 
