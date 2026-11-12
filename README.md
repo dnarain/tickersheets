@@ -2,6 +2,15 @@
 
 This fork tests and repairs selected providers from Google Sheets and Apps Script.
 It does not require a hosted server.
+The following guides describe this fork's `dnarain/provider-tests` branch:
+
+| Guide | Purpose |
+|---|---|
+| [INSTALL.md](INSTALL.md) | Copy the template or install the script, authorize requests and save API keys |
+| [FUNCTIONS.md](FUNCTIONS.md) | Find formula arguments, output columns, units, sources and limits |
+| [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) | Create custom tabs with one ticker input and copyable formulas |
+| [ANALYSIS.md](ANALYSIS.md) | Use the generated analysis tabs, charts, options and watchlist |
+
 [Make your own copy of the research template](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy), then follow the [installation guide](INSTALL.md).
 See [PROVIDER-TESTING.md](PROVIDER-TESTING.md) for the test runner and setup instructions.
 The [November 11, 2026 results](test-results/2026-11-11-google-apps-script/KEYED-PROVIDERS.md) include live requests to all eight providers.
@@ -12,10 +21,15 @@ Change one ticker to refresh history, indicators, fundamentals, earnings and sup
 FRED series use your private `FRED_API_KEY` setting.
 The [installation guide](INSTALL.md) explains the template and single-file installation.
 The [function reference](FUNCTIONS.md) covers reusable data formulas, option models and selected SMF field numbers.
+The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and copyable formulas for a custom workbook.
+Current-session quotes include accepted pre-market and after-hours prices with their own timestamps.
+`CFRSITARGETS` adds RSI2 targets, and `CFFREDVALUE` adds exact-date observations.
+The ADVFN year-end parser is implemented, but its live Apps Script requests returned HTTP 403.
 The [SMF coverage checklist](SMF-COVERAGE.md) compares all 121 public functions and 11,892 numbered definitions with this fork.
 The research tabs add earnings comparisons, options across expirations, a watchlist and a journal of changes between refreshes.
 The [analysis test results](test-results/2026-11-11-google-apps-script/STOCK-ANALYSIS.md) record live ticker, expiration and FRED checks.
 The [research expansion results](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) cover the additional charts, strategies, provider fields, reusable formulas, watchlist and clean template.
+The [lookup and quote results](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) cover RSI2, exact-date FRED, blocked ADVFN calls and after-hours prices.
 
 Both bundles add **CacheFinance → API keys…** to the spreadsheet menu.
 Reload the spreadsheet after installing the script.

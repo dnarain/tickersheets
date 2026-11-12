@@ -91,6 +91,16 @@ describe("watchlist values and change journal", () => {
 });
 
 describe("watchlist refresh and ticker changes during requests", () => {
+    it("uses the active extended quote and timestamp while keeping regular-close indicators", () => {
+        const sheet = singleTicker(); mockData();
+        const base = CFPublicData.chart("NVDA"), before = [...base.chart.history];
+        vi.spyOn(CFPublicData, "quote").mockReturnValue({ ...base, source: "https://finance.yahoo.com/quote/NVDA/", quote: { price: 158.78, quoteTime: "2026-11-12T01:00:00Z", session: "After-hours" } });
+        W.refresh(book);
+        expect(sheet.getRange("C8").getValue()).toBe(158.78); expect(sheet.getRange("E8").getValue()).toEqual(new Date("2026-11-12T01:00:00Z")); expect(sheet.getRange("X8").getValue()).toBe("After-hours");
+        expect(sheet.getRange("G8").getValue()).toBe(before.at(-1).date); expect(base.chart.history).toEqual(before);
+        expect(book.getSheetByName("CF Journal").getRange("C8").getValue()).toBe(158.78);
+        W.clearRows(book); expect(sheet.getRange("X8").getValue()).toBe("");
+    });
     it("writes current data with units, Date timestamps and source while preserving ticker inputs", () => {
         const sheet = singleTicker(); mockData(); const result = W.refresh(book, { clock: () => Date.UTC(2026, 10, 11, 22) });
         expect(result).toMatchObject({ ok: true, tickers: 1 }); expect(sheet.getRange("A8").getValue()).toBe("NVDA"); expect(sheet.getRange("B8").getValue()).toBe("Available"); expect(sheet.getRange("C8").getValue()).toBe(100);

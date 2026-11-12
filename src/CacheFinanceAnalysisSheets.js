@@ -1,5 +1,6 @@
 /*  *** DEBUG START ***
 import { CFAnalysisOptions } from "./CacheFinanceAnalysisOptions.js";
+import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
 export { CFAnalysisSheets };
 //  *** DEBUG END ***/
 
@@ -229,6 +230,7 @@ class CFAnalysisSheets {
         }
         const main = sheets["CF Analysis"], history = sheets["CF Price history"], options = sheets["CF Options"], sources = sheets["CF Sources"];
         const chart = snapshot.chart || {}, technical = snapshot.technical || { series: [], summary: {} }, summary = technical.summary || {};
+        const displayedQuote = CFAnalysisData.selectQuote({ ...chart, symbol: chart.symbol || snapshot.symbol, price: chart.price ?? summary.price }, snapshot.details);
         const series = technical.series || [], growth = CFAnalysisSheets.growth_(series, snapshot.benchmarks);
         const optionData = snapshot.options || {}, expirations = (optionData.expirations || []).filter(value => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)).slice().sort();
         const selectedExpiry = expirations.includes(oldExpiry) ? oldExpiry : expirations[0] || "";
@@ -246,17 +248,23 @@ class CFAnalysisSheets {
         main.getRange("D5").setValue("Company"); main.getRange("E5:H5").merge().setValue(CFAnalysisSheets.safe_(chart.name || snapshot.details?.name));
         main.getRange("A6").setValue("Currency"); main.getRange("B6").setValue(CFAnalysisSheets.safe_(chart.currency));
         main.getRange("D6").setValue("Indicators through"); main.getRange("E6").setValue(CFAnalysisSheets.date_(summary.indicatorAsOf || summary.historyEnd, book) || "N/A").setNumberFormat("yyyy-mm-dd");
-        const metrics = [["Price", chart.price ?? summary.price, "Yahoo Chart API"], ["Quote time", CFAnalysisSheets.date_(chart.quoteTime, book), "Yahoo regularMarketTime"],
+        main.getRange("G6").setValue("Price session"); main.getRange("H6").setValue(displayedQuote.session);
+        main.getRange("G7").setValue("Session change"); main.getRange("H7").setValue(CFAnalysisSheets.safe_(displayedQuote.change)).setNumberFormat("0.00"); main.getRange("I7").setValue(CFAnalysisSheets.safe_(displayedQuote.changeFraction)).setNumberFormat("0.00%");
+        const metrics = [["Price", displayedQuote.price, displayedQuote.session], ["Quote time", CFAnalysisSheets.date_(displayedQuote.quoteTime, book), "Published quote; sheet time zone"],
             ["1-day adjusted return", summary.return1d, "Adjusted close"], ["1-month adjusted return", summary.return1m, "21 sessions"], ["3-month adjusted return", summary.return3m, "63 sessions"],
             ["1-year adjusted return", summary.return1y, "252 sessions"], ["YTD adjusted return", summary.returnYtd, "Last prior-year close"], ["RSI14", summary.rsi14, "Wilder; Yahoo close"],
             ["SMA50", summary.sma50, "Yahoo close"], ["SMA200", summary.sma200, "Yahoo close"], ["20-day annualized volatility", summary.volatility20d, "Adjusted log returns"],
             ["Maximum observed drawdown", summary.maxDrawdown, "Loaded adjusted history"], ["MACD", summary.macd, "EMA12 − EMA26"], ["MACD signal", summary.macdSignal, "EMA9 of MACD"],
             ["20-day average volume", summary.volumeAverage20, "Daily shares"], ["History sessions", summary.barCount, "Yahoo daily bars"]];
         CFAnalysisSheets.table_(main, 8, 1, ["Metric", "Value", "Basis"], metrics); main.setColumnWidth(3, 195);
-        main.getRange(9, 2, metrics.length, 1).setNumberFormat("#,##0.00"); main.getRange("B10").setNumberFormat("yyyy-mm-dd hh:mm:ss");
+        main.getRange(9, 2, metrics.length, 1).setNumberFormat("#,##0.00"); main.getRange("B10").setNumberFormat("mmm d, hh:mm:ss");
         main.getRangeList(["B11:B15", "B19:B20"]).setNumberFormat("0.00%"); main.getRange("B23:B24").setNumberFormat("#,##0");
-        CFAnalysisSheets.table_(main, 8, 4, ["Provider", "Price", "Yield", "Identity", "Quote time", "Status"], (snapshot.quoteSources || []).map(row => [row.provider, row.price, row.yieldFraction, row.identity, CFAnalysisSheets.date_(row.quoteTime, book), row.status]));
-        if ((snapshot.quoteSources || []).length) { main.getRange(9, 5, snapshot.quoteSources.length, 1).setNumberFormat("#,##0.00"); main.getRange(9, 6, snapshot.quoteSources.length, 1).setNumberFormat("0.00%"); main.getRange(9, 8, snapshot.quoteSources.length, 1).setNumberFormat("yyyy-mm-dd hh:mm"); }
+        const comparisonRows = (snapshot.quoteSources || []).slice(0, 4).map(row => [row.provider === "Yahoo Chart" ? "Yahoo regular" : row.provider, row.price, row.yieldFraction, row.identity, CFAnalysisSheets.date_(row.quoteTime, book), row.status]);
+        for (const [kind, label] of [["pre", "Yahoo pre-market"], ["post", "Yahoo after-hours"]]) {
+            const row = displayedQuote[kind]; comparisonRows.push([label, row.price, null, row.price === null ? "Unknown" : "Matched", CFAnalysisSheets.date_(row.quoteTime, book), row.status]);
+        }
+        CFAnalysisSheets.table_(main, 8, 4, ["Provider / session", "Price", "Yield", "Identity", "Quote time", "Status"], comparisonRows);
+        main.getRange(9, 5, comparisonRows.length, 1).setNumberFormat("#,##0.00"); main.getRange(9, 6, comparisonRows.length, 1).setNumberFormat("0.00%"); main.getRange(9, 8, comparisonRows.length, 1).setNumberFormat("mmm d, hh:mm:ss");
         const companyFields = { ...(snapshot.statistics?.fields || {}) };
         for (const [id, field] of Object.entries(snapshot.details?.fields || {})) if (field.value !== null && field.value !== undefined || !companyFields[id]) companyFields[id] = field;
         const currency = chart.currency || "Currency not supplied", nextEarnings = snapshot.details?.nextEarnings || {};
@@ -374,6 +382,7 @@ class CFAnalysisSheets {
         const availableExpirations = Array.isArray(criteria[0]) ? criteria[0].filter(value => typeof value === "string").slice(0, 40) : [];
         return { ticker: sources ? sources.getRange("B3").getValue() || "" : "", inputTicker: main ? main.getRange("B4").getValue() : "", symbol: main ? main.getRange("B5").getValue() : "",
             status: main ? main.getRange("H4").getValue() : "", selectedExpiration: options ? CFAnalysisSheets.readInput(book).expiration : "", availableExpirations, model, formulaErrors,
+            displayedPrice: main ? main.getRange("B9").getValue() : "", displayedQuoteTime: main ? main.getRange("B10").getValue() : "", displayedSession: main ? main.getRange("H6").getValue() : "",
             historyRows: rows("CF Price history").filter(row => row[0] instanceof Date).length,
             earningsRows: earningsRows.slice(0, earningsEnd < 0 ? earningsRows.length : earningsEnd).filter(row => (row[1] === "GAAP" || row[1] === "Adjusted") && (typeof row[2] === "number" || typeof row[3] === "number")).length,
             fundamentalRows: rows("CF Fundamentals").filter(row => typeof row[0] === "string" && row[0] && row[0] !== "Metric" && row[4]).length,

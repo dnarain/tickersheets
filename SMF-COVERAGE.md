@@ -1,6 +1,8 @@
 # SMF coverage checklist for Google Sheets
 
-Reviewed November 11, 2026, against CacheFinance commit `8842b97` and SMF Mac source commit `60014079`.
+Reviewed November 11, 2026, against tested CacheFinance source hash `a3b6d07b2943` on `dnarain/provider-tests` and SMF Mac source commit `60014079`.
+The initial CacheFinance implementation audit used commit `8842b97`; the first coverage checklist used `126fa72`.
+The source hash identifies the tested bundle. Branch links can advance.
 
 **CacheFinance covers selected SMF tasks. It does not implement the original SMF function names or argument lists.**
 An existing SMF workbook therefore requires formula changes before it can use this fork in Google Sheets.
@@ -15,8 +17,9 @@ Those features do not establish complete SMF coverage.
 | [Function checklist](smf-coverage/functions.csv) | All 121 public VBA Functions, their replacements, gaps and separate Google Sheets/Excel evidence |
 | [Numbered field checklist](smf-coverage/fields.csv) | All 11,892 effective field IDs, descriptions, providers, mappings and legacy status |
 | [Source inventory](smf-coverage/inventory.json) | Function signatures, source links, counts, source hashes, retired modes and evidence |
-| [Supported Sheets functions](FUNCTIONS.md) | The twelve public CacheFinance functions and their current arguments |
-| [Native test report](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) | The saved Google Sheets checks and their limits |
+| [Supported Sheets functions](FUNCTIONS.md) | The fourteen worksheet functions and their current arguments |
+| [Latest native test report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) | RSI2, exact-date FRED, active-session quotes and blocked ADVFN checks |
+| [Earlier research checks](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) | Broader research workflow and original provider-field baseline evidence |
 
 Download a CSV file and import it into Google Sheets to filter by function, field ID, provider or status.
 The CSV files contain checklist data.
@@ -27,8 +30,9 @@ The CSV files contain checklist data.
 - That inventory excludes private functions, class members and VBA Subs. We list 28 public Subs separately in the source inventory.
 - The default field loader resolves **11,892 numbered definitions** from 11,893 rows.
 - **8,430 definitions are ADVFN slots for different annual or quarterly periods.** These are not 8,430 distinct metrics.
-- CacheFinance maps **34 SMF IDs** through provider-qualified `CFFIELD` calls.
-- CacheFinance also supplies GuruFocus trailing dividend yield without a mapped SMF ID. This produces **35 provider fields** in total.
+- CacheFinance maps **35 SMF IDs** through provider-qualified `CFFIELD` calls.
+- CacheFinance also supplies GuruFocus trailing dividend yield without a mapped SMF ID. This produces **36 provider fields** in total.
+- The original 35 Finviz/Zacks/GuruFocus fields have selected-symbol native evidence. The new ADVFN field `5196` has passing parser tests, but its three native calls returned HTTP 403.
 
 The field count excludes arbitrary JSON paths, caller URLs, constants, settings and example-workbook formulas.
 The source files include duplicate ID `13900`. The later row in `smf-elements-6.txt` wins, as in the loader.
@@ -42,7 +46,7 @@ One function can expose many providers, fields, periods and output modes.
 
 | Status | Meaning |
 |---|---|
-| Partial | A narrower task works through a CacheFinance function, analysis tab or rewritten formula. The row names the missing behavior. |
+| Partial | Part of the SMF behavior is implemented through a CacheFinance function or workflow. The row separates native results, local parser checks and blocked providers. |
 | Not ported | This fork supplies no matching public function or workflow. A native Sheets suggestion does not change this status. |
 | Retired | The reviewed SMF source or retirement registry confirms the entire legacy function's source mode is retired. |
 | Native alternative | Existing Sheets functions or date arithmetic can serve a similar purpose. We did not test complete SMF equivalence. |
@@ -55,8 +59,8 @@ The function CSV includes separate Excel reference columns. An Excel PASS never 
 
 | Function status | Count |
 |---|---|
-| Partial | 18 |
-| Not ported | 35 |
+| Partial | 20 |
+| Not ported | 33 |
 | Retired | 7 |
 | Native alternative | 5 |
 | Excel-specific | 5 |
@@ -67,28 +71,32 @@ The function CSV includes separate Excel reference columns. An Excel PASS never 
 
 | Task | Sheets entry point | Coverage and evidence |
 |---|---|---|
-| Current quote fields | `CFQUOTE`, `CACHEFINANCE`, `CACHEFINANCES` | Selected price/name/yield fields under different APIs. Native scalar/range checks exist. No old Yahoo quote-code interface. |
+| Current quote fields | `CFQUOTE`, `CACHEFINANCE`, `CACHEFINANCES` | `CFQUOTE` separates regular, pre-market and post-market prices/times and labels the accepted active session. Native NVDA after-hours checks passed. No old Yahoo quote-code interface. |
 | Daily prices | `CFHISTORY` | Seven columns, oldest first, up to 510 sessions from about two years. Native NVDA/AAPL arrays passed. No arbitrary dates or weekly/monthly API. |
 | Fundamentals and earnings | `CFFUNDAMENTALS`; CF Earnings / CF Research | Selected Yahoo fields and separate accounting bases. Native NVDA/AAPL tables passed. No arbitrary Yahoo JSON module/path API. |
 | Dividends and splits | CF Earnings | Events within the loaded Yahoo history window. The code and local fixtures cover events. No separate native assertion verifies every event value. |
-| Options | `CFEXPIRATIONS`, `CFOPTIONS`; CF Options / CF Research | Published dates, one selected chain and up to five maturity comparisons. Native NVDA/AAPL checks passed. No full SMF item-code/source/relative-strike interface. |
-| Option models and strategies | `CFOPTIONMODEL`, `CFSTRATEGY`; CF Strategies | Black–Scholes values and four expiration payoff models. Native selections and independent position arithmetic passed. These do not expand SMF provider coverage. |
-| FRED | `CFFRED` | Latest 1–1000 observations, units and source. Native checks cover the four default series and DGS2. Exact-date and full metadata selectors remain missing. |
-| Selected numbered fields | `CFFIELD` | 34 mapped IDs plus one additional yield field. Direct Apps Script adapters returned all 35 fields for NVDA/AAPL. Actual worksheet cells checked Finviz price. |
-| Trends and indicators | CF Analysis / CF Price history / CF Research | Fixed RSI14, moving averages and MACD. No generic `SMFTech` interface or RSI2 target prices. |
+| Options | `CFEXPIRATIONS`, `CFOPTIONS`; CF Options / CF Research | Published dates, one selected chain and up to five maturity comparisons. Earlier NVDA/AAPL checks passed. The latest NVDA/AVGO chains loaded, but all five ATM IV comparisons lacked usable quotes. No full SMF item-code/source/relative-strike interface. |
+| Option models and strategies | `CFOPTIONMODEL`, `CFSTRATEGY`; CF Strategies | Black–Scholes values and four expiration payoff models. Explicit numeric examples passed. The latest generated calculators lacked usable seed premiums and returned unavailable outputs. These do not expand SMF provider coverage. |
+| FRED | `CFFRED`, `CFFREDVALUE` | Recent observations and one exact-date value, with published units. ISO text, date-valued cells and missing-date checks passed in Sheets. Full metadata-label selectors remain missing. |
+| Selected numbered fields | `CFFIELD` | 35 mapped IDs plus one additional yield field. The original 35 Finviz/Zacks/GuruFocus fields have native adapter evidence for NVDA/AAPL. New ADVFN `5196` is live-blocked by HTTP 403. |
+| Trends and indicators | `CFRSITARGETS`; CF Analysis / CF Price history / CF Research | RSI2 trigger targets and named quote selectors passed selected Sheets checks. Fixed RSI14, moving averages and MACD remain available. No generic `SMFTech` interface. |
 | Watchlists and saved changes | CF Watchlist / CF Journal | Up to 20 inputs. Native checks covered five US stocks. This does not implement arbitrary SMF download tables. |
 | Pictures | CF Images | Manual StockCharts/Finviz page links. The function downloads zero provider images. Native numeric charts use worksheet data. |
 
-The [native report](test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md) records 997 local tests and selected Google Sheets checks.
+The [latest report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) records **1,306 local tests in 34 files**.
+The saved local coverage is 96.06% of lines, 89.12% of branches and 96.74% of functions.
+The final worksheet run records **18 PASS, 0 FAIL, 3 BLOCKED and 0 PENDING**; all three blocked calls use ADVFN.
+The saved NVDA quote is 158.78, labeled **After-hours**, with regular price 173.73 and post-market quote time `2026-11-12T01:00:00Z`.
+That saved result does not establish the current price. Daily returns and RSI calculations continue to use regular-session prices.
 Those checks establish accepted outputs for their saved inputs. We did not reconcile every financial value against filings or an exchange feed.
 
 ## Important differences
 
 - **MACD:** SMF's `SMFTech` code uses simple averages. CacheFinance uses seeded exponential averages for MACD and its signal.
-- **RSI targets:** RSI14 in the analysis does not implement `smfRSITargetPrices`, which calculates RSI2 triggers and target prices.
+- **RSI targets:** `CFRSITARGETS` supplies RSI2 trigger targets through named selectors. The original `smfRSITargetPrices` name and `pItems` code string remain absent.
 - **History:** The public Sheets table has a finite daily window. SMF supports more date, interval, event, column and layout arguments.
-- **FRED:** `CFFRED` returns recent observations. `smfGetEconData` also accepts exact dates and metadata labels.
-- **Financial statements:** Selected Yahoo tables do not establish complete ADVFN, GuruFocus or Morningstar catalogs.
+- **FRED:** `CFFRED` returns recent observations; `CFFREDVALUE` returns one exact-date value. A missing date never uses an earlier value. Full SMF metadata-label selectors remain absent.
+- **Financial statements:** ADVFN latest annual year-end parsing is implemented, but native requests receive HTTP 403. Selected Yahoo tables and this parser do not establish complete ADVFN, GuruFocus or Morningstar catalogs.
 - **Units:** CacheFinance field units control interpretation. A numeric alias does not guarantee identical legacy scaling or formatting.
 - **Errors:** Research functions return explanatory `N/A: ...` text. This differs from native spreadsheet `#N/A` and SMF caller-supplied error values.
 
@@ -101,8 +109,8 @@ An existing recipe does not prove that its provider still publishes data.
 
 | CacheFinance ID coverage | Count |
 |---|---|
-| Not ported | 11858 |
-| Mapped field | 34 |
+| Not ported | 11857 |
+| Mapped field | 35 |
 
 
 
@@ -165,8 +173,11 @@ Named fields also work. The [function reference](FUNCTIONS.md#cffield) gives the
 | 4042 | FINVIZ | `beta` | ratio |
 | 849 | ZACKS | `target_price` | currency |
 | 2727 | GURUFOCUS | `forward_dividend_yield` | fraction |
+| 5196 | ADVFN | `year_end_date` | date text; live HTTP 403 |
 
 
+ADVFN `5196` maps the latest annual ending date, such as `=CFFIELD("ADVFN","NASDAQ:AAPL",5196)`.
+Its parser passes local fixtures. AAPL, NVDA and named-alias worksheet requests all returned HTTP 403; no live annual date was accepted.
 GuruFocus `trailing_dividend_yield` has no mapped ID and remains outside this table.
 Fourteen other Finviz definitions have related Yahoo fields in the CSV.
 Those rows remain unmapped. Their provider, units and reporting basis require separate review.
@@ -179,7 +190,7 @@ The full CSV lists each ID and description within the groups.
 
 | SMF recipe group | Effective IDs | Mapped IDs | Explicitly retired defaults | Retired-mode dependencies |
 |---|---|---|---|---|
-| AdvFN-A | 2810 |  |  |  |
+| AdvFN-A | 2810 | 1 |  |  |
 | AdvFN-Q | 5620 |  |  |  |
 | BarChart | 21 |  |  |  |
 | BarChartMM | 97 |  | 16 |  |
@@ -239,17 +250,17 @@ This table separates those functions from the older provider recipes.
 
 | Source or mode | Google Sheets coverage | Remaining work |
 |---|---|---|
-| Yahoo Chart | Partial, native quote/history checks | Date/interval controls, full event API and SMF output selectors |
+| Yahoo Chart and quote page | Partial, native history and active-session quote checks | Date/interval controls, full event API and SMF output selectors |
 | Yahoo fundamentals / JSON | Partial, selected fields and earnings tables | Arbitrary modules, paths, full catalogs and historical statement selectors |
 | Yahoo options | Partial, native chains/dates/strategies | Full item codes, direct contract interface, relative strikes and alternate-provider modes |
-| FRED official API | Partial, native observations and units | Exact-date and full metadata-label interfaces |
+| FRED official API | Partial, native recent observations, exact dates and units | Full metadata-label interface and arbitrary date windows |
 | Finviz | Partial, 32 of 81 numbered definitions mapped | 49 IDs without aliases, plus field-by-field meaning and source checks |
 | Zacks | Partial, target-price consensus ID 849 | Other quote, earnings and estimate recipes |
 | GuruFocus | Partial, two yield fields | Data/Item/CSV catalogs, history and required provider permissions |
 | Google Finance website | Partial, repaired CacheFinance quote adapter | SMF numbered recipes and historical CSV interface remain unported |
 | Globe & Mail | Native CacheFinance quote/name/yield checks | This additional provider does not establish SMF ID coverage |
 | Finnhub / Alpha Vantage / Twelve Data / CoinMarketCap | Selected keyed CacheFinance quote fields passed earlier native checks | Their broader provider APIs remain outside the implemented adapters |
-| ADVFN, including regional hosts | Not ported | Annual/quarterly financials and latest annual year-end lookup |
+| ADVFN | Partial parser; all three native year-end calls blocked by HTTP 403 | Resolve live access. Other annual/quarterly metrics, periods and regional hosts remain unported. |
 | Morningstar | Not ported | History/provider interface and live access checks |
 | Barchart / BigCharts / MarketWatch / Nasdaq | Not ported | Direct Apps Script access and quote/option parsers |
 | FreeRealtime | Not ported | Direct Apps Script access and selected recipes |
@@ -332,7 +343,7 @@ The CSV and JSON preserve signatures and separate Excel reference results.
 
 | SMF function | Purpose | Coverage | Sheets replacement and remaining gap |
 |---|---|---|---|
-| [`smfGetEconData`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetEconData.bas#L8) | Read a FRED exact-date observation or requested series metadata label. | Partial | `CFFRED`. Latest 1–1000 observations and units/source available; no exact-date argument or full metadata-label interface. |
+| [`smfGetEconData`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetEconData.bas#L8) | Read a FRED exact-date observation or requested series metadata label. | Partial | `CFFRED / CFFREDVALUE`. Latest observations, units/source and one exact-date observation are available. Missing dates never use an earlier value. Full metadata-label selectors and the original smfGetEconData/pError interface remain absent. |
 
 
 ### Excel charts
@@ -425,7 +436,7 @@ The CSV and JSON preserve signatures and separate Excel reference results.
 
 | SMF function | Purpose | Coverage | Sheets replacement and remaining gap |
 |---|---|---|---|
-| [`RCHGetElementNumber`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetElementNumber.bas#L17) | Read a numbered field from SMF recipe files. | Partial | `CFFIELD`. Only selected Finviz/Zacks/GuruFocus IDs; no arbitrary recipe file, metadata fields, constants or general recipe interpreter. |
+| [`RCHGetElementNumber`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetElementNumber.bas#L17) | Read a numbered field from SMF recipe files. | Partial | `CFFIELD`. 35 provider-qualified numeric aliases across Finviz, Zacks, GuruFocus and ADVFN; ADVFN 5196 is live-blocked. No arbitrary recipe files, metadata fields, constants or general recipe interpreter. |
 
 
 ### Options
@@ -472,7 +483,7 @@ The CSV and JSON preserve signatures and separate Excel reference results.
 
 | SMF function | Purpose | Coverage | Sheets replacement and remaining gap |
 |---|---|---|---|
-| [`smfGetADVFNElement`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetAdvFNElement.bas#L3) | Read an ADVFN annual or quarterly financial-statement element. | Not ported | No ADVFN provider or year-end lookup. Yahoo financial charts do not reproduce ADVFN fields. |
+| [`smfGetADVFNElement`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetAdvFNElement.bas#L3) | Read an ADVFN annual or quarterly financial-statement element. | Partial | `CFFIELD("ADVFN",ticker,5196) or year_end_date`. Only the latest annual year-end parser and provider-qualified ID 5196 are implemented. All three native calls were blocked by HTTP 403. Quarterly/earlier-period metrics and the original SMF arguments remain absent. |
 | [`smfGetGuruFocusCSVItem`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfGetGuruFocusCSVItem_.bas#L3) | Read a named field and period from GuruFocus's financial CSV export. | Not ported | No GuruFocus financial CSV export,30-year annual/120-quarter catalog or subscription authentication. |
 | [`smfGetGuruFocusData`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetGuruFocusData.bas#L4) | Read a numbered GuruFocus valuation/quality item and historical offset. | Not ported | Two GuruFocus yield fields in CFFIELD do not implement this separate item catalog or offsets. |
 | [`smfGetGuruFocusItem`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetGuruFocusItem.bas#L4) | Read a GuruFocus financial-statement item for TTM, annual or quarterly periods. | Not ported | No GuruFocus statement catalog, historical offset or premium-data support. |
@@ -491,7 +502,7 @@ The CSV and JSON preserve signatures and separate Excel reference results.
 
 | SMF function | Purpose | Coverage | Sheets replacement and remaining gap |
 |---|---|---|---|
-| [`smfRSITargetPrices`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modRSITargetPrices.bas#L3) | Calculate current/previous RSI2 and low/high-trigger target prices with quote fields. | Not ported | RSI14 in the analysis is a different period and does not supply RSI2 buy/sell targets or the12-item output. |
+| [`smfRSITargetPrices`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modRSITargetPrices.bas#L3) | Calculate current/previous RSI2 and low/high-trigger target prices with quote fields. | Partial | `CFRSITARGETS`. RSI2 trigger targets and 12 named output fields are implemented using regular-session prices. No original smfRSITargetPrices alias or pItems code-string interface; unavailable bid/ask or unreachable targets remain N/A. |
 | [`SMFTech`](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modTechnicalAnalysis.bas#L9) | Calculate ADL, ATR, CCI, EMA, MACD, OBV, ROC, RSI, SMA or stochastic tables. | Partial | `CF Price history / CF Analysis / CF Research`. Only fixed RSI14/SMA20,50,200/EMA12,26/MACD12,26,9 in generated sheets. SMF MACD uses simple averages; CacheFinance uses exponential averages. No generic indicator formula or ADL/ATR/CCI/OBV/ROC/STO. |
 
 
@@ -622,7 +633,8 @@ The following user-facing commands require separate treatment.
 
 ## Next implementation checklist
 
-These tasks remain open. The order favors data and functions that already have useful Mac reference cases.
+The completed rows record the new narrow APIs. The open rows name the remaining work.
+The order favors data and functions that already have useful Mac reference cases.
 Effort labels describe implementation with tests, assuming the provider accepts requests from Apps Script.
 Provider access can prevent a repair regardless of coding effort.
 Small tasks extend an existing parser or API.
@@ -631,9 +643,12 @@ Large tasks add general extraction engines or many compatibility arguments.
 
 | Done | Task | Effort | Evidence required before closing |
 |---|---|---|---|
-| [ ] | Add RSI2 target-price calculations and selectors | Medium | Port the existing controlled Mac cases. Compare trigger targets and quote fields in Sheets. |
-| [ ] | Add exact-date FRED lookup and selected metadata selectors | Small–medium | Match exact dates, missing observations, units and caller errors with a private key. |
-| [ ] | Add ADVFN latest annual year-end lookup | Small parser, access unverified | First obtain a matching live response from Apps Script. Then port the year-end fixtures and regional-host cases. |
+| [x] | Add RSI2 target-price calculations and named selectors | Complete for the new API | Controlled Mac reference cases and selected NVDA/AAPL worksheet scalar/array checks pass. Original SMF arguments remain outside this task. |
+| [x] | Add exact-date FRED lookup | Complete for the new API | ISO text, date-valued cells, table agreement and missing-date worksheet checks pass. Local tests cover units, zeros, date bounds and private-key handling. |
+| [ ] | Add FRED metadata-label selectors | Small–medium | Compare title, frequency, seasonal adjustment, notes, release and source selectors with the SMF interface. |
+| [x] | Add ADVFN latest annual year-end parser and ID 5196 | Parser complete | Matching-ticker, annual-header, fiscal-year and public-wrapper fixtures pass. This row records the parser only. |
+| [ ] | Establish live ADVFN year-end access | Blocked by HTTP 403 | Obtain a matching accepted Apps Script response. All three saved worksheet calls are blocked; regional-host checks remain open. |
+| [x] | Separate regular and extended-session quotes | Complete for selected fields | Final native NVDA active price/session/time checks pass. Local tests reject stale, wrong-ticker and conflicting metadata. |
 | [ ] | Expand Yahoo history date/interval/event controls | Medium–large | Compare ordering, dates, adjusted close, dividends, splits and weekly/monthly periods. |
 | [ ] | Add generic HTML table/cell/tag and CSV/JSON extraction | Large | Define public arguments, port parsing fixtures and test actual worksheet results and blocked pages. |
 | [ ] | Add a generic technical-indicator function | Medium | Port RSI/ATR/CCI/OBV/ROC/STO cases. Make the requested MACD calculation explicit. |
@@ -658,14 +673,20 @@ The comparison uses the following fixed sources:
 
 - [Default field loader](https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetElementNumber.bas#L230).
 
-- [CacheFinance source commit](https://github.com/dnarain/cachefinance/tree/8842b97f474ae56c52431665bf2c3bbdbb858b86).
+- [Initial CacheFinance implementation audit commit](https://github.com/dnarain/cachefinance/tree/8842b97f474ae56c52431665bf2c3bbdbb858b86).
+
+- [Initial coverage checklist commit](https://github.com/dnarain/cachefinance/tree/126fa72478f54d17337a184e62c78fc4066ea6e8).
+
+- [Current CacheFinance branch](https://github.com/dnarain/cachefinance/tree/dnarain/provider-tests), tested generated source hash `a3b6d07b2943`. New [RSI2](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/src/CacheFinanceRsiTargets.js), [exact-date FRED](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/src/CacheFinanceFredValue.js), [provider](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/src/CacheFinanceSmfProviders.js) and [quote](https://github.com/dnarain/cachefinance/blob/dnarain/provider-tests/src/CacheFinanceResearchFunctions.js) code links use this branch. These links can advance after the recorded tests.
+
+- [Latest worksheet results](test-results/2026-11-11-google-apps-script/lookup-quotes-native-results.json) and [test report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md).
 
 - [SMF documentation index](https://climbermel.github.io/SMF_Add-in/Documentation/).
 
 
 This checklist records a source comparison and existing evidence. It adds no provider or compatibility function.
 
-1. Record the source commits before changing a status.
+1. Record the source commits and the tested generated source hash before changing a status.
 2. Keep function coverage separate from provider availability and legacy retirement.
 3. Add a source link and a relevant test before marking a task available.
 4. Identify whether the evidence came from local fixtures, Excel or Google Sheets.

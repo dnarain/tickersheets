@@ -1,19 +1,18 @@
 {
   "review_date": "2026-11-11",
-  "scope": "Source comparison and existing test records. This review did not run new provider requests.",
+  "scope": "Source comparison plus saved local and native Google Sheets evidence through the tested lookup/quote source hash. This checklist update did not make provider requests.",
   "smf": {
-    "schema_version": 1,
+    "schema_version": 2,
     "baseline": "SMF Mac0.7-dev native public .bas Functions inventory",
     "smf_commit": "60014079d08eadc489ed0ad01427d1807450c657",
-    "cachefinance_commit": "8842b97f474ae56c52431665bf2c3bbdbb858b86",
     "scope": "121 public/default-public .bas Functions; excludes private Functions, class members and all Subs. Includes Mac implementation and test helpers.",
-    "interpretation": "No original SMF function name/signature is implemented in Apps Script. Partial means a narrower task is available through another interface. Native alternatives are proposed rewrites, not CacheFinance implementations or tested parity.",
+    "interpretation": "No original SMF function name/signature is implemented in Apps Script. Partial means part of the task is implemented through another interface; each entry separates native outputs, local parser checks and blocked provider access. Native alternatives need rewritten formulas and do not establish complete parity.",
     "summary": {
       "functions": 121,
       "by_status": {
         "Internal helper": 51,
-        "Not ported": 35,
-        "Partial": 18,
+        "Not ported": 33,
+        "Partial": 20,
         "Retired": 7,
         "Excel-specific": 5,
         "Native alternative": 5
@@ -27,11 +26,12 @@
       "public_bas_subs_outside_count": 28
     },
     "important_gaps": [
-      "SMFTech exposes10 indicator modes; current Sheets offers a fixed subset in generated sheets.",
+      "SMFTech exposes 10 indicator modes; current Sheets offers a fixed subset in generated sheets. CFRSITARGETS separately supplies RSI2 trigger targets.",
       "SMFTech MACD uses simple moving averages; Sheets MACD uses exponential moving averages.",
-      "smfRSITargetPrices computes RSI2 targets; the Sheets RSI14 chart does not cover that function.",
-      "smfGetEconData exact-date/metadata-label interface differs from CFFRED latest-observation table.",
-      "Raw CSV/history controls, dividends/split output tables, arbitrary Yahoo modules and generic HTML recipes remain absent.",
+      "CFRSITARGETS has new named selectors and regular-session inputs; the original smfRSITargetPrices name and pItems code-string interface are absent.",
+      "CFFREDVALUE adds exact-date observations; the full smfGetEconData metadata-label interface remains absent.",
+      "ADVFN latest annual year-end ID 5196 has a tested parser, but all three native calls returned HTTP 403. No positive live ADVFN value is established.",
+      "Raw CSV/history controls, dividend/split output tables, arbitrary Yahoo modules and generic HTML recipes remain absent.",
       "Some generic option dispatchers have both live Yahoo and explicitly retired source modes; do not mark the entire function retired."
     ],
     "functions": [
@@ -319,9 +319,9 @@
         "signature": "Function smfGetADVFNElement(ByVal pTicker As String, ByVal pPeriod As String, ByVal pCells As Integer, Optional ByVal pFind1 As String = \"\", Optional ByVal pFind2 As String = \"\", Optional ByVal pError As Variant = \"Error\", Optional ByVal pType As Integer = 0) As Variant",
         "category": "Provider fundamentals",
         "purpose": "Read an ADVFN annual or quarterly financial-statement element.",
-        "status": "Not ported",
-        "replacement": "",
-        "gap": "No ADVFN provider or year-end lookup. Yahoo financial charts do not reproduce ADVFN fields.",
+        "status": "Partial",
+        "replacement": "CFFIELD(\"ADVFN\",ticker,5196) or year_end_date",
+        "gap": "Only the latest annual year-end parser and provider-qualified ID 5196 are implemented. All three native calls were blocked by HTTP 403. Quarterly/earlier-period metrics and the original SMF arguments remain absent.",
         "role": "Worksheet function",
         "current_source_line": 3,
         "current_signature": "Function smfGetADVFNElement(ByVal pTicker As String, ByVal pPeriod As String, ByVal pCells As Integer, Optional ByVal pFind1 As String = \"\", Optional ByVal pFind2 As String = \"\", Optional ByVal pError As Variant = \"Error\", Optional ByVal pType As Integer = 0) As Variant",
@@ -343,14 +343,20 @@
           "mac/test-results/0.7-dev-20261109-final/full/function-status.csv"
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetAdvFNElement.bas#L3",
-        "cachefinance_source_files": [],
+        "cachefinance_source_files": [
+          "src/CacheFinanceSmfProviders.js",
+          "src/CacheFinanceResearchFunctions.js"
+        ],
         "smf_reference_files": [
           "SMF code/modGetAdvFNElement.bas:3"
         ],
         "google_sheets_evidence": [
-          "No native Google Sheets implementation or parity evidence for this SMF function."
+          "Three Google Sheets calls (AAPL ID, NVDA ID, named alias) were BLOCKED by ADVFN HTTP 403. Local annual-header, identity, date and wrapper fixtures passed; no positive live year-end value is established. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
-        "local_test_files": []
+        "local_test_files": [
+          "test/CacheFinanceAdvfn.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
+        ]
       },
       {
         "function": "smfGetCSVFile",
@@ -403,8 +409,8 @@
         "category": "Economic series",
         "purpose": "Read a FRED exact-date observation or requested series metadata label.",
         "status": "Partial",
-        "replacement": "CFFRED",
-        "gap": "Latest 1\u20131000 observations and units/source available; no exact-date argument or full metadata-label interface.",
+        "replacement": "CFFRED / CFFREDVALUE",
+        "gap": "Latest observations, units/source and one exact-date observation are available. Missing dates never use an earlier value. Full metadata-label selectors and the original smfGetEconData/pError interface remain absent.",
         "role": "Worksheet function",
         "current_source_line": 8,
         "current_signature": "Function smfGetEconData(pID As String, pDate As Variant, Optional pError As Variant = \"Error\")",
@@ -428,16 +434,19 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetEconData.bas#L8",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisFred.js",
-          "src/CacheFinanceResearchFunctions.js:112",
-          "src/CacheFinanceResearchFunctions.js:208"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceFredValue.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
-          "DGS10, FEDFUNDS, CPIAUCSL and UNRATE native chart/table retrieval; DGS2 via generic CFFRED native cell outside default series; checks 3,19,30,37"
+          "DGS10, FEDFUNDS, CPIAUCSL and UNRATE native chart/table retrieval; DGS2 via generic CFFRED native cell outside default series; checks 3,19,30,37",
+          "Exact-date ISO text and date-valued cell checks passed in Google Sheets, including recent-table agreement and weekend/monthly no-observation results. No earlier date is substituted; see test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisFred.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:142"
+          "test/CacheFinanceResearchFunctions.test.js",
+          "test/CacheFinanceFredValue.test.js"
         ]
       },
       {
@@ -450,7 +459,7 @@
         "purpose": "Read a numbered field from SMF recipe files.",
         "status": "Partial",
         "replacement": "CFFIELD",
-        "gap": "Only selected Finviz/Zacks/GuruFocus IDs; no arbitrary recipe file, metadata fields, constants or general recipe interpreter.",
+        "gap": "35 provider-qualified numeric aliases across Finviz, Zacks, GuruFocus and ADVFN; ADVFN 5196 is live-blocked. No arbitrary recipe files, metadata fields, constants or general recipe interpreter.",
         "role": "Worksheet function",
         "current_source_line": 17,
         "current_signature": "Public Function RCHGetElementNumber(ByVal pTicker As String, Optional ByVal pItem As Integer = 1, Optional ByVal pError As Variant = \"Error\", Optional ByVal pFile As String = \"\")",
@@ -473,17 +482,19 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetElementNumber.bas#L17",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:217",
-          "src/CacheFinanceSmfProviders.js:62",
-          "src/CacheFinanceSmfProviders.js:7"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceSmfProviders.js",
+          "src/CacheFinanceSmfProviders.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
-          "All 35 fields accepted directly by Apps Script adapters for NVDA/AAPL; invalid symbols accepted no fields. Native worksheet CFFIELD Finviz price; checks 0,10,3,19,37"
+          "Original 35 Finviz/Zacks/GuruFocus adapter fields returned values for NVDA/AAPL in the saved November 11 Apps Script checks; actual worksheet CFFIELD checked Finviz price. This excludes the new ADVFN field.",
+          "Three Google Sheets calls (AAPL ID, NVDA ID, named alias) were BLOCKED by ADVFN HTTP 403. Local annual-header, identity, date and wrapper fixtures passed; no positive live year-end value is established. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
         "local_test_files": [
-          "test/CacheFinanceResearchFunctions.test.js:175",
-          "test/CacheFinanceSmfProviders.test.js"
+          "test/CacheFinanceResearchFunctions.test.js",
+          "test/CacheFinanceSmfProviders.test.js",
+          "test/CacheFinanceAdvfn.test.js"
         ]
       },
       {
@@ -953,14 +964,14 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionExpirations.bas#L3",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisOptions.js",
-          "src/CacheFinanceResearchFunctions.js:202"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Native expiration spills for NVDA/AAPL; checks 3,19,37,38"
         ],
         "local_test_files": [
-          "test/CacheFinanceResearchFunctions.test.js:114"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1079,7 +1090,7 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionQuotes.bas#L3",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisOptions.js",
-          "src/CacheFinanceResearchFunctions.js:192"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -1087,7 +1098,7 @@
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisOptions.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:114"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1594,7 +1605,7 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionQuotes.bas#L1388",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisOptions.js",
-          "src/CacheFinanceResearchFunctions.js:192"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -1602,7 +1613,7 @@
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisOptions.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:114"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1639,7 +1650,7 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionQuotes.bas#L1475",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisOptions.js",
-          "src/CacheFinanceResearchFunctions.js:192"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -1647,7 +1658,7 @@
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisOptions.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:114"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1684,7 +1695,7 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionQuotes.bas#L1568",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisOptions.js",
-          "src/CacheFinanceResearchFunctions.js:192"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -1692,7 +1703,7 @@
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisOptions.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:114"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1760,14 +1771,14 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetOptionStrikes.bas#L3",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:192"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Native CFOPTIONS array with strikes and contract symbols for NVDA/AAPL; checks 3,19,37,38"
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisOptions.test.js:89"
+          "test/CacheFinanceAnalysisOptions.test.js"
         ]
       },
       {
@@ -1929,17 +1940,17 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooHistory.bas#L2",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:51",
-          "src/CacheFinanceResearchFunctions.js:172",
-          "src/CacheFinanceResearchFunctions.js:69"
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Native NVDA and AAPL history spills and menu history tables; checks 3, 19, 37, 38"
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:24",
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -1975,17 +1986,17 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooHistory.bas#L103",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:51",
-          "src/CacheFinanceResearchFunctions.js:172",
-          "src/CacheFinanceResearchFunctions.js:69"
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Native NVDA and AAPL history spills and menu history tables; checks 3, 19, 37, 38"
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:24",
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -2022,16 +2033,18 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooJSONData.bas#L2",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisDetails.js",
-          "src/CacheFinanceResearchFunctions.js:182",
-          "src/CacheFinanceResearchFunctions.js:81"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceAnalysisData.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
-          "Native NVDA/AAPL fundamentals, earnings and estimate tables; scalar P/E and displayed basis-separated earnings; checks 3,19,37,38"
+          "Native NVDA/AAPL fundamentals, earnings and estimate tables; scalar P/E and displayed basis-separated earnings; checks 3,19,37,38",
+          "Final native NVDA snapshot: CFQUOTE price 158.78, session After-hours; regular price 173.73; post-market quote time 2026-11-12T01:00:00Z. These are saved results, not a current-price guarantee. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisDetails.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:98"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -2068,8 +2081,8 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooJSONData.bas#L61",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisDetails.js",
-          "src/CacheFinanceResearchFunctions.js:182",
-          "src/CacheFinanceResearchFunctions.js:81"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -2077,7 +2090,7 @@
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisDetails.test.js",
-          "test/CacheFinanceResearchFunctions.test.js:98"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -2163,15 +2176,16 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooQuotes.bas#L2",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:151",
-          "src/CacheFinanceResearchFunctions.js:160"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
-          "CFQUOTE price, timestamps and table results in native NVDA/AAPL example cells; checks 3,19,37,38"
+          "CFQUOTE price, timestamps and table results in native NVDA/AAPL example cells; checks 3,19,37,38",
+          "Final native NVDA snapshot: CFQUOTE price 158.78, session After-hours; regular price 173.73; post-market quote time 2026-11-12T01:00:00Z. These are saved results, not a current-price guarantee. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
         "local_test_files": [
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -2207,15 +2221,15 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modGetYahooQuotes.bas#L236",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:151",
-          "src/CacheFinanceResearchFunctions.js:160"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Related replacement workflow only. This evidence does not establish this SMF function or mode: CFQUOTE price, timestamps and table results in native NVDA/AAPL example cells; checks 3,19,37,38"
         ],
         "local_test_files": [
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -3407,9 +3421,9 @@
         "signature": "Public Function smfRSITargetPrices(ByVal pTicker As String, Optional ByVal pLoTrigger As Integer = 20, Optional ByVal pHiTrigger As Integer = 80, Optional ByVal pItems As Variant = \"010203040506070809101112\")",
         "category": "Technical calculations",
         "purpose": "Calculate current/previous RSI2 and low/high-trigger target prices with quote fields.",
-        "status": "Not ported",
-        "replacement": "",
-        "gap": "RSI14 in the analysis is a different period and does not supply RSI2 buy/sell targets or the12-item output.",
+        "status": "Partial",
+        "replacement": "CFRSITARGETS",
+        "gap": "RSI2 trigger targets and 12 named output fields are implemented using regular-session prices. No original smfRSITargetPrices alias or pItems code-string interface; unavailable bid/ask or unreachable targets remain N/A.",
         "role": "Worksheet function",
         "current_source_line": 3,
         "current_signature": "Public Function smfRSITargetPrices(ByVal pTicker As String, Optional ByVal pLoTrigger As Integer = 20, Optional ByVal pHiTrigger As Integer = 80, Optional ByVal pItems As Variant = \"010203040506070809101112\")",
@@ -3431,14 +3445,18 @@
           "mac/test-results/0.7-dev-20261109-final/full/function-status.csv"
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modRSITargetPrices.bas#L3",
-        "cachefinance_source_files": [],
+        "cachefinance_source_files": [
+          "src/CacheFinanceRsiTargets.js"
+        ],
         "smf_reference_files": [
           "SMF code/modRSITargetPrices.bas:3"
         ],
         "google_sheets_evidence": [
-          "No native Google Sheets implementation or parity evidence for this SMF function."
+          "CFRSITARGETS scalar and 12-field array checks passed in Google Sheets for selected NVDA/AAPL inputs; regular-session prices anchor RSI2. Final lookup/quote run: 18 PASS, 0 FAIL, 3 ADVFN BLOCKED, 0 PENDING; see test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
-        "local_test_files": []
+        "local_test_files": [
+          "test/CacheFinanceRsiTargets.test.js"
+        ]
       },
       {
         "function": "SMFTech",
@@ -3474,15 +3492,15 @@
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modTechnicalAnalysis.bas#L9",
         "cachefinance_source_files": [
           "src/CacheFinanceAnalysisData.js",
-          "src/CacheFinanceAnalysisSheets.js:280",
-          "src/CacheFinanceAnalysisVisuals.js:209"
+          "src/CacheFinanceAnalysisSheets.js",
+          "src/CacheFinanceAnalysisVisuals.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
           "Native RSI/MACD/price chart tables for NVDA/AAPL; checks 3,19,37"
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:100"
+          "test/CacheFinanceAnalysisData.test.js"
         ]
       },
       {
@@ -3570,7 +3588,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modZAdditional.bas#L4",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:172"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -3611,7 +3629,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modZAdditional.bas#L19",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:172"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -3652,7 +3670,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modZAdditional.bas#L42",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:172"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -3693,7 +3711,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/modZAdditional.bas#L65",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:172"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -3773,7 +3791,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfConvertYahooTicker_.bas#L2",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:7",
+          "src/CacheFinanceAnalysisData.js",
           "src/CacheFinanceSmfProviders.js"
         ],
         "smf_reference_files": [],
@@ -3781,7 +3799,7 @@
           "Related replacement workflow only. This evidence does not establish this SMF function or mode: Native plain NVDA/AAPL and five US symbols; international transformations only locally tested"
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:10"
+          "test/CacheFinanceAnalysisData.test.js"
         ]
       },
       {
@@ -3984,11 +4002,11 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfGetYahooHistoryCSV_.bas#L4",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:51",
-          "src/CacheFinanceAnalysisData.js:89",
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceAnalysisData.js",
           "src/CacheFinanceAnalysisSheets.js",
-          "src/CacheFinanceResearchFunctions.js:172",
-          "src/CacheFinanceResearchFunctions.js:69"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -3996,9 +4014,9 @@
           "Native earnings tables rendered for NVDA/AAPL; report documents Yahoo Chart event requests. No separate native assertion of every dividend/split value."
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:24",
-          "test/CacheFinanceAnalysisData.test.js:63",
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -4034,11 +4052,11 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfGetYahooHistoryCSV_.bas#L98",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:51",
-          "src/CacheFinanceAnalysisData.js:89",
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceAnalysisData.js",
           "src/CacheFinanceAnalysisSheets.js",
-          "src/CacheFinanceResearchFunctions.js:172",
-          "src/CacheFinanceResearchFunctions.js:69"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -4046,9 +4064,9 @@
           "Related replacement workflow only. This evidence does not establish this SMF function or mode: Native earnings tables rendered for NVDA/AAPL; report documents Yahoo Chart event requests. No separate native assertion of every dividend/split value."
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:24",
-          "test/CacheFinanceAnalysisData.test.js:63",
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -4240,11 +4258,11 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfGetYahooHistory_.bas#L7",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:51",
-          "src/CacheFinanceAnalysisData.js:89",
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceAnalysisData.js",
           "src/CacheFinanceAnalysisSheets.js",
-          "src/CacheFinanceResearchFunctions.js:172",
-          "src/CacheFinanceResearchFunctions.js:69"
+          "src/CacheFinanceResearchFunctions.js",
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -4252,9 +4270,9 @@
           "Native earnings tables rendered for NVDA/AAPL; report documents Yahoo Chart event requests. No separate native assertion of every dividend/split value."
         ],
         "local_test_files": [
-          "test/CacheFinanceAnalysisData.test.js:24",
-          "test/CacheFinanceAnalysisData.test.js:63",
-          "test/CacheFinanceResearchFunctions.test.js:75"
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceAnalysisData.test.js",
+          "test/CacheFinanceResearchFunctions.test.js"
         ]
       },
       {
@@ -4294,7 +4312,8 @@
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
-          "Native five-symbol NVDA/AAPL/MSFT/GOOGL/AMZN watchlists in analysis and clean template; checks 5,8,37,38"
+          "Native five-symbol NVDA/AAPL/MSFT/GOOGL/AMZN watchlists in analysis and clean template; checks 5,8,37,38",
+          "Final native NVDA snapshot: CFQUOTE price 158.78, session After-hours; regular price 173.73; post-market quote time 2026-11-12T01:00:00Z. These are saved results, not a current-price guarantee. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
         ],
         "local_test_files": [
           "test/CacheFinanceAnalysisWatchlist.test.js"
@@ -4333,8 +4352,8 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfPricesBetween_.bas#L2",
         "cachefinance_source_files": [
-          "src/CacheFinanceAnalysisData.js:243",
-          "src/CacheFinanceAnalysisSheets.js:239"
+          "src/CacheFinanceAnalysisData.js",
+          "src/CacheFinanceAnalysisSheets.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -4378,7 +4397,7 @@
         ],
         "source_url": "https://github.com/dnarain/SMF_Add-in/blob/60014079d08eadc489ed0ad01427d1807450c657/code/smfPricesByDates_.bas#L2",
         "cachefinance_source_files": [
-          "src/CacheFinanceResearchFunctions.js:172"
+          "src/CacheFinanceResearchFunctions.js"
         ],
         "smf_reference_files": [],
         "google_sheets_evidence": [
@@ -5438,11 +5457,14 @@
         "gap": "No all-fields/provider-sheet database updater.",
         "review": "Feature reviewed"
       }
-    ]
+    ],
+    "cachefinance_baseline_commit": "8842b97f474ae56c52431665bf2c3bbdbb858b86",
+    "cachefinance_source_ref": "dnarain/provider-tests",
+    "cachefinance_source_hash": "a3b6d07b2943",
+    "cachefinance_source_note": "New lookup and quote code is identified by its tested generated source hash. Branch source links can advance; the initial audit commit remains a separate baseline."
   },
   "numbered_fields": {
     "smf_commit": "60014079d08eadc489ed0ad01427d1807450c657",
-    "cachefinance_commit": "8842b97f474ae56c52431665bf2c3bbdbb858b86",
     "scope": "Effective numbered recipes from exact smf-elements-0.txt through smf-elements-22.txt files, in loader order. No private files or runtime credentials are read.",
     "loader_references": [
       "code/modGetElementNumber.bas:230-240",
@@ -5462,8 +5484,8 @@
       }
     ],
     "cf_id_coverage_counts": {
-      "Not ported": 11858,
-      "Mapped field": 34
+      "Not ported": 11857,
+      "Mapped field": 35
     },
     "legacy_definition_counts": {
       "Definition present; availability unverified": 11527,
@@ -5474,7 +5496,7 @@
     "per_provider": {
       "AdvFN-A": {
         "total": 2810,
-        "mapped": 0,
+        "mapped": 1,
         "explicit_retired": 0,
         "retired_mode_dependency": 0,
         "related_other_provider": 0
@@ -6110,6 +6132,14 @@
         "unit": "fraction",
         "smf_id": null,
         "source_label": "Dividend Yield (Trailing)"
+      },
+      {
+        "provider": "ADVFN",
+        "field": "year_end_date",
+        "description": "Latest annual year-end date",
+        "unit": "date text",
+        "smf_id": 5196,
+        "source_label": "Year End"
       }
     ],
     "mapped_ids": [
@@ -6146,7 +6176,8 @@
       4075,
       4076,
       4077,
-      4079
+      4079,
+      5196
     ],
     "new_cf_fields_without_smf_id": [
       {
@@ -6236,12 +6267,19 @@
       "Mapped field means a provider-qualified CFFIELD ID alias exists. No original RCHGetElementNumber wrapper or whole-SMF signature compatibility is provided.",
       "All mapped fields retain CacheFinance units. This inventory does not assert identical raw numeric scaling to legacy recipes.",
       "The fourteen other-provider candidates do not increase the count of mapped SMF IDs. No provider substitution is automatic.",
-      "The 51 SMF source-group labels are informational family names, not 51 distinct websites or providers. For example, AdvFN-A and AdvFN-Q share one provider, and Yahoo has many groups."
+      "The 51 SMF source-group labels are informational family names, not 51 distinct websites or providers. For example, AdvFN-A and AdvFN-Q share one provider, and Yahoo has many groups.",
+      "The adapter registry now contains 36 fields and 35 numeric aliases. The original 35 Finviz/Zacks/GuruFocus fields have saved selected-symbol native evidence; ADVFN is the new 36th field.",
+      "Mapped ADVFN ID 5196 is a locally tested latest annual year-end parser. All three Google Sheets requests returned HTTP 403; no live year-end value was accepted.",
+      "Current CacheFinance source links use the branch ref and tested generated source hash a3b6d07b2943. The initial implementation audit commit remains recorded separately."
     ],
     "csv_file": "fields.csv",
     "csv_rows": 11892,
-    "csv_sha256": "548b398e8d3cf90fd1ea8c9558868960c75adebc997308a7c2991a4470ac7cee",
-    "source_group_labels_count": 51
+    "csv_sha256": "4ca5ff8cf7c440230a1405f78b00b49150eab3daf8992f01a904584bff0b909a",
+    "source_group_labels_count": 51,
+    "cachefinance_baseline_commit": "8842b97f474ae56c52431665bf2c3bbdbb858b86",
+    "cachefinance_source_ref": "dnarain/provider-tests",
+    "cachefinance_source_hash": "a3b6d07b2943",
+    "cachefinance_source_note": "New lookup and quote code is identified by its tested generated source hash. Branch source links can advance; the initial audit commit remains a separate baseline."
   },
   "capabilities": [
     {
@@ -6264,13 +6302,13 @@
         "Native NVDA and AAPL history spills and menu history tables; checks 3, 19, 37, 38"
       ],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:69",
-        "src/CacheFinanceResearchFunctions.js:172",
-        "src/CacheFinanceAnalysisData.js:51"
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceAnalysisData.js"
       ],
       "localTests": [
-        "test/CacheFinanceResearchFunctions.test.js:75",
-        "test/CacheFinanceAnalysisData.test.js:24"
+        "test/CacheFinanceResearchFunctions.test.js",
+        "test/CacheFinanceAnalysisData.test.js"
       ],
       "note": "",
       "sameNameCompatibilityWrapper": false
@@ -6294,11 +6332,11 @@
         "Native earnings tables rendered for NVDA/AAPL; report documents Yahoo Chart event requests. No separate native assertion of every dividend/split value."
       ],
       "sourceFiles": [
-        "src/CacheFinanceAnalysisData.js:89",
+        "src/CacheFinanceAnalysisData.js",
         "src/CacheFinanceAnalysisSheets.js"
       ],
       "localTests": [
-        "test/CacheFinanceAnalysisData.test.js:63"
+        "test/CacheFinanceAnalysisData.test.js"
       ],
       "note": "Event handling has controlled local zero/missing/split tests. Do not describe this as full dividend-history parity.",
       "sameNameCompatibilityWrapper": false
@@ -6311,21 +6349,26 @@
         "smfYahooCodeDesc"
       ],
       "cachefinanceAvailable": [
-        "CFQUOTE exposes selected modern Yahoo Chart quote fields under new names",
+        "CFQUOTE exposes selected Yahoo quote fields, including separate regular/pre-market/post-market prices/times and the accepted active session; active-session cache is at most 60 seconds",
         "CACHEFINANCE/CACHEFINANCES retain original CacheFinance scalar/range lookups"
       ],
       "remaining": [
         "SMF quote-code arguments/output layout and code-description API; arbitrary CSV-URL mode with pItems empty"
       ],
       "nativeGoogleEvidence": [
-        "CFQUOTE price, timestamps and table results in native NVDA/AAPL example cells; checks 3,19,37,38"
+        "CFQUOTE price, timestamps and table results in native NVDA/AAPL example cells; checks 3,19,37,38",
+        "Final native NVDA snapshot: CFQUOTE price 158.78, session After-hours; regular price 173.73; post-market quote time 2026-11-12T01:00:00Z. These are saved results, not a current-price guarantee. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
       ],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:151",
-        "src/CacheFinanceResearchFunctions.js:160"
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceAnalysisData.js",
+        "src/CacheFinanceAnalysisDetails.js"
       ],
       "localTests": [
-        "test/CacheFinanceResearchFunctions.test.js:75"
+        "test/CacheFinanceResearchFunctions.test.js",
+        "test/CacheFinanceAnalysisData.test.js",
+        "test/CacheFinanceAnalysisDetails.test.js"
       ],
       "note": "Only the old nonempty-pItems ticker/quote-code route is confirmed retired. RCHGetYahooQuotes CSV-URL mode remains a separate SMF function mode and is not ported.",
       "sameNameCompatibilityWrapper": false
@@ -6348,12 +6391,12 @@
       ],
       "sourceFiles": [
         "src/CacheFinanceAnalysisDetails.js",
-        "src/CacheFinanceResearchFunctions.js:81",
-        "src/CacheFinanceResearchFunctions.js:182"
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceResearchFunctions.js"
       ],
       "localTests": [
         "test/CacheFinanceAnalysisDetails.test.js",
-        "test/CacheFinanceResearchFunctions.test.js:98"
+        "test/CacheFinanceResearchFunctions.test.js"
       ],
       "note": "Internally parsing selected published JSON does not implement SMF generic Yahoo JSON APIs.",
       "sameNameCompatibilityWrapper": false
@@ -6375,15 +6418,16 @@
         "Same-name functions; arbitrary SMF pItems/pTickers dispatcher and exact single-contract arguments; non-Yahoo sources; mini/adjusted/nonstandard contracts; SMF output dimension/header modes"
       ],
       "nativeGoogleEvidence": [
-        "Native NVDA and AAPL option spills, selected chain and five maturities; checks 1,3,17,19,34,37"
+        "Native NVDA and AAPL option spills, selected chain and five maturities; checks 1,3,17,19,34,37",
+        "Final a3b6d07b2943 refresh loaded 177 NVDA and 164 AVGO contracts, but all five ATM comparisons lacked usable quotes; see RSI-FRED-ADVFN-QUOTES.md."
       ],
       "sourceFiles": [
         "src/CacheFinanceAnalysisOptions.js",
-        "src/CacheFinanceResearchFunctions.js:192"
+        "src/CacheFinanceResearchFunctions.js"
       ],
       "localTests": [
         "test/CacheFinanceAnalysisOptions.test.js",
-        "test/CacheFinanceResearchFunctions.test.js:114"
+        "test/CacheFinanceResearchFunctions.test.js"
       ],
       "note": "SMF legacy helper implementation differs; the new Yahoo chain supplies a narrower modern task. Old options providers are not implicitly working.",
       "sameNameCompatibilityWrapper": false
@@ -6404,11 +6448,11 @@
         "Native expiration spills for NVDA/AAPL; checks 3,19,37,38"
       ],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:202",
+        "src/CacheFinanceResearchFunctions.js",
         "src/CacheFinanceAnalysisOptions.js"
       ],
       "localTests": [
-        "test/CacheFinanceResearchFunctions.test.js:114"
+        "test/CacheFinanceResearchFunctions.test.js"
       ],
       "note": "For the narrow task of listing published Yahoo expirations, CFEXPIRATIONS is a semantic equivalent; the whole SMF function is Partial.",
       "sameNameCompatibilityWrapper": false
@@ -6429,10 +6473,10 @@
         "Native CFOPTIONS array with strikes and contract symbols for NVDA/AAPL; checks 3,19,37,38"
       ],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:192"
+        "src/CacheFinanceResearchFunctions.js"
       ],
       "localTests": [
-        "test/CacheFinanceAnalysisOptions.test.js:89"
+        "test/CacheFinanceAnalysisOptions.test.js"
       ],
       "note": "Extracting a strike column from the chain requires new Sheets formulas; no SMF strike wrapper exists.",
       "sameNameCompatibilityWrapper": false
@@ -6462,24 +6506,28 @@
         "smfGetEconData"
       ],
       "cachefinanceAvailable": [
-        "CFFRED supports any validated FRED series ID and latest 1..1000 observations, preserving published units and missing values; private FRED_API_KEY required"
+        "CFFRED supports any validated FRED series ID and latest 1..1000 observations, preserving published units and missing values; private FRED_API_KEY required",
+        "CFFREDVALUE(seriesId,date,refresh) returns one exact-date observation for strict ISO text or a date-valued cell in the spreadsheet timezone; published units are retained and older dates never fill a missing observation"
       ],
       "remaining": [
-        "SMF exact-date observation lookup and metadata selectors (title/frequency/seasonal adjustment/notes/release/source); explicit date-window arguments"
+        "Full SMF metadata selectors (title/frequency/seasonal adjustment/notes/release/source); general date-window arguments; original smfGetEconData/pError interface"
       ],
       "nativeGoogleEvidence": [
-        "DGS10, FEDFUNDS, CPIAUCSL and UNRATE native chart/table retrieval; DGS2 via generic CFFRED native cell outside default series; checks 3,19,30,37"
+        "DGS10, FEDFUNDS, CPIAUCSL and UNRATE native chart/table retrieval; DGS2 via generic CFFRED native cell outside default series; checks 3,19,30,37",
+        "Exact-date ISO text and date-valued cell checks passed in Google Sheets, including recent-table agreement and weekend/monthly no-observation results. No earlier date is substituted; see test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
       ],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:112",
-        "src/CacheFinanceResearchFunctions.js:208",
-        "src/CacheFinanceAnalysisFred.js"
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceResearchFunctions.js",
+        "src/CacheFinanceAnalysisFred.js",
+        "src/CacheFinanceFredValue.js"
       ],
       "localTests": [
-        "test/CacheFinanceResearchFunctions.test.js:142",
-        "test/CacheFinanceAnalysisFred.test.js"
+        "test/CacheFinanceResearchFunctions.test.js",
+        "test/CacheFinanceAnalysisFred.test.js",
+        "test/CacheFinanceFredValue.test.js"
       ],
-      "note": "No extrapolation from Mac FRED tests. Generic extra-series acceptance also has local PAYEMS metadata/units tests.",
+      "note": "Native checks include the real monthly API response that reports count 0 but echoes an earlier period row: CFFREDVALUE returns no observation and never uses that earlier value. Local tests also cover missing dots, zero/negative values, timezone edges, duplicate/wrong-date rows and private-key reflection.",
       "sameNameCompatibilityWrapper": false
     },
     {
@@ -6489,43 +6537,53 @@
         "RCHGetElementNumber"
       ],
       "cachefinanceAvailable": [
-        "CFFIELD supports 35 named provider fields: 32 Finviz, one Zacks, two GuruFocus",
-        "34 selected native SMF numeric IDs are aliases; GuruFocus trailing yield has no selected numeric alias"
+        "CFFIELD registers 36 named provider fields: 32 Finviz, one Zacks, two GuruFocus and one ADVFN",
+        "35 SMF numeric IDs are aliases; GuruFocus trailing yield has no selected numeric alias; ADVFN ID 5196 is implemented but live-blocked"
       ],
       "remaining": [
         "Generic numbered-field engine; external/local element definitions; arbitrary custom recipes/metadata selectors/field files; all other SMF field IDs"
       ],
       "nativeGoogleEvidence": [
-        "All 35 fields accepted directly by Apps Script adapters for NVDA/AAPL; invalid symbols accepted no fields. Native worksheet CFFIELD Finviz price; checks 0,10,3,19,37"
+        "Original 35 Finviz/Zacks/GuruFocus adapter fields returned values for NVDA/AAPL in the saved November 11 Apps Script checks; actual worksheet CFFIELD checked Finviz price. This excludes the new ADVFN field.",
+        "Three Google Sheets calls (AAPL ID, NVDA ID, named alias) were BLOCKED by ADVFN HTTP 403. Local annual-header, identity, date and wrapper fixtures passed; no positive live year-end value is established. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
       ],
       "sourceFiles": [
-        "src/CacheFinanceSmfProviders.js:7",
-        "src/CacheFinanceSmfProviders.js:62",
-        "src/CacheFinanceResearchFunctions.js:217"
+        "src/CacheFinanceSmfProviders.js",
+        "src/CacheFinanceSmfProviders.js",
+        "src/CacheFinanceResearchFunctions.js"
       ],
       "localTests": [
         "test/CacheFinanceSmfProviders.test.js",
-        "test/CacheFinanceResearchFunctions.test.js:175"
+        "test/CacheFinanceResearchFunctions.test.js",
+        "test/CacheFinanceAdvfn.test.js"
       ],
-      "note": "35 recipes are not the full SMF field catalog. 288 explicitly obsolete SMF recipes are distinct from these 121 public functions.",
+      "note": "Mapping counts describe implemented aliases. The new ADVFN field has no positive live result. The 288 explicitly obsolete SMF recipes remain a separate count.",
       "sameNameCompatibilityWrapper": false
     },
     {
       "id": "advfn",
-      "status": "Not ported",
+      "status": "Partial",
       "smfFunctions": [
         "smfGetADVFNElement"
       ],
-      "cachefinanceAvailable": [],
+      "cachefinanceAvailable": [
+        "CFFIELD(\"ADVFN\",ticker,5196) and named year_end_date alias; strict latest annual date text parser"
+      ],
       "remaining": [
-        "ADVFN financial table lookup, latest annual year-end lookup and field 5196 are absent from CacheFinance"
+        "Resolve live ADVFN HTTP 403 access before claiming a working live year-end lookup; quarterly/earlier annual metrics, regional hosts and generic financial-table arguments"
       ],
-      "nativeGoogleEvidence": [],
+      "nativeGoogleEvidence": [
+        "Three Google Sheets calls (AAPL ID, NVDA ID, named alias) were BLOCKED by ADVFN HTTP 403. Local annual-header, identity, date and wrapper fixtures passed; no positive live year-end value is established. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
+      ],
       "sourceFiles": [
-        "SMF code/modGetAdvFNElement.bas:3"
+        "src/CacheFinanceSmfProviders.js",
+        "src/CacheFinanceResearchFunctions.js"
       ],
-      "localTests": [],
-      "note": "The repaired Mac ADVFN lookup is not evidence that Google Apps Script can retrieve it. No current CacheFinance ADVFN fetch adapter exists.",
+      "localTests": [
+        "test/CacheFinanceAdvfn.test.js",
+        "test/CacheFinanceResearchFunctions.test.js"
+      ],
+      "note": "The parser accepts only a matching primary ticker, valid annual header and matching fiscal year. All three native lookup calls were blocked; a fixture date is not a live provider result.",
       "sameNameCompatibilityWrapper": false
     },
     {
@@ -6600,31 +6658,37 @@
       ],
       "sourceFiles": [
         "src/CacheFinanceAnalysisData.js",
-        "src/CacheFinanceAnalysisSheets.js:280",
-        "src/CacheFinanceAnalysisVisuals.js:209"
+        "src/CacheFinanceAnalysisSheets.js",
+        "src/CacheFinanceAnalysisVisuals.js"
       ],
       "localTests": [
-        "test/CacheFinanceAnalysisData.test.js:100"
+        "test/CacheFinanceAnalysisData.test.js"
       ],
       "note": "SMF code/modTechnicalAnalysis.bas:174 labels SMA12/SMA26 and computes rolling simple averages; CacheFinance uses exponential averages. The shared MACD label does not mean equal values. Local tests separately check CacheFinance Wilder RSI14.",
       "sameNameCompatibilityWrapper": false
     },
     {
       "id": "rsi-price-targets",
-      "status": "Not ported",
+      "status": "Partial",
       "smfFunctions": [
         "smfRSITargetPrices"
       ],
-      "cachefinanceAvailable": [],
+      "cachefinanceAvailable": [
+        "CFRSITARGETS(ticker,lowTrigger,highTrigger,field,refresh): RSI2, buy/sell targets, regular-session quote fields, previous close and previous RSI2; 12 named scalar selectors or header/value array"
+      ],
       "remaining": [
-        "RSI2 trigger-based buy/sell target prices and SMF 12-field output"
+        "Original smfRSITargetPrices alias and numeric pItems code-string interface; unavailable bid/ask and unreachable targets remain N/A"
       ],
-      "nativeGoogleEvidence": [],
+      "nativeGoogleEvidence": [
+        "CFRSITARGETS scalar and 12-field array checks passed in Google Sheets for selected NVDA/AAPL inputs; regular-session prices anchor RSI2. Final lookup/quote run: 18 PASS, 0 FAIL, 3 ADVFN BLOCKED, 0 PENDING; see test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
+      ],
       "sourceFiles": [
-        "SMF code/modRSITargetPrices.bas:3"
+        "src/CacheFinanceRsiTargets.js"
       ],
-      "localTests": [],
-      "note": "CacheFinance RSI14 charts do not calculate RSI2 target prices.",
+      "localTests": [
+        "test/CacheFinanceRsiTargets.test.js"
+      ],
+      "note": "The RSI2 calculation uses completed prior sessions and the regular-session quote. After-hours display quotes do not change RSI2 inputs.",
       "sameNameCompatibilityWrapper": false
     },
     {
@@ -6646,7 +6710,7 @@
       ],
       "nativeGoogleEvidence": [],
       "sourceFiles": [
-        "src/CacheFinanceResearchFunctions.js:172"
+        "src/CacheFinanceResearchFunctions.js"
       ],
       "localTests": [],
       "note": "A history table alone does not implement these selectors.",
@@ -6659,13 +6723,15 @@
         "smfGetYahooPortfolioView"
       ],
       "cachefinanceAvailable": [
-        "CF Watchlist refreshes up to 20 input tickers with selected quotes, returns, indicators, fundamentals and timestamps; CF Journal records same-symbol/currency changes"
+        "CF Watchlist refreshes up to 20 input tickers with selected quotes, returns, indicators, fundamentals and timestamps; CF Journal records same-symbol/currency changes",
+        "Watchlist prices and timestamps use the accepted active quote and an explicit Price session column; indicators and returns continue to use regular daily closes"
       ],
       "remaining": [
         "SMF 91-item portfolio-view selection, pMultiple/header/dimension arguments and exact output format"
       ],
       "nativeGoogleEvidence": [
-        "Native five-symbol NVDA/AAPL/MSFT/GOOGL/AMZN watchlists in analysis and clean template; checks 5,8,37,38"
+        "Native five-symbol NVDA/AAPL/MSFT/GOOGL/AMZN watchlists in analysis and clean template; checks 5,8,37,38",
+        "Final native NVDA snapshot: CFQUOTE price 158.78, session After-hours; regular price 173.73; post-market quote time 2026-11-12T01:00:00Z. These are saved results, not a current-price guarantee. See test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md."
       ],
       "sourceFiles": [
         "src/CacheFinanceAnalysisWatchlist.js"
@@ -6781,11 +6847,11 @@
         "Native plain NVDA/AAPL and five US symbols; international transformations only locally tested"
       ],
       "sourceFiles": [
-        "src/CacheFinanceAnalysisData.js:7",
+        "src/CacheFinanceAnalysisData.js",
         "src/CacheFinanceSmfProviders.js"
       ],
       "localTests": [
-        "test/CacheFinanceAnalysisData.test.js:10"
+        "test/CacheFinanceAnalysisData.test.js"
       ],
       "note": "Direction and supported providers differ from the original SMF conversion function.",
       "sameNameCompatibilityWrapper": false
@@ -6821,7 +6887,10 @@
     "Native field existence/status is not independent reconciliation of every financial value against filings/exchange data",
     "No every-exchange/ticker/expiration/field assertion; full20ticker cold/warm runtime not native-tested",
     "International ticker conversions, malformed inputs, cache bounds, date timezone edges and hostile/missing/zero/conflicting responses are primarily local controlled tests",
-    "Mac Excel endpoint results are reference evidence only; never count them as native Google Sheets provider results"
+    "Mac Excel endpoint results are reference evidence only; never count them as native Google Sheets provider results",
+    "ADVFN has local parser and public-wrapper tests but zero accepted live values in the final worksheet run; all three calls were blocked by HTTP 403.",
+    "Native and local totals record saved runs for generated source hash a3b6d07b2943. Older broad provider/template checks remain baseline evidence and do not independently retest every older field in the final source snapshot.",
+    "Latest NVDA/AVGO option chains did not supply usable same-strike ATM quotes. Generated model outputs were unavailable; 21 payoff helper cells intentionally returned native #N/A when seed inputs were absent."
   ],
   "retired_modes": [
     {
@@ -6928,15 +6997,52 @@
     }
   ],
   "evidence": {
-    "nativeResults": "test-results/2026-11-11-google-apps-script/research-expansion-native-results.json",
-    "nativeReport": "test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md",
-    "finalNativeSourceHash": "5b13f50d1358",
+    "nativeResults": "test-results/2026-11-11-google-apps-script/lookup-quotes-native-results.json",
+    "nativeReport": "test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md",
+    "finalNativeSourceHash": "a3b6d07b2943",
     "localSuiteReported": {
-      "tests": 997,
-      "files": 30,
-      "lineCoverage": 95.63,
-      "branchCoverage": 88.15
+      "tests": 1306,
+      "files": 34,
+      "lineCoverage": 96.06,
+      "branchCoverage": 89.12,
+      "functionCoverage": 96.74
     },
-    "currentNativeCoverage": "Selected NVDA/AAPL workflows, five US watchlist symbols, five named FRED series,35 provider recipes. Earlier hash checks are retained in the evidence; final hash checks34-41 establish final build/template."
+    "lookupQuoteNativeSummary": {
+      "PASS": 18,
+      "FAIL": 0,
+      "BLOCKED": 3,
+      "PENDING": 0,
+      "blockedProvider": "ADVFN",
+      "sourceHash": "a3b6d07b2943"
+    },
+    "currentNativeCoverage": "Final lookup/quote worksheet run: selected NVDA/AAPL RSI2 scalars/arrays, exact-date FRED including date-valued cells and no-observation cases, active-session NVDA quotes, and three ADVFN HTTP 403 blocks. Earlier broader workflows and original 35 provider fields retain their own baseline evidence.",
+    "savedQuoteSnapshot": {
+      "symbol": "NVDA",
+      "price": 158.78,
+      "priceSession": "After-hours",
+      "regularPrice": 173.73,
+      "postMarketQuoteTime": "2026-11-12T01:00:00Z",
+      "note": "Saved native quote result; no claim of a current quote or continuous refresh."
+    },
+    "researchExpansionBaseline": {
+      "nativeResults": "test-results/2026-11-11-google-apps-script/research-expansion-native-results.json",
+      "nativeReport": "test-results/2026-11-11-google-apps-script/RESEARCH-EXPANSION.md",
+      "finalNativeSourceHash": "5b13f50d1358",
+      "localSuiteReported": {
+        "tests": 997,
+        "files": 30,
+        "lineCoverage": 95.63,
+        "branchCoverage": 88.15
+      },
+      "currentNativeCoverage": "Selected NVDA/AAPL workflows, five US watchlist symbols, five named FRED series,35 provider recipes. Earlier hash checks are retained in the evidence; final hash checks34-41 establish final build/template."
+    }
+  },
+  "source_snapshot": {
+    "cachefinance_branch": "dnarain/provider-tests",
+    "generated_source_hash": "a3b6d07b2943",
+    "initial_implementation_audit_commit": "8842b97f474ae56c52431665bf2c3bbdbb858b86",
+    "initial_coverage_commit": "126fa72478f54d17337a184e62c78fc4066ea6e8",
+    "smf_commit": "60014079d08eadc489ed0ad01427d1807450c657",
+    "note": "The generated source hash identifies the tested code before the release commit. Branch links can advance; retain the baseline commits when comparing earlier evidence."
   }
 }

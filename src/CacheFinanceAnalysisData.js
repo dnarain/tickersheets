@@ -48,6 +48,62 @@ class CFAnalysisData {
         return exchange ? exchange + ":" + symbol : null;
     }
 
+    /** Extract only explicit provider quote pairs. Untimed extended prices never become current quotes. */
+    static quoteSessions(meta, source = "", percentScale = 1) {
+        const number = value => CFAnalysisData.number_(value && typeof value === "object" ? value.raw : value);
+        const timestamp = value => {
+            const epoch = number(value);
+            return Number.isSafeInteger(epoch) && epoch > 0 && epoch <= 253402300799 ? new Date(epoch * 1000).toISOString() : null;
+        };
+        const quote = (prefix, regular = false) => {
+            const price = number(meta?.[prefix + "Price"]), time = timestamp(meta?.[prefix + "Time"]);
+            const accepted = price !== null && price > 0;
+            const rawChange = number(meta?.[prefix + "Change"]), rawFraction = number(meta?.[prefix + "ChangePercent"]);
+            return { price: accepted && (regular || time !== null) ? price : null, quoteTime: accepted ? time : null,
+                change: accepted && (regular || time !== null) ? rawChange : null,
+                changeFraction: accepted && (regular || time !== null) && rawFraction !== null ? rawFraction * percentScale : null,
+                source, status: !accepted ? "Price unavailable" : time === null ? "Timestamp unavailable" : "Available" };
+        };
+        const state = typeof meta?.marketState === "string" ? meta.marketState.trim().toUpperCase() : "";
+        return { symbol: typeof meta?.symbol === "string" ? meta.symbol.toUpperCase() : null, currency: CFAnalysisData.text_(meta?.currency),
+            marketState: ["REGULAR", "PRE", "PREPRE", "POST", "POSTPOST", "CLOSED", "OVERNIGHT"].includes(state) ? state : null,
+            regular: quote("regularMarket", true), pre: quote("preMarket"), post: quote("postMarket") };
+    }
+
+    /** Select the latest quote in the provider's stated session, while keeping regular prices separate. */
+    static selectQuote(chart = {}, details = {}) {
+        const base = chart.quoteSessions && chart.quoteSessions.symbol === chart.symbol ? chart.quoteSessions : CFAnalysisData.quoteSessions({ symbol: chart.symbol, currency: chart.currency,
+            regularMarketPrice: chart.price, regularMarketTime: chart.quoteTime ? Date.parse(chart.quoteTime) / 1000 : null, marketState: chart.marketState }, chart.source || "Yahoo Chart API");
+        const snapshots = [base];
+        if (details?.ok === true && details.symbol === chart.symbol && details.quoteSessions?.symbol === chart.symbol
+            && !(base.currency && details.quoteSessions.currency && base.currency !== details.quoteSessions.currency)) snapshots.push(details.quoteSessions);
+        const epoch = value => typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : null;
+        const merged = {};
+        for (const kind of ["regular", "pre", "post"]) {
+            const rows = snapshots.map(row => row[kind]).filter(row => typeof row?.price === "number" && Number.isFinite(row.price) && row.price > 0);
+            const timed = rows.filter(row => epoch(row.quoteTime) !== null).sort((a, b) => epoch(b.quoteTime) - epoch(a.quoteTime));
+            const chosen = timed[0] || (kind === "regular" ? rows[0] : null);
+            const conflict = chosen && timed.some(row => row.quoteTime === chosen.quoteTime && Math.abs(row.price - chosen.price) > Math.max(1e-8, chosen.price * 1e-7));
+            merged[kind] = chosen && !conflict ? { ...chosen } : { price: null, quoteTime: null, change: null, changeFraction: null, source: "", status: conflict ? "Conflicting same-time quotes" : "Quote unavailable" };
+        }
+        const regularEpoch = epoch(merged.regular.quoteTime);
+        for (const kind of ["pre", "post"]) if (regularEpoch !== null && epoch(merged[kind].quoteTime) !== null && epoch(merged[kind].quoteTime) < regularEpoch) merged[kind].status = "Older than regular quote";
+        const states = snapshots.filter(row => row.marketState).map(row => ({ state: row.marketState,
+            epoch: Math.max(...["regular", "pre", "post"].map(kind => epoch(row[kind]?.quoteTime) ?? -Infinity)) }))
+            .filter(row => regularEpoch === null || row.epoch >= regularEpoch).sort((a, b) => b.epoch - a.epoch);
+        const marketState = states.length && !states.some(row => row.epoch === states[0].epoch && row.state !== states[0].state) ? states[0].state : null;
+        let selected = "regular";
+        const newer = kind => regularEpoch !== null && merged[kind].price !== null && epoch(merged[kind].quoteTime) > regularEpoch;
+        if (["PRE", "PREPRE"].includes(marketState) && newer("pre")) selected = "pre";
+        if (["POST", "POSTPOST"].includes(marketState) && newer("post")) selected = "post";
+        if (["CLOSED", "OVERNIGHT"].includes(marketState)) for (const kind of ["pre", "post"]) {
+            if (newer(kind) && epoch(merged[kind].quoteTime) > (epoch(merged[selected].quoteTime) ?? -Infinity)) selected = kind;
+        }
+        const active = merged[selected];
+        return { ...merged, marketState, price: active.price, quoteTime: active.quoteTime, change: active.change, changeFraction: active.changeFraction,
+            session: ({ regular: "Regular", pre: "Pre-market", post: "After-hours" })[selected], source: active.source, selectedSession: selected };
+    }
+
     static parseChart(body, requestedYahooSymbol) {
         const source = "Yahoo Chart API";
         const failure = message => ({ ok: false, source, symbol: null, history: [], events: { dividends: [], splits: [] }, error: message });
@@ -86,6 +142,7 @@ class CFAnalysisData {
             }
             const epoch = CFAnalysisData.number_(meta.regularMarketTime, true);
             const quoteDate = epoch === null ? null : new Date(epoch * 1000);
+            const quoteSessions = CFAnalysisData.quoteSessions(meta, source, 0.01);
             const events = { dividends: [], splits: [] };
             for (const dividend of Object.values(chart.events?.dividends || {})) {
                 if (CFAnalysisData.number_(dividend.date, true) !== null && CFAnalysisData.number_(dividend.amount) !== null && dividend.amount >= 0) {
@@ -104,7 +161,8 @@ class CFAnalysisData {
                 currency: CFAnalysisData.text_(meta.currency), exchange: CFAnalysisData.text_(meta.fullExchangeName) || CFAnalysisData.text_(meta.exchangeName),
                 exchangeCode: CFAnalysisData.text_(meta.exchangeName), timezone: CFAnalysisData.text_(meta.exchangeTimezoneName), instrumentType: CFAnalysisData.text_(meta.instrumentType),
                 quoteTime: quoteDate && Number.isFinite(quoteDate.getTime()) ? quoteDate.toISOString() : null,
-                price: CFAnalysisData.number_(meta.regularMarketPrice, true), previousClose: CFAnalysisData.number_(meta.previousClose, true), marketState: CFAnalysisData.text_(meta.marketState),
+                price: CFAnalysisData.number_(meta.regularMarketPrice, true), regularPrice: quoteSessions.regular.price, regularQuoteTime: quoteSessions.regular.quoteTime,
+                quoteSessions, previousClose: CFAnalysisData.number_(meta.previousClose, true), marketState: quoteSessions.marketState,
                 metrics: { dayHigh: CFAnalysisData.number_(meta.regularMarketDayHigh, true), dayLow: CFAnalysisData.number_(meta.regularMarketDayLow, true), volume: CFAnalysisData.number_(meta.regularMarketVolume),
                     fiftyTwoWeekHigh: CFAnalysisData.number_(meta.fiftyTwoWeekHigh, true), fiftyTwoWeekLow: CFAnalysisData.number_(meta.fiftyTwoWeekLow, true), marketCap: CFAnalysisData.number_(meta.marketCap, true) },
                 dateBasis: "UTC date of Yahoo daily bar", history, events,

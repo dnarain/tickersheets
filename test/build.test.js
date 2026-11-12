@@ -43,10 +43,13 @@ class Widget {}`;
 });
 
 describe("cachefinance bundle", () => {
+    it.each(["||=", "&&=", "??="])("rejects %s before upload because Apps Script rejects logical assignment", operator => {
+        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nlet value; value " + operator + " 1;")).toThrow(/logical assignment/);
+    });
     it("builds a valid Apps Script bundle", () => {
         const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
 
-        expect(sectionCount).toBe(23);
+        expect(sectionCount).toBe(26);
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);
         expect(bundle).toContain(`Source hash: ${sourceHash}`);
         expect(bundle).toContain("function CACHEFINANCE");

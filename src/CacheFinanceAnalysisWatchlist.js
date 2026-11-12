@@ -20,7 +20,7 @@ class CFWatchlist {
             if (sheet && sheet.getRange("Z1").getValue() !== marker) throw new Error("Rename the existing " + name + " tab before building the watchlist.");
         }
     }
-    static headers() { return ["Ticker", "Status", "Price", "Currency", "Quote time", "Retrieved", "Indicators through", "1-day return", "1-month return", "1-year return", "RSI14", "SMA50", "SMA200", "20-day annual volatility", "P/E", "EPS (trailing)", "Market cap", "Analyst target", "Next earnings", "Price change since prior refresh", "RSI change", "Target change", "Public source"]; }
+    static headers() { return ["Ticker", "Status", "Price", "Currency", "Quote time", "Retrieved", "Indicators through", "1-day return", "1-month return", "1-year return", "RSI14", "SMA50", "SMA200", "20-day annual volatility", "P/E", "EPS (trailing)", "Market cap", "Analyst target", "Next earnings", "Price change since prior refresh", "RSI change", "Target change", "Public source", "Price session"]; }
     static journalHeaders() { return ["Recorded at", "Ticker", "Price", "Currency", "Quote time", "Indicators through", "RSI14", "P/E", "EPS (trailing)", "Analyst target", "Next earnings", "ATM IV", "Price change since prior refresh", "RSI change", "EPS change", "Target change", "Earnings date changed", "IV change (percentage points)"]; }
     static decorate(sheet, title, columns) {
         if (sheet.getMaxColumns() < 26) sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
@@ -40,6 +40,7 @@ class CFWatchlist {
             CFWatchlist.decorate(sheet, name === "CF Watchlist" ? "Stock watchlist" : "Changes between refreshes", headers.length);
             sheet.getRange(7, 1, 1, headers.length).setValues([headers]).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold").setWrap(true);
             if (name === "CF Watchlist") {
+                sheet.getRange("A2:L2").setValue("Prices use the latest accepted session quote. Returns and indicators use regular daily closes. Source times use the spreadsheet time zone.");
                 sheet.getRange("A4:L4").merge().setValue("Edit up to 20 yellow ticker cells, then choose Stock analysis → Refresh watchlist.");
                 sheet.getRange("A8:A27").setBackground("#FFF2CC").setFontColor("#0000FF").setFontWeight("bold").setNumberFormat("@");
                 sheet.setColumnWidths(5, 2, 175); sheet.setColumnWidths(20, 3, 185); sheet.setColumnWidth(23, 360);
@@ -61,7 +62,7 @@ class CFWatchlist {
         CFWatchlist.check(book);
         const sheet = book.getSheetByName("CF Watchlist");
         const start = Math.max(8, first), height = Math.min(28, first + count) - start;
-        if (sheet && Number.isInteger(start) && Number.isInteger(height) && height > 0) sheet.getRange(start, 2, height, 22).clearContent();
+        if (sheet && Number.isInteger(start) && Number.isInteger(height) && height > 0) sheet.getRange(start, 2, height, CFWatchlist.headers().length - 1).clearContent();
     }
     static metrics(snapshot) {
         const chart = snapshot.chart || {}, summary = snapshot.technical?.summary || {}, fields = { ...(snapshot.statistics?.fields || {}) };
@@ -69,7 +70,8 @@ class CFWatchlist {
         const options = snapshot.options || {}, spot = CFWatchlist.number(options.underlyingPrice);
         const usable = options.ok && spot !== null ? (options.contracts || []).filter(row => CFWatchlist.number(row.iv) !== null && row.iv >= 0 && CFWatchlist.number(row.mid) !== null && row.mid > 0).sort((a, b) => Math.abs(a.strike - spot) - Math.abs(b.strike - spot)) : [];
         const sameStrike = usable.length ? usable.filter(row => row.strike === usable[0].strike && row.expiration === usable[0].expiration) : [];
-        return { symbol: snapshot.symbol || snapshot.ticker, price: CFWatchlist.number(chart.price), currency: chart.currency || "", quoteTime: chart.quoteTime || "",
+        const quote = snapshot.displayQuote || CFAnalysisData.selectQuote(chart, snapshot.details || {});
+        return { symbol: snapshot.symbol || snapshot.ticker, price: CFWatchlist.number(quote.price), currency: chart.currency || "", quoteTime: quote.quoteTime || "", priceSession: quote.session,
             indicatorAsOf: summary.indicatorAsOf || summary.historyEnd || "", rsi14: CFWatchlist.number(summary.rsi14), pe: CFWatchlist.number(fields.trailing_pe?.value),
             eps: CFWatchlist.number(fields.eps_ttm?.value), target: CFWatchlist.number(fields.target_price?.value), nextEarnings: snapshot.details?.nextEarnings?.dates?.[0] || fields.earnings_date?.value || "",
             atmIV: sameStrike.length ? sameStrike.reduce((sum, row) => sum + row.iv, 0) / sameStrike.length : null };
@@ -103,21 +105,21 @@ class CFWatchlist {
         for (const input of initial) {
             let data, detail;
             try {
-                const quote = CFPublicData.chart(input.input, dependencies), fundamentals = CFPublicData.details(input.input, dependencies);
+                const quote = CFPublicData.quote(input.input, dependencies), fundamentals = CFPublicData.details(input.input, dependencies);
                 const snapshot = { ok: quote.ok || fundamentals.ok, ticker: String(input.input), symbol: quote.symbol || fundamentals.symbol,
-                    chart: quote.chart || {}, technical: CFAnalysisData.calculate(quote.chart?.history || []), details: fundamentals.details || {}, statistics: { fields: fundamentals.fields || {} }, fetchedAt: new Date((dependencies.clock || Date.now)()).toISOString() };
+                    chart: quote.chart || {}, displayQuote: quote.quote, technical: CFAnalysisData.calculate(quote.chart?.history || []), details: fundamentals.details || {}, statistics: { fields: fundamentals.fields || {} }, fetchedAt: new Date((dependencies.clock || Date.now)()).toISOString() };
                 const now = sheet.getRange(input.row, 1).getValue();
                 if (typeof now !== "string" || now.trim().toUpperCase() !== input.input) { results.push({ ticker: String(input.input), status: "Ticker changed during refresh" }); continue; }
                 const journal = CFWatchlist.record(book, snapshot), metric = CFWatchlist.metrics(snapshot), summary = snapshot.technical.summary;
                 const status = quote.ok && fundamentals.ok ? "Available" : quote.ok ? "Quote available; fundamentals unavailable" : fundamentals.ok ? "Fundamentals available; quote unavailable" : quote.status;
                 data = [status, metric.price, metric.currency, CFWatchlist.date(metric.quoteTime), CFWatchlist.date(quote.retrievedAt || fundamentals.retrievedAt), metric.indicatorAsOf,
                     summary.return1d, summary.return1m, summary.return1y, metric.rsi14, summary.sma50, summary.sma200, summary.volatility20d,
-                    metric.pe, metric.eps, snapshot.statistics.fields.market_cap?.value, metric.target, metric.nextEarnings, journal?.delta.price, journal?.delta.rsi14, journal?.delta.target, quote.source];
+                    metric.pe, metric.eps, snapshot.statistics.fields.market_cap?.value, metric.target, metric.nextEarnings, journal?.delta.price, journal?.delta.rsi14, journal?.delta.target, quote.source, metric.priceSession];
                 detail = { ticker: input.input, status, quote: quote.ok, fundamentals: fundamentals.ok, cacheHit: quote.cacheHit, journalRow: journal?.row || null };
-            } catch { data = ["Invalid ticker or unavailable request", ...Array(21).fill(null)]; detail = { ticker: String(input.input), status: data[0] }; }
+            } catch { data = ["Invalid ticker or unavailable request", ...Array(CFWatchlist.headers().length - 2).fill(null)]; detail = { ticker: String(input.input), status: data[0] }; }
             const current = sheet.getRange(input.row, 1).getValue();
             if (typeof current !== "string" || current.trim().toUpperCase() !== input.input) { results.push({ ticker: String(input.input), status: "Ticker changed during refresh" }); continue; }
-            if (data) sheet.getRange(input.row, 2, 1, 22).setValues([data.map(CFWatchlist.safe)]);
+            if (data) sheet.getRange(input.row, 2, 1, CFWatchlist.headers().length - 1).setValues([data.map(CFWatchlist.safe)]);
             results.push(detail);
         }
         sheet.getRange("C8:C27").setNumberFormat("#,##0.00"); sheet.getRange("H8:J27").setNumberFormat("0.00%"); sheet.getRange("K8:M27").setNumberFormat("0.00"); sheet.getRange("N8:N27").setNumberFormat("0.00%");

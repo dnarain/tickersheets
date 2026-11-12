@@ -68,7 +68,7 @@ class CFPublicData {
 
     static chart(input, overrides = {}, refresh = "") {
         const symbol = CFPublicData.ticker(input);
-        return CFPublicData.cached("chart", symbol, 60, deps => {
+        return CFPublicData.cached("chart:v2", symbol, 60, deps => {
             const source = "https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(symbol);
             const response = CFPublicData.request(source + "?range=2y&interval=1d&events=div%2Csplits&includeAdjustedClose=true", deps);
             const chart = CFAnalysisData.parseChart(response.body, symbol);
@@ -79,7 +79,7 @@ class CFPublicData {
 
     static details(input, overrides = {}, refresh = "") {
         const symbol = CFPublicData.ticker(input);
-        return CFPublicData.cached("details", symbol, 900, deps => {
+        return CFPublicData.cached("details:v2", symbol, 900, deps => {
             const source = "https://finance.yahoo.com/quote/" + encodeURIComponent(symbol) + "/";
             const response = CFPublicData.request(source, deps), statistics = CFAnalysisData.parseStatistics(response.body, symbol), details = CFAnalysisDetails.parsePage(response.body, symbol);
             const fields = { ...(statistics.fields || {}) };
@@ -87,6 +87,23 @@ class CFPublicData {
             const ok = details.ok || statistics.ok;
             return { ok, symbol, source, http: response.http, details, fields, status: ok ? "Available" : response.http === 200 ? "Matching fundamentals unavailable" : "HTTP " + response.http };
         }, overrides, refresh);
+    }
+
+    /** Session quotes use a separate one-minute cache, never the fifteen-minute fundamentals cache. */
+    static quote(input, overrides = {}, refresh = "") {
+        const chartData = CFPublicData.chart(input, overrides, refresh);
+        if (!chartData.ok) return chartData;
+        const symbol = chartData.symbol;
+        const detailData = CFPublicData.cached("quote-sessions:v1", symbol, 60, deps => {
+            const source = "https://finance.yahoo.com/quote/" + encodeURIComponent(symbol) + "/";
+            const response = CFPublicData.request(source, deps), details = CFAnalysisDetails.parsePage(response.body, symbol);
+            return { ok: details.ok, symbol, source, http: response.http, quoteSessions: details.quoteSessions || null,
+                status: details.ok ? "Available" : "Extended-session quote unavailable" };
+        }, overrides, refresh);
+        const quote = CFAnalysisData.selectQuote(chartData.chart, { ok: detailData.ok, symbol, quoteSessions: detailData.quoteSessions });
+        return { ...chartData, quote, quoteTime: quote.quoteTime, source: quote.source === "Yahoo Chart API" ? chartData.source : quote.source || chartData.source,
+            retrievedAt: detailData.ok && quote.source === detailData.source ? detailData.retrievedAt : chartData.retrievedAt,
+            cacheHit: chartData.cacheHit && detailData.cacheHit, extendedQuoteStatus: detailData.status };
     }
 
     static options(input, expiration = "", overrides = {}, refresh = "") {
@@ -138,7 +155,8 @@ class CFPublicData {
     }
 
     static provider(provider, input, overrides = {}, refresh = "") {
-        const symbol = CFPublicData.ticker(input), id = String(provider || "").trim().toUpperCase();
+        const normalized = CFAnalysisData.normalizeTicker(input), id = String(provider || "").trim().toUpperCase();
+        const symbol = id === "ADVFN" ? normalized.cacheSymbol || normalized.yahooSymbol : normalized.yahooSymbol;
         if (typeof CFSmfProviders === "undefined") return CFPublicData.failure("Provider adapter unavailable.");
         return CFPublicData.cached("provider", id + ":" + symbol, 300, deps => CFSmfProviders.fetch(id, symbol, deps), overrides, refresh);
     }
@@ -148,8 +166,12 @@ class CFPublicData {
     }
 
     static quoteFields(data) {
-        const chart = data.chart || {}, metrics = chart.metrics || {};
-        return { price: chart.price, name: chart.name, currency: chart.currency, exchange: chart.exchange, quote_time: chart.quoteTime,
+        const chart = data.chart || {}, metrics = chart.metrics || {}, quote = data.quote || CFAnalysisData.selectQuote(chart);
+        return { price: quote.price, name: chart.name, currency: chart.currency, exchange: chart.exchange, quote_time: quote.quoteTime,
+            price_session: quote.session, market_state: quote.marketState,
+            regular_price: quote.regular.price, regular_time: quote.regular.quoteTime, regular_change: quote.regular.change, regular_change_fraction: quote.regular.changeFraction,
+            pre_market_price: quote.pre.price, pre_market_time: quote.pre.quoteTime, pre_market_change: quote.pre.change, pre_market_change_fraction: quote.pre.changeFraction,
+            post_market_price: quote.post.price, post_market_time: quote.post.quoteTime, post_market_change: quote.post.change, post_market_change_fraction: quote.post.changeFraction,
             previous_close: chart.previousClose, day_high: metrics.dayHigh, day_low: metrics.dayLow, volume: metrics.volume,
             fifty_two_week_high: metrics.fiftyTwoWeekHigh, fifty_two_week_low: metrics.fiftyTwoWeekLow, market_cap: metrics.marketCap,
             retrieved_at: data.retrievedAt, status: data.status, source: data.source };
@@ -161,7 +183,8 @@ function CFQUOTE(ticker, field = "price", refresh = "") {
     try {
         const wanted = String(field).trim().toLowerCase();
         if (!Object.prototype.hasOwnProperty.call(CFPublicData.quoteFields({}), wanted) && wanted !== "all") return "N/A: Unsupported quote field";
-        const data = CFPublicData.chart(ticker, {}, refresh);
+        const sessionFields = ["price", "quote_time", "price_session", "market_state", "retrieved_at", "status", "source", "all"];
+        const data = sessionFields.includes(wanted) || /^(?:pre|post)_market_/.test(wanted) ? CFPublicData.quote(ticker, {}, refresh) : CFPublicData.chart(ticker, {}, refresh);
         if (!data.ok) return CFPublicData.error(data);
         const fields = CFPublicData.quoteFields(data);
         return wanted === "all" ? [["Field", "Value"], ...Object.entries(fields).map(([id, value]) => [id, CFPublicData.safe(value)])] : CFPublicData.safe(fields[wanted]);
@@ -229,7 +252,7 @@ function CFFIELD(provider, ticker, field = "all", refresh = "") {
 function CFDATASTATUS(ticker, dataset = "quote", argument = "", refresh = "") {
     try {
         const kind = String(dataset).trim().toLowerCase();
-        const data = kind === "quote" || kind === "history" ? CFPublicData.chart(ticker, {}, refresh)
+        const data = kind === "quote" ? CFPublicData.quote(ticker, {}, refresh) : kind === "history" ? CFPublicData.chart(ticker, {}, refresh)
             : kind === "fundamentals" ? CFPublicData.details(ticker, {}, refresh)
             : kind === "options" ? CFPublicData.options(ticker, argument, {}, refresh)
             : kind === "fred" ? CFPublicData.fred(ticker, argument || 60, {}, refresh)

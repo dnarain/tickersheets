@@ -1,4 +1,5 @@
 /*  *** DEBUG START ***
+import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
 export { CFAnalysisDetails };
 //  *** DEBUG END ***/
 
@@ -28,7 +29,8 @@ class CFAnalysisDetails {
                 if (envelope.status !== 200 || typeof envelope.body !== "string") continue;
                 const payload = JSON.parse(envelope.body);
                 if (payload.quoteSummary?.error || !Array.isArray(payload.quoteSummary?.result)) continue;
-                quote = payload.quoteSummary.result.find(item => item && typeof item.price?.symbol === "string" && item.price.symbol.toUpperCase() === symbol) || null;
+                const matching = payload.quoteSummary.result.filter(item => item && typeof item.price?.symbol === "string" && item.price.symbol.toUpperCase() === symbol);
+                quote = matching.length === 1 ? matching[0] : null;
                 if (quote) break;
             } catch { /* A changed or unrelated JSON block supplies no details. */ }
         }
@@ -36,6 +38,8 @@ class CFAnalysisDetails {
         result.ok = true; result.error = "";
         result.name = CFAnalysisDetails.text_(quote.price.longName || quote.price.shortName);
         const currency = CFAnalysisDetails.text_(quote.price.currency);
+        result.currency = currency;
+        result.quoteSessions = CFAnalysisData.quoteSessions(quote.price, source, 1);
         const financialCurrency = CFAnalysisDetails.text_(quote.financialData?.financialCurrency) || currency;
         const definitions = [
             ["market_cap", "Market capitalization", "price.marketCap", "currency"],

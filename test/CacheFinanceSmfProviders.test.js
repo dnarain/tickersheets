@@ -10,7 +10,7 @@ const response = (body, http = 200) => ({ getResponseCode: () => http, getConten
 
 describe("selected SMF provider registry and public URLs", () => {
     it("exposes supported named fields and selected SMF identifiers", () => {
-        expect(P.registry().map(row => row.provider)).toEqual(["FINVIZ", "ZACKS", "GURUFOCUS"]);
+        expect(P.registry().map(row => row.provider)).toEqual(["FINVIZ", "ZACKS", "GURUFOCUS", "ADVFN"]);
         expect(P.resolveField("Finviz", 4074)).toBe("price");
         expect(P.resolveField("finviz", "4072")).toBe("earnings_date");
         expect(P.resolveField("zacks", 849)).toBe("target_price");

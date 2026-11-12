@@ -97,6 +97,70 @@ describe("quote-statistics fallback fields", () => {
     });
 });
 
+describe("regular and extended-session quotes", () => {
+    const regularTime = 1794430800, postTime = regularTime + 3600;
+    const sessions = (changes = {}, source = "Public quote page") => D.quoteSessions({ symbol: "NVDA", currency: "USD", marketState: "POST", regularMarketPrice: 173.73, regularMarketTime: regularTime,
+        postMarketPrice: { raw: 158.78 }, postMarketTime: postTime, postMarketChange: { raw: -14.949997 }, postMarketChangePercent: { raw: -0.08605306 }, ...changes }, source);
+    const chart = (changes = {}) => ({ ok: true, symbol: "NVDA", currency: "USD", price: 173.73, quoteTime: new Date(regularTime * 1000).toISOString(), quoteSessions: sessions({ marketState: null, postMarketPrice: null }, "Yahoo Chart API"), ...changes });
+    const details = (changes = {}) => ({ ok: true, symbol: "NVDA", quoteSessions: sessions(changes) });
+    it("keeps the chart's price and history regular even when explicit extended quotes exist", () => {
+        const data = clone(); Object.assign(data.chart.result[0].meta, { marketState: "POST", postMarketPrice: 158.78, postMarketTime: postTime, postMarketChangePercent: -8.605306 });
+        const parsed = D.parseChart(data, "NVDA");
+        expect(parsed.price).toBe(173.73); expect(parsed.regularPrice).toBe(173.73); expect(parsed.regularQuoteTime).toBe(parsed.quoteTime);
+        expect(parsed.history).toEqual(D.parseChart(captured, "NVDA").history);
+        expect(parsed.quoteSessions.post).toMatchObject({ price: 158.78, quoteTime: new Date(postTime * 1000).toISOString(), changeFraction: -0.08605306 });
+        expect(D.selectQuote(parsed).session).toBe("After-hours");
+    });
+    it("does not treat untimed fulldayPrice as an extended-session quote", () => {
+        const parsed = D.parseChart(captured, "NVDA"); expect(parsed.quoteSessions.post.price).toBeNull(); expect(D.selectQuote(parsed)).toMatchObject({ price: 173.73, session: "Regular" });
+    });
+    it.each(["POST", "POSTPOST", "OVERNIGHT", "CLOSED"])("selects the latest published post quote for provider state %s", marketState => {
+        const result = D.selectQuote(chart(), details({ marketState }));
+        expect(result).toMatchObject({ price: 158.78, session: "After-hours", selectedSession: "post", marketState, changeFraction: -0.08605306 });
+        expect(result.regular.price).toBe(173.73); expect(result.quoteTime).toBe(new Date(postTime * 1000).toISOString());
+    });
+    it.each(["PRE", "PREPRE"])("selects a newer pre-market quote for provider state %s", marketState => {
+        const result = D.selectQuote(chart(), details({ marketState, preMarketPrice: 174, preMarketTime: postTime + 86400 }));
+        expect(result).toMatchObject({ price: 174, session: "Pre-market", marketState });
+    });
+    it("keeps regular quotes during the regular session and unknown states", () => {
+        for (const marketState of ["REGULAR", "UNRECOGNIZED", "=1+1", null]) expect(D.selectQuote(chart(), details({ marketState }))).toMatchObject({ price: 173.73, session: "Regular" });
+    });
+    it("does not promote an old after-hours quote after a newer regular session", () => {
+        const result = D.selectQuote(chart(), details({ postMarketTime: regularTime - 3600, regularMarketTime: regularTime - 86400 }));
+        expect(result).toMatchObject({ price: 173.73, session: "Regular", marketState: null });
+        expect(result.post).toMatchObject({ price: 158.78, status: "Older than regular quote" });
+    });
+    it.each([null, "1794434400", 0, -1, 1.5, Infinity, 253402300800])("does not accept extended prices with missing or malformed timestamps (%s)", postMarketTime => {
+        const result = D.selectQuote(chart(), details({ postMarketTime })); expect(result.post.price).toBeNull(); expect(result).toMatchObject({ price: 173.73, session: "Regular" });
+    });
+    it.each([null, 0, -1, Infinity, "158.78", { fmt: "158.78" }])("does not convert missing or malformed extended prices to zero (%#)", postMarketPrice => {
+        const result = D.selectQuote(chart(), details({ postMarketPrice })); expect(result.post.price).toBeNull(); expect(result.session).toBe("Regular");
+    });
+    it("preserves zero extended-session changes", () => {
+        const result = D.selectQuote(chart(), details({ postMarketPrice: 173.73, postMarketChange: { raw: 0 }, postMarketChangePercent: { raw: 0 } }));
+        expect(result).toMatchObject({ price: 173.73, change: 0, changeFraction: 0 });
+    });
+    it("rejects another ticker or currency while preserving the matching regular quote", () => {
+        const other = details(); other.symbol = "AAPL"; expect(D.selectQuote(chart(), other).session).toBe("Regular");
+        other.symbol = "NVDA"; other.quoteSessions.symbol = "AAPL"; expect(D.selectQuote(chart(), other).session).toBe("Regular");
+        other.quoteSessions.symbol = "NVDA"; other.quoteSessions.currency = "CAD"; expect(D.selectQuote(chart(), other).session).toBe("Regular");
+    });
+    it("rejects conflicting same-time regular prices and extended state declarations", () => {
+        const base = chart(), conflicting = details({ regularMarketPrice: 190 });
+        expect(D.selectQuote(base, conflicting).regular.status).toBe("Conflicting same-time quotes");
+        base.quoteSessions = sessions({ marketState: "REGULAR" });
+        expect(D.selectQuote(base, details()).marketState).toBeNull(); expect(D.selectQuote(base, details()).session).toBe("Regular");
+    });
+    it("allows float-rounding noise without accepting materially different prices", () => {
+        expect(D.selectQuote(chart(), details({ regularMarketPrice: 173.72999572753906 })).regular.price).toBe(173.73);
+    });
+    it("retains an explicit regular price when its time is unavailable, without promoting an extended quote", () => {
+        const base = chart({ quoteTime: null }); delete base.quoteSessions;
+        expect(D.selectQuote(base, details({ regularMarketTime: null }))).toMatchObject({ price: 173.73, quoteTime: null, session: "Regular" });
+    });
+});
+
 describe("price indicators and adjusted returns", () => {
     it("starts SMA values only after their full warm-up windows", () => {
         const result=D.calculate(bars(Array.from({length:210},(_,i)=>i+1)));

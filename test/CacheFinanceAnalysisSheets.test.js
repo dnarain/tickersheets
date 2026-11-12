@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CFAnalysisSheets as S } from "../src/CacheFinanceAnalysisSheets.js";
+import { CFAnalysisData } from "../src/CacheFinanceAnalysisData.js";
 
 const names=["CF Analysis","CF Price history","CF Fundamentals","CF Earnings","CF Options","CF Macro","CF Sources"];
 const marker="CACHEFINANCE_ANALYSIS_V1";
@@ -51,6 +52,20 @@ afterEach(()=>vi.unstubAllGlobals());
 function snapshot(ticker="NVDA",length=260){const series=Array.from({length},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),close:100+i,adjustedClose:100+i,open:99+i,high:102+i,low:98+i,volume:1000+i,sma50:i>=49?100+i-24.5:null,sma200:i>=199?100+i-99.5:null,rsi14:i>14?55:null}));return {ticker,symbol:ticker,cacheSymbol:"NASDAQ:"+ticker,fetchedAt:"2026-11-11T23:00:00Z",chart:{name:ticker+" Corporation",currency:"USD",price:359,quoteTime:"2026-11-11T22:00:00Z",history:series,events:{dividends:[{date:"2026-01-01",amount:.01,source:"Yahoo Chart API"}],splits:[]}},technical:{series,summary:{historyEnd:series.at(-1)?.date,price:359,barCount:length,rsi14:55,return1d:.01,sma50:334.5,sma200:259.5}},benchmarks:{SPY:{chart:{history:series.map(r=>({...r,adjustedClose:r.adjustedClose*2}))}},QQQ:{chart:{history:series.map(r=>({...r,adjustedClose:r.adjustedClose*3}))}}},statistics:{fields:{trailing_pe:{label:"P/E",value:20,unit:"ratio",source:"Yahoo Finance website",field:"PE Ratio (TTM)"},dividend_yield:{label:"Yield",value:.01,unit:"fraction",source:"Yahoo Finance website",field:"Yield"}}},details:{name:ticker+" Corp",fields:{market_cap:{label:"Market cap",value:1e12,unit:"currency",source:"https://finance.yahoo.com/quote/"+ticker+"/",field:"price.marketCap.raw"}},earnings:[{period:"Q1 2026",basis:"GAAP",actual:1.25,estimate:1,reportedDate:"2026-02-01",periodEnd:"2026-01-31",currency:"USD",source:"Yahoo Finance website"}],financials:[{period:"2025",frequency:"Annual",basis:"GAAP",revenue:1000,netIncome:200,profitMargin:.2,currency:"USD",source:"Yahoo Finance website"}],estimates:[{period:"Next quarter",basis:"GAAP",epsAverage:1.5,currency:"USD",source:"Yahoo Finance website"}],nextEarnings:{dates:["2026-11-17"],estimated:true}},quoteSources:[{provider:"Google",price:359,yieldFraction:.01,identity:"Matched",quoteTime:null,status:"Available"}],options:{ok:false,error:"Public options endpoint returned HTTP 401.",expirations:[],contracts:[]},fred:[{seriesId:"DGS10",label:"10-year Treasury yield",unit:"Percent",ok:false,status:"KEY_REQUIRED",error:"FRED key required.",observations:[]}],sources:[{provider:"Yahoo Chart",scope:"History",http:200,status:"Available",identity:"Matched",retrievedAt:"2026-11-11T23:00:00Z",quoteTime:"2026-11-11T22:00:00Z",source:"https://query1.finance.yahoo.com/v8/finance/chart/"+ticker,note:"Selected ticker"},{provider:"Options",scope:"Chain",http:401,status:"HTTP_ERROR",note:"No accepted chain.",source:"https://query2.finance.yahoo.com/v7/finance/options/"+ticker}]};}
 
 describe("managed analysis tabs",()=>{
+    it("displays the timed after-hours price while retaining regular daily history and indicators", () => {
+        S.build(book); const data = snapshot();
+        Object.assign(data.chart, { symbol: "NVDA", price: 173.73, quoteTime: "2026-11-11T21:00:00.000Z" });
+        Object.assign(data.details, { ok: true, symbol: "NVDA", quoteSessions: CFAnalysisData.quoteSessions({ symbol: "NVDA", currency: "USD", marketState: "OVERNIGHT",
+            regularMarketPrice: 173.73, regularMarketTime: 1794430800, postMarketPrice: 158.78, postMarketTime: 1794445200,
+            postMarketChange: -14.95, postMarketChangePercent: -.08605306 }, "https://finance.yahoo.com/quote/NVDA/") });
+        S.render(book, data); const main = book.getSheetByName("CF Analysis");
+        expect(main.getRange("B9").getValue()).toBe(158.78); expect(main.getRange("H6").getValue()).toBe("After-hours");
+        expect(main.getRange("B10").getValue().toISOString()).toBe("2026-11-12T01:00:00.000Z");
+        expect(main.getRange("H7").getValue()).toBe(-14.95); expect(main.getRange("I7").getValue()).toBeCloseTo(-.08605306);
+        expect(main.getRange("D9:I14").getValues().find(row => row[0] === "Yahoo after-hours")[1]).toBe(158.78);
+        expect(main.getRange("B16").getValue()).toBe(55); expect(book.getSheetByName("CF Price history").getRange("E8").getValue()).toBe(100);
+        expect(S.inspect(book)).toMatchObject({ displayedPrice: 158.78, displayedSession: "After-hours", historyRows: 260 });
+    });
     it("never clears either editable B4 during content or formatting cleanup", () => {
         S.build(book);
         const main = book.getSheetByName("CF Analysis"), options = book.getSheetByName("CF Options");

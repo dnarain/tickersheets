@@ -24,12 +24,15 @@ export const SOURCE_FILES = Object.freeze([
     "CacheFinanceAnalysisOptionModel.js",
     "CacheFinanceSmfProviders.js",
     "CacheFinanceResearchFunctions.js",
+    "CacheFinanceRsiTargets.js",
+    "CacheFinanceFredValue.js",
     "CacheFinanceAnalysisSheets.js",
     "CacheFinanceAnalysisCalculatorSheets.js",
     "CacheFinanceAnalysisVisuals.js",
     "CacheFinanceAnalysisStrategies.js",
     "CacheFinanceAnalysisWatchlist.js",
     "CacheFinanceFunctionExamples.js",
+    "CacheFinanceLookupChecks.js",
     "CacheFinanceProviderImages.js",
     "CacheFinanceAnalysis.js",
     "CacheFinanceMenu.js"
@@ -131,6 +134,9 @@ export function validateBundleContent(content) {
     }
     if (/^[ \t]*import\s/m.test(content) || /^[ \t]*export\s/m.test(content)) {
         errors.push("contains ES module import/export statements");
+    }
+    if (/(?:\|\||&&|\?\?)=/.test(content)) {
+        errors.push("contains logical assignment rejected by the Apps Script editor");
     }
 
     if (errors.length > 0) {

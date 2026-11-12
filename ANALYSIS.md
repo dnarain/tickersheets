@@ -1,9 +1,21 @@
 # One-ticker stock analysis in Google Sheets
 
+This guide explains the [CacheFinance Research Template sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit).
+You can view the public sample without editing it.
+[Make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy) to change the ticker and refresh its data.
+
+The sample starts with `NVDA` and contains saved results from a test run.
+It contains no saved API keys.
+Your copy requests new data when you run a refresh.
+FRED requires your own key in your copy.
+
+This guide describes the generated workbook on this fork's `dnarain/provider-tests` branch.
+The original CacheFinance project does not include these analysis tabs.
 The analysis runs in the spreadsheet owner's Apps Script project.
 The script creates the tabs and charts and downloads provider data when you refresh.
 The [installation guide](INSTALL.md) includes the template workflow.
 The [function reference](FUNCTIONS.md) lists reusable formulas and supported provider fields.
+The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs from those formulas.
 
 ## Install
 
@@ -82,7 +94,11 @@ StockCharts' [reprint policy](https://help.stockcharts.com/learning-more/policie
 
 ## Price and indicator dates
 
-The current quote comes from Yahoo Chart metadata.
+The current quote combines matching Yahoo Chart metadata and Yahoo quote-page session fields.
+The overview selects an accepted newer pre-market or after-hours quote for the provider's reported session.
+It shows the selected session, its timestamp and its published change.
+The comparison table also shows separate regular, pre-market and after-hours rows.
+The quote timestamp can precede the latest retrieval time.
 Yahoo can publish a current-day bar whose closing price is still missing.
 The overview shows **Indicators through** separately and uses the latest published close for indicator summaries.
 The unfinished bar remains in the history with missing close values.
@@ -121,6 +137,8 @@ The source does not establish a bid/ask timestamp.
 
 The calculator uses European Black–Scholes prices and Greeks.
 Its inputs are editable and reset on refresh.
+If the provider supplies no usable call quote, the calculator leaves its strike and premium unavailable.
+Its model outputs then show `n.a.`, and the payoff table uses `#N/A` gaps until the inputs contain valid numbers.
 The default days to expiration uses whole calendar days.
 Same-day options require an editable fractional-day input to model remaining time.
 Rates, dividend yields and implied volatility are fractions, formatted as percentages.
@@ -158,7 +176,10 @@ Watchlist tickers remain separate from the single-stock ticker input.
 
 ## Reusable functions
 
-`CFQUOTE`, `CFHISTORY`, `CFFUNDAMENTALS`, `CFOPTIONS`, `CFEXPIRATIONS`, `CFFRED` and `CFFIELD` work in user worksheets.
+`CFQUOTE`, `CFHISTORY`, `CFFUNDAMENTALS`, `CFOPTIONS`, `CFEXPIRATIONS`, `CFFRED`, `CFFREDVALUE`, `CFRSITARGETS` and `CFFIELD` work in user worksheets.
+The formula tab includes RSI2 targets, exact-date FRED examples and the ADVFN year-end request.
+ADVFN returned HTTP 403 in the live Apps Script checks, so its date remains unavailable.
+The [build-your-own guide](BUILD-YOUR-OWN.md) gives recipes for separate custom tabs.
 `CFDATASTATUS` returns source times and cache status for the corresponding dataset.
 `CFOPTIONMODEL` and `CFSTRATEGY` calculate from their entered assumptions.
 The original `CACHEFINANCE` and `CACHEFINANCES` functions remain available.
@@ -201,11 +222,14 @@ FRED observation dates identify periods, not publication times. A `.` observatio
 
 The analysis uses Yahoo Chart history, Yahoo quote-page details and the existing Google/Globe comparison adapters.
 The additional adapters cover 32 Finviz fields, the Zacks average price target and two GuruFocus dividend-yield fields.
+The ADVFN adapter adds one latest annual year-end field, but the November 11 Apps Script requests returned HTTP 403.
+The live year-end value remains unverified.
 Each field keeps its source and units.
 The source table reports blocked or missing provider results without replacing them with another provider's value.
 Stock dividend yields can use different provider definitions, including forward and trailing yield.
 The source columns retain the provider field and EPS basis.
 Availability in one ticker does not establish every ticker or data field.
+The [lookup and quote test report](test-results/2026-11-11-google-apps-script/RSI-FRED-ADVFN-QUOTES.md) records the latest checks and remaining gaps.
 
 This builds selected stock-analysis features on CacheFinance.
 It does not port every SMF function or retired source.

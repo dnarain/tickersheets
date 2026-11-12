@@ -31,14 +31,14 @@ function runtime() {
         PropertiesService: { getScriptProperties: () => ({ getProperty: name => name === "FRED_API_KEY" ? fredKey : null }) },
         SpreadsheetApp: { getUi: () => ({ createMenu: menu }) } };
     const { bundle } = buildCacheFinanceBundle();
-    const bindings = vm.runInNewContext(bundle + ";({ CFQUOTE, CFHISTORY, CFFUNDAMENTALS, CFOPTIONS, CFEXPIRATIONS, CFFRED, CFFIELD, CFDATASTATUS, CFSTRATEGY, CFOPTIONMODEL, CACHEFINANCE, CACHEFINANCES, CFAnalysisService, CFPublicData, CFAnalysisStrategies, CFSmfProviders, CFFunctionExamples, CFWatchlist, onOpen, hasCallback: name => typeof globalThis[name] === 'function' });", globals);
+    const bindings = vm.runInNewContext(bundle + ";({ CFQUOTE, CFHISTORY, CFFUNDAMENTALS, CFOPTIONS, CFEXPIRATIONS, CFFRED, CFFREDVALUE, CFRSITARGETS, CFFIELD, CFDATASTATUS, CFSTRATEGY, CFOPTIONMODEL, CACHEFINANCE, CACHEFINANCES, CFAnalysisService, CFPublicData, CFAnalysisStrategies, CFSmfProviders, CFFunctionExamples, CFWatchlist, onOpen, hasCallback: name => typeof globalThis[name] === 'function' });", globals);
     return { bindings, values, fetch, menuItems, logs, requests, bundle };
 }
 
 describe("research features in the generated Apps Script bundle", () => {
     it("compiles all modules without test imports and resolves every menu callback", () => {
         const run = runtime();
-        for (const name of ["CFQUOTE", "CFHISTORY", "CFFUNDAMENTALS", "CFOPTIONS", "CFEXPIRATIONS", "CFFRED", "CFFIELD", "CFDATASTATUS", "CFSTRATEGY", "CFOPTIONMODEL", "CACHEFINANCE", "CACHEFINANCES"]) expect(typeof run.bindings[name]).toBe("function");
+        for (const name of ["CFQUOTE", "CFHISTORY", "CFFUNDAMENTALS", "CFOPTIONS", "CFEXPIRATIONS", "CFFRED", "CFFREDVALUE", "CFRSITARGETS", "CFFIELD", "CFDATASTATUS", "CFSTRATEGY", "CFOPTIONMODEL", "CACHEFINANCE", "CACHEFINANCES"]) expect(typeof run.bindings[name]).toBe("function");
         expect(run.bundle).toContain("@OnlyCurrentDoc"); expect(run.bundle).not.toMatch(/^\s*(?:import|export)\s/m);
         run.bindings.onOpen(); expect(run.menuItems.some(item => item.callback === "CFRefreshWatchlist")).toBe(true); expect(run.menuItems.some(item => item.callback === "CFBuildFormulaExamples")).toBe(true);
         expect(run.menuItems.every(item => run.bindings.hasCallback(item.callback))).toBe(true);
@@ -46,9 +46,10 @@ describe("research features in the generated Apps Script bundle", () => {
     });
     it("uses global quote, history, fundamentals and provider bindings with a shared public cache", () => {
         const { bindings: b, fetch } = runtime();
-        expect(b.CFQUOTE("NVDA")).toBe(173.73); expect(b.CFHISTORY("NVDA", 1)[1][0]).toBe("2026-11-11"); expect(fetch).toHaveBeenCalledOnce();
+        expect(b.CFQUOTE("NVDA")).toBe(159.5405); expect(b.CFQUOTE("NVDA", "price_session")).toBe("After-hours"); expect(b.CFQUOTE("NVDA", "regular_price")).toBe(173.73);
+        expect(b.CFHISTORY("NVDA", 1)[1][0]).toBe("2026-11-11"); expect(fetch).toHaveBeenCalledTimes(2);
         expect(b.CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeCloseTo(21.96, 1); expect(b.CFFIELD("FINVIZ", "NVDA", 4074)).toBe(173.73);
-        expect(b.CFDATASTATUS("NVDA", "provider", "FINVIZ")[1][0]).toBe("Available"); expect(fetch).toHaveBeenCalledTimes(3);
+        expect(b.CFDATASTATUS("NVDA", "provider", "FINVIZ")[1][0]).toBe("Available"); expect(fetch).toHaveBeenCalledTimes(4);
     });
     it("runs the anonymous option flow and excludes session values from returned/cached data", () => {
         const { bindings: b, values, requests, logs } = runtime();
@@ -61,6 +62,13 @@ describe("research features in the generated Apps Script bundle", () => {
         const { bindings: b, values, requests, logs } = runtime();
         expect(b.CFFRED("DGS2", 1)).toEqual([["Date", "Value", "Unit", "Series", "Source"], ["2026-11-09", 3.88, "Percent", "DGS2", "https://fred.stlouisfed.org/series/DGS2"]]);
         expect(requests).toHaveLength(2); expect(requests[0].url).toContain(fredKey); expect([...values.values()].join("|")).not.toContain(fredKey); expect(logs.join("|")).not.toContain(fredKey);
+    });
+    it("connects exact-date FRED and RSI2 headers in the single-file Apps Script runtime", () => {
+        const { bindings: b, values, requests, fetch } = runtime();
+        expect(b.CFRSITARGETS("NVDA", 20, 80, "headers")[0]).toHaveLength(12); expect(fetch).not.toHaveBeenCalled();
+        expect(b.CFFREDVALUE("DGS2", "2026-11-09")).toBe(3.88);
+        expect(requests[1].url).toContain("observation_start=2026-11-09&observation_end=2026-11-09");
+        expect([...values.values()].join("|")).not.toContain(fredKey);
     });
     it("connects the real strategy model and Black–Scholes function to public formulas", () => {
         const { bindings: b } = runtime();

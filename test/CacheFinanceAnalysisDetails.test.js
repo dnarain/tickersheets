@@ -8,6 +8,23 @@ const payload = () => JSON.parse(JSON.parse(nvda.match(/<script[^>]*>([\s\S]*)<\
 const page = (quote, requested = "NVDA", query = "") => '<script type="application/json" data-sveltekit-fetched data-url="https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + requested + query + '">' + JSON.stringify({ status: 200, body: JSON.stringify({ quoteSummary: { result: [quote], error: null } }) }) + '</script>';
 
 describe("public Yahoo quote details", () => {
+    it("reads explicit regular, pre-market and after-hours quote pairs from the matching price module", () => {
+        const result = Details.parsePage(nvda, "NVDA");
+        expect(result.quoteSessions).toMatchObject({ symbol: "NVDA", currency: "USD", marketState: "POST",
+            regular: { price: 173.73, quoteTime: "2026-11-11T21:00:00.000Z" },
+            pre: { price: 172.77, quoteTime: "2026-11-11T14:29:59.000Z" },
+            post: { price: 159.5405, quoteTime: "2026-11-12T00:44:09.000Z", change: -14.189499, changeFraction: -0.08167559 } });
+    });
+    it("does not select an untimed after-hours price or use related-ticker price fields", () => {
+        const q = payload(); delete q.price.postMarketTime; q.relatedQuote = { symbol: "MSFT", postMarketPrice: { raw: 999 }, postMarketTime: 1794445200 };
+        const result = Details.parsePage(page(q), "NVDA"); expect(result.quoteSessions.post.price).toBeNull();
+        expect(result.quoteSessions.regular.price).toBe(173.73);
+    });
+    it("does not choose the first of duplicated matching primary price objects", () => {
+        const q = payload(), duplicate = payload(); duplicate.price.postMarketPrice.raw = 999;
+        const html = page(q).replace(JSON.stringify({ quoteSummary: { result: [q], error: null } }).replaceAll('"','\\"'), JSON.stringify({ quoteSummary: { result: [q, duplicate], error: null } }).replaceAll('"','\\"'));
+        expect(Details.parsePage(html, "NVDA").ok).toBe(false);
+    });
     it("reads the captured ticker's financial metrics with raw units and source fields", () => {
         const result = Details.parsePage(nvda, "NVDA");
         expect(result.ok).toBe(true); expect(result.name).toBe("NVIDIA Corporation");

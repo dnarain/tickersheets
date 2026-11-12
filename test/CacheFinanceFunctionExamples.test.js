@@ -9,7 +9,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("formula example sheet", () => {
     it("creates a marked sheet with eight scalar examples and independent spill areas", () => {
         const result = E.build(book), sheet = book.getSheetByName("CF Formulas");
-        expect(result).toMatchObject({ ok: true, functions: 12, sheet: "CF Formulas" });
+        expect(result).toMatchObject({ ok: true, functions: 14, sheet: "CF Formulas" });
         expect(sheet.getRange("Z1").getValue()).toBe("CACHEFINANCE_FUNCTIONS_V1"); expect(sheet.hiddenColumn).toBe(26); expect(sheet.frozenRows).toBe(4);
         expect(sheet.getRange("B4").getValue()).toBe("NVDA"); expect(sheet.getRange("E4").getValue()).toBe(1);
         expect(sheet.getRange("A23:A30").getValues().every(row => typeof row[0] === "string" && row[0])).toBe(true);
