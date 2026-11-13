@@ -15,6 +15,7 @@ const CF_KEY_PROVIDERS_ = Object.freeze([
 function CFSettingsMenu_() {
     SpreadsheetApp.getUi().createMenu("Data settings")
         .addItem("API keys…", "CFShowApiKeySettings")
+        .addItem("Refresh formulas", "CFRefreshFormulas")
         .addToUi();
 }
 

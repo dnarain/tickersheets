@@ -41,7 +41,11 @@ describe("research features in the generated Apps Script bundle", () => {
         const run = runtime();
         for (const name of ["CFQUOTE", "CFHISTORY", "CFFUNDAMENTALS", "CFOPTIONS", "CFEXPIRATIONS", "CFFRED", "CFFREDVALUE", "CFRSITARGETS", "CFFIELD", "CFDATASTATUS", "CFSTRATEGY", "CFOPTIONMODEL", "CACHEFINANCE", "CACHEFINANCES"]) expect(typeof run.bindings[name]).toBe("function");
         expect(run.bundle).toContain("@OnlyCurrentDoc"); expect(run.bundle).not.toMatch(/^\s*(?:import|export)\s/m);
-        run.bindings.onOpen(); expect(run.menuItems.some(item => item.callback === "CFRefreshWatchlist")).toBe(true); expect(run.menuItems.some(item => item.callback === "CFBuildFormulaExamples")).toBe(true);
+        run.bindings.onOpen();
+        expect(run.menuItems).toEqual([
+            { menu: "Data settings", label: "API keys…", callback: "CFShowApiKeySettings" },
+            { menu: "Data settings", label: "Refresh formulas", callback: "CFRefreshFormulas" }
+        ]);
         expect(run.menuItems.every(item => run.bindings.hasCallback(item.callback))).toBe(true);
         expect(run.fetch).not.toHaveBeenCalled();
     });

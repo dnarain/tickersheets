@@ -37,7 +37,7 @@ beforeEach(() => {
     const validation = () => ({ requireValueInList() { return this; }, requireValueInRange() { return this; }, setAllowInvalid() { return this; }, build() { return {}; } });
     const context = { console: { log: vi.fn() }, UrlFetchApp: { fetch }, PropertiesService: { getScriptProperties: keyRead }, Utilities: { formatDate: () => "2026-11-12" },
         SpreadsheetApp: { getActiveSpreadsheet: () => book, newDataValidation: validation, flush: vi.fn() }, Charts: { ChartType: { LINE: "LINE", COLUMN: "COLUMN", COMBO: "COMBO" } } };
-    api = vm.runInNewContext(buildCacheFinanceBundle().bundle + '\n;({ W:CFFormulaWorkbook,V:CFFormulaViews,P:CFProviderImages,CFBuildAnalysis,CFRefreshAnalysis,CFBuildWatchlist,CFRefreshWatchlist,CFBuildFormulaExamples,CFRefreshFormulaExamples,CFRecordJournalSnapshot,CFAnalysisService,CFAnalysisHandleEdit_ });', context);
+    api = vm.runInNewContext(buildCacheFinanceBundle().bundle + '\n;({ W:CFFormulaWorkbook,V:CFFormulaViews,P:CFProviderImages,CFBuildAnalysis,CFRefreshAnalysis,CFBuildWatchlist,CFRefreshWatchlist,CFBuildFormulaExamples,CFRefreshFormulaExamples,CFRecordJournalSnapshot,CFAnalysisService,buildLegacy:()=>CFFormulaWorkbook.build(SpreadsheetApp.getActiveSpreadsheet(),CFFormulaModules_()),refreshLegacy:()=>CFFormulaWorkbook.refresh(SpreadsheetApp.getActiveSpreadsheet(),CFFormulaModules_()),handleLegacyEdit:event=>CFFormulaWorkbook.handleEdit(event,CFFormulaModules_()) });', context);
 });
 
 function readyMetrics(overrides = {}) {
@@ -53,15 +53,15 @@ function savedRow(time, ticker = "NVDA", currency = "USD", overrides = {}) {
     return row;
 }
 
-describe("formula workbook, compiled Apps Script bundle", () => {
+describe("legacy 15-tab formula workbook, compiled Apps Script bundle", () => {
     it("rejects every reserved name before changing an owned workbook", () => {
         const sheet = book.insertSheet("Quote data"); sheet.getRange("A1").setValue("User work");
-        expect(() => api.CFBuildAnalysis()).toThrow(/not managed by TickerSheets/);
+        expect(() => api.buildLegacy()).toThrow(/not managed by TickerSheets/);
         expect([...book.sheets.keys()]).toEqual(["Quote data"]); expect(sheet.getRange("A1").getValue()).toBe("User work"); expect(fetch).not.toHaveBeenCalled();
     });
 
     it("builds direct custom-function examples without collecting a market snapshot", () => {
-        const collect = vi.spyOn(api.CFAnalysisService, "collect"); const result = api.CFBuildAnalysis();
+        const collect = vi.spyOn(api.CFAnalysisService, "collect"); const result = api.buildLegacy();
         expect(result.mode).toBe("formulas"); expect(api.W.isFormulaBook(book)).toBe(true);
         expect(book.getSheetByName("Analysis").getRange("B9").getFormula()).toBe('=CFQUOTE($B$4,"price")');
         expect(book.getSheetByName("Analysis").getRange("E17").getFormula()).toBe('=CFFUNDAMENTALS($B$4,"trailing_pe")');
@@ -90,14 +90,14 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     it("preserves watchlist ticker inputs and historical journal rows", () => {
         const watch = book.insertSheet("Watchlist"); watch.getRange("Z1").setValue("CACHEFINANCE_WATCHLIST_V1"); watch.getRange("A8:A9").setValues([["CRCL"], ["AAPL"]]);
         const journal = book.insertSheet("Journal"); journal.getRange("Z1").setValue("CACHEFINANCE_JOURNAL_V1"); journal.getRange("A8:C8").setValues([["Saved observation", "NVDA", 123]]);
-        api.CFBuildAnalysis();
+        api.buildLegacy();
         expect(watch.getRange("A8:A9").getValues()).toEqual([["CRCL"], ["AAPL"]]); expect(journal.getRange("A8:C8").getValues()).toEqual([["Saved observation", "NVDA", 123]]);
     });
 
-    it("routes refresh menus through the hidden generation without overwriting result formulas", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), formulas = book.getSheetByName("Formulas"), priceFormula = main.getRange("B9").getFormula();
-        for (const refresh of [api.CFRefreshAnalysis, api.CFRefreshWatchlist, api.CFRefreshFormulaExamples]) {
-            const previous = main.getRange("Z4").getValue(); refresh(); expect(main.getRange("Z4").getValue()).toBe(previous + 1);
+    it("refreshes the legacy class through the hidden generation without overwriting result formulas", () => {
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), formulas = book.getSheetByName("Formulas"), priceFormula = main.getRange("B9").getFormula();
+        for (let iteration = 0; iteration < 3; iteration++) {
+            const previous = main.getRange("Z4").getValue(); api.refreshLegacy(); expect(main.getRange("Z4").getValue()).toBe(previous + 1);
             expect(main.getRange("B9").getFormula()).toBe(priceFormula); expect(formulas.getRange("E4").getFormula()).toBe("");
         }
         api.CFBuildFormulaExamples(); api.CFBuildWatchlist();
@@ -105,7 +105,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("puts a scalar custom formula in every quote and fundamental value cell with visible formula text", () => {
-        api.CFBuildAnalysis(); const quote = book.getSheetByName("Quote data"), fundamentals = book.getSheetByName("Fundamentals"), examples = book.getSheetByName("Formulas");
+        api.buildLegacy(); const quote = book.getSheetByName("Quote data"), fundamentals = book.getSheetByName("Fundamentals"), examples = book.getSheetByName("Formulas");
         expect(api.V.quoteFields()).toHaveLength(29); expect(api.V.fundamentalFields()).toHaveLength(63);
         expect(quote.getRange("A8:A36").getValues()).toEqual(api.V.quoteFields().map(field => [field]));
         api.V.quoteFields().forEach((field, i) => {
@@ -131,7 +131,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("keeps refresh controls out of the beginner views and uses two-argument scalar calls", () => {
-        api.CFBuildAnalysis();
+        api.buildLegacy();
         for (const name of ["Analysis", "Quote data", "Fundamentals", "Formulas"]) {
             const sheet = book.getSheetByName(name);
             expect(sheet.getRange("D4:E4").getValues()).toEqual([["", ""]]);
@@ -152,13 +152,13 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("does not record a partially loading workbook in Journal", () => {
-        api.CFBuildAnalysis(); const data = book.getSheetByName("Quote data"), journal = book.getSheetByName("Journal");
+        api.buildLegacy(); const data = book.getSheetByName("Quote data"), journal = book.getSheetByName("Journal");
         data.getRange("AA8:AB10").setValues([["price", 100], ["currency", "USD"], ["rsi14", "Loading..."]]);
         const last = journal.getLastRow(); expect(() => api.CFRecordJournalSnapshot()).toThrow(/Wait for source formulas/); expect(journal.getLastRow()).toBe(last);
     });
 
     it("compares the latest timestamp for the same ticker and currency after Journal rows are sorted", () => {
-        api.CFBuildAnalysis(); readyMetrics();
+        api.buildLegacy(); readyMetrics();
         const journal = book.getSheetByName("Journal"), day = Date.UTC(2026, 10, 11), serial = (day - Date.UTC(1899, 11, 30)) / 86400000;
         const records = [savedRow(new Date(day)), savedRow(new Date(Date.UTC(2026, 9, 1))), savedRow(new Date(Date.UTC(2026, 10, 12)), "NVDA", "CAD"),
             savedRow(new Date(Date.UTC(2026, 10, 12)), "AAPL"), savedRow(serial, "NVDA", "USD", { 2: 95, 9: 0 }),
@@ -175,7 +175,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("ignores invalid timestamps and leaves the first comparable snapshot deltas unavailable", () => {
-        api.CFBuildAnalysis(); readyMetrics(); const journal = book.getSheetByName("Journal");
+        api.buildLegacy(); readyMetrics(); const journal = book.getSheetByName("Journal");
         journal.getRange("A8:R11").setValues([savedRow("Saved observation"), savedRow(""), savedRow(new Date("invalid")), savedRow(NaN)]);
         const result = api.CFRecordJournalSnapshot(); expect(result.row).toBe(12);
         expect(journal.getRange("M12:R12").getValues()).toEqual([Array(6).fill('="N/A"')]);
@@ -183,14 +183,14 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("clears stale provider chart links only for a changed ticker and makes no provider request", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options"), charts = book.insertSheet("Chart links");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options"), charts = book.insertSheet("Chart links");
         charts.getRange("Z1").setValue("CACHEFINANCE_IMAGES_V1"); charts.getRange("A5").setValue("NVDA chart link");
         const remove = vi.fn(); charts.getImages = () => [{ remove }]; const invalidate = vi.spyOn(api.P, "invalidate");
-        api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("E4"), oldValue: "1", value: "2" });
-        api.CFAnalysisHandleEdit_({ source: book, range: options.getRange("B4"), oldValue: "2026-11-13", value: "2026-11-20" });
-        main.getRange("B4").setValue(" nvda "); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: " nvda " });
+        api.handleLegacyEdit({ source: book, range: main.getRange("E4"), oldValue: "1", value: "2" });
+        api.handleLegacyEdit({ source: book, range: options.getRange("B4"), oldValue: "2026-11-13", value: "2026-11-20" });
+        main.getRange("B4").setValue(" nvda "); api.handleLegacyEdit({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: " nvda " });
         expect(invalidate).not.toHaveBeenCalled(); expect(charts.getRange("A5").getValue()).toBe("NVDA chart link");
-        main.getRange("B4").setValue("CRCL"); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "CRCL" });
+        main.getRange("B4").setValue("CRCL"); api.handleLegacyEdit({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "CRCL" });
         expect(options.getRange("B4").getFormula()).toBe('=IF(\'Quote data\'!$O$8="","",\'Quote data\'!$O$8)');
         expect(invalidate).toHaveBeenCalledTimes(1); expect(remove).toHaveBeenCalledTimes(1); expect(charts.getRange("A5").getValue()).toBe("");
         expect(charts.getRange("A1").getValue()).toBe("CRCL — provider chart links");
@@ -198,13 +198,13 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("marks chart titles visibly pending on ticker edits without reading or updating charts", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis");
         const reads = ["Analysis", "Research", "Options", "Strategies"].map(name => vi.spyOn(book.getSheetByName(name), "getCharts"));
         const writes = ["Analysis", "Research", "Options", "Strategies"].map(name => vi.spyOn(book.getSheetByName(name), "updateChart"));
         const previous = main.getRange("Z4").getValue();
-        main.getRange("B4").setValue("AAPL"); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
+        main.getRange("B4").setValue("AAPL"); api.handleLegacyEdit({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
         expect(main.getRange("Z4").getValue()).toBe(previous + 1);
-        main.getRange("B4").setValue(" aapl "); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "AAPL", value: " aapl " });
+        main.getRange("B4").setValue(" aapl "); api.handleLegacyEdit({ source: book, range: main.getRange("B4"), oldValue: "AAPL", value: " aapl " });
         expect(main.getRange("Z4").getValue()).toBe(previous + 1);
         expect(main.getRange("Z3").getValue()).toContain("Chart titles pending");
         expect(main.getRange("G5").getFormula()).toBe('=IF($Z$3="","",$Z$3)');
@@ -213,7 +213,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("updates titles before calculator inputs and source refresh, and exposes transient title failures", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), research = book.getSheetByName("Research"), options = book.getSheetByName("Options");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), research = book.getSheetByName("Research"), options = book.getSheetByName("Options");
         main.getRange("B4").setValue("AAPL"); options.getRange("P9").setValue(0.08);
         const previous = main.getRange("Z4").getValue(), update = api.W.updateChartTitles;
         const beforeSourceRefresh = vi.spyOn(api.W, "updateChartTitles").mockImplementation(target => {
@@ -223,17 +223,17 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         const failedRead = vi.spyOn(research, "getCharts").mockImplementationOnce(() => { throw new Error("Spreadsheet busy"); });
         const failedWrite = vi.spyOn(main, "updateChart").mockImplementationOnce(() => { throw new Error("Spreadsheet busy"); }).mockImplementation(() => main);
         const unchanged = vi.spyOn(options, "updateChart");
-        const result = api.CFRefreshAnalysis();
+        const result = api.refreshLegacy();
         expect(result.ok).toBe(true); expect(result.chartTitles.pending).toBe(2); expect(result.chartTitles.updated).toBeGreaterThan(0);
         expect(main.getRange("Z4").getValue()).toBe(previous + 1); expect(options.getRange("P9").getValue()).toBe(0.04);
         expect(main.getRange("Z3").getValue()).toContain("Chart titles pending"); expect(book.toasts.at(-1)[0]).toContain("chart titles are pending");
         expect(unchanged).not.toHaveBeenCalled(); beforeSourceRefresh.mockRestore(); failedRead.mockRestore(); failedWrite.mockRestore();
-        expect(api.CFRefreshAnalysis().chartTitles.pending).toBe(0); expect(main.getRange("Z3").getValue()).toBe("");
+        expect(api.refreshLegacy().chartTitles.pending).toBe(0); expect(main.getRange("Z3").getValue()).toBe("");
         expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
 
     it("treats displayed custom-function loading as pending while retaining actual formula errors", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), originalRange = main.getRange.bind(main);
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), originalRange = main.getRange.bind(main);
         originalRange("B9").setValue("#ERROR!");
         main.getRange = (...args) => { const range = originalRange(...args); if (args[0] === "B9") range.getDisplayValue = () => "Loading..."; return range; };
         expect(api.W.inspect(book).errors).not.toContainEqual(expect.objectContaining({ sheet: "Analysis", cell: "B9" }));
@@ -243,24 +243,24 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     });
 
     it("uses one script-written calculation date without volatile custom-function dependencies", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis");
         for (const sheet of book.sheets.values()) for (const formula of sheet.formulas.values()) expect(formula).not.toMatch(/\b(?:TODAY|NOW)\s*\(/i);
         expect(main.getRange("J4").getValue()).toBe("Calculation date"); expect(main.formatAt(4, 11)).toBe("@");
         expect(book.getSheetByName("Options").getRange("P7").getFormula()).toContain('DATEVALUE(Analysis!$K$4)');
         expect(book.getSheetByName("Research").getRange("CR8").getFormula()).toContain('DATEVALUE(Analysis!$K$4)');
-        main.getRange("K4").setValue("2030-12-01"); api.CFRefreshAnalysis(); expect(main.getRange("K4").getValue()).toBe("2026-11-12");
+        main.getRange("K4").setValue("2030-12-01"); api.refreshLegacy(); expect(main.getRange("K4").getValue()).toBe("2026-11-12");
         expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
 
     it("retains the MACD combo type and series when updating its ticker title", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), research = book.getSheetByName("Research");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), research = book.getSheetByName("Research");
         main.getRange("B4").setValue("AAPL"); const update = vi.spyOn(research, "updateChart"); api.W.updateChartTitles(book);
         const macd = update.mock.calls.map(([chart]) => chart).find(chart => chart.options.title === "AAPL — MACD / signal / histogram");
         expect(macd.type).toBe("COMBO"); expect(macd.options.series).toEqual({ 0: { type: "line" }, 1: { type: "line" }, 2: { type: "bars" } });
     });
 
     it("gates all five option sources on the returned expiration generation and advances it before resetting dates", () => {
-        api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options"), research = book.getSheetByName("Research");
+        api.buildLegacy(); const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options"), research = book.getSheetByName("Research");
         const selected = options.getRange("A7").getFormula();
         expect(selected).toBe('=IF(IFERROR(AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$Z$4),FALSE),CFOPTIONS(Analysis!$B$4,$B$4,\'Quote data\'!$P$8),"N/A: Expiration dates loading or unavailable; see Quote data!O7")');
         for (const [index, address] of ["AA600", "AQ600", "BG600", "BW600"].entries()) {
@@ -269,7 +269,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         }
         const previous = main.getRange("Z4").getValue(), original = options.getRange.bind(options); let counterWhenDateReset;
         options.getRange = (...args) => { const range = original(...args); if (args[0] === "B4") { const setFormula = range.setFormula.bind(range); range.setFormula = formula => { counterWhenDateReset = main.getRange("Z4").getValue(); return setFormula(formula); }; } return range; };
-        main.getRange("B4").setValue("AAPL"); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
+        main.getRange("B4").setValue("AAPL"); api.handleLegacyEdit({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
         expect(counterWhenDateReset).toBe(previous + 1); expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
 });

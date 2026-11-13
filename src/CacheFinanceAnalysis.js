@@ -200,6 +200,8 @@ function CFFormulaModules_() {
 function CFBuildAnalysis() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the spreadsheet before building the analysis.");
+    // Older open menus use this callback. They must not recreate the retired demo tabs.
+    if (typeof CFTutorial !== "undefined") return CFTutorial.build(book);
     const formulaModules = CFFormulaModules_();
     if (formulaModules) return CFFormulaWorkbook.build(book, formulaModules);
     if (typeof CFAnalysisSheets.check_ === "function") CFAnalysisSheets.check_(book);
@@ -218,6 +220,7 @@ function CFBuildAnalysis() {
 function CFRefreshAnalysis() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the analysis spreadsheet first.");
+    if (typeof CFRefreshFormulas === "function") return CFRefreshFormulas();
     const formulaModules = CFFormulaModules_();
     if (formulaModules) return CFFormulaWorkbook.refresh(book, formulaModules);
     const lock = LockService.getDocumentLock();

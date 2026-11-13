@@ -1,14 +1,9 @@
 /*  *** DEBUG START ***
-export { onOpen, onEdit };
+export { onOpen };
 //  *** DEBUG END ***/
 
-/** Add the TickerSheets menus and optional provider diagnostics. */
+/** Add API-key settings and a refresh command for formulas in any cell layout. */
 function onOpen() {
     CFSettingsMenu_();
-    if (typeof CFAnalysisMenu_ === "function") CFAnalysisMenu_();
     if (typeof CFProviderTestMenu_ === "function") CFProviderTestMenu_();
-}
-
-function onEdit(event) {
-    if (typeof CFAnalysisHandleEdit_ === "function") CFAnalysisHandleEdit_(event);
 }

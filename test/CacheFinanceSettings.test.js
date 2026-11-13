@@ -200,11 +200,10 @@ function sidebar() {
 }
 
 describe("API key menu and sidebar", () => {
-    it("adds exactly one API-key entry to the Data settings menu", () => {
+    it("adds API keys and Refresh formulas to the Data settings menu", () => {
         CFSettingsMenu_();
         expect(ui.createMenu).toHaveBeenCalledWith("Data settings");
-        expect(menu.addItem).toHaveBeenCalledOnce();
-        expect(menu.addItem).toHaveBeenCalledWith("API keys…", "CFShowApiKeySettings");
+        expect(menu.addItem.mock.calls).toEqual([["API keys…", "CFShowApiKeySettings"], ["Refresh formulas", "CFRefreshFormulas"]]);
         expect(menu.addToUi).toHaveBeenCalledOnce();
     });
 

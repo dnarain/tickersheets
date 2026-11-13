@@ -1,105 +1,85 @@
 # TickerSheets
 
-Open-source stock and options research for Google Sheets.
+Reusable stock and options functions for Google Sheets.
 
-TickerSheets is our Google Sheets application for researching one stock, its options and economic context.
-It creates analysis tabs, charts, earnings tables, a watchlist and reusable formulas in your spreadsheet's Apps Script project.
-It requires no hosted server.
+Enter a ticker in `A1`, then put this formula in another cell:
 
-[View TickerSheet Demo and Tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
-The **TickerSheet Demo and Tutorial** workbook demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
-You can also create your own spreadsheet with the same functions.
+```excel
+=CFQUOTE(A1,"price")
+```
 
-Open **Start here** in your copy to learn from the working formulas.
-**Analysis!B9** contains `=CFQUOTE($B$4,"price")` and displays the returned price in that same cell.
-**Quote data** and **Fundamentals** show individual field formulas beside their results.
-For your own sheet, enter a ticker in `A1` and use `=CFQUOTE(A1,"price")` in another cell.
-You can use these functions without the sample's tab layout.
-History, earnings, option chains and economic histories return tables with a formula in the first cell.
-**Price history** contains visible formulas for moving averages, RSI, MACD, returns and volatility.
-Choose **Stock analysis → Refresh selected ticker** to request new results for the sample.
-Google Sheets then recalculates the individual values, returned tables and their dependent formulas.
+That cell contains the formula and shows the returned price.
+Other functions return fundamentals, earnings, daily history, option chains, RSI2 targets and FRED observations.
+Everything runs in the spreadsheet's attached Apps Script. There is no hosted server.
 
-[![NVDA quote values with simple, copyable formulas beside each result](img/tickersheets-simple-formulas.png)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
+## Get started
 
-*NVDA example with saved results from November 12, 2026. Refresh your own copy to request newer data.*
+Choose one installation method:
+
+1. [Copy TickerSheet Demo and Tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy). Google copies its attached Apps Script too.
+2. For your own spreadsheet, paste [dist/TickerSheets.js](https://github.com/dnarain/tickersheets/blob/main/dist/TickerSheets.js) into **Extensions → Apps Script → Code.gs**. Save and reload the spreadsheet.
+
+Then enter the functions in the cells where you want their results.
+The tutorial has one tab, **Start here**, with a ticker input, working examples and formula text beside each result.
+You can [view the public tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) without copying it.
+
+[![Tutorial with copyable formulas](img/tickersheets-tutorial.png)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
+
+*Tutorial with copyable formulas.*
+
+| What you want | Formula with the ticker in A1 |
+|---|---|
+| Latest available price | `=CFQUOTE(A1,"price")` |
+| Regular-session price | `=CFQUOTE(A1,"regular_price")` |
+| After-hours price | `=CFQUOTE(A1,"post_market_price")` |
+| Trailing P/E | `=CFFUNDAMENTALS(A1,"trailing_pe")` |
+| Trailing EPS | `=CFFUNDAMENTALS(A1,"eps_ttm")` |
+| Daily history | `=CFHISTORY(A1,252)` |
+| Option expiration dates | `=CFEXPIRATIONS(A1)` |
+| Nearest-expiration option chain | `=CFOPTIONS(A1)` |
+
+A named field returns one value in its formula's cell.
+History and option functions return tables that expand into adjacent empty cells.
+The functions can reuse recent cached provider responses. They do not stream continuously.
+Choose **Data settings → Refresh formulas** to request new results from your installed functions.
+
+## API keys
+
+**The public tutorial contains no saved API keys and does not use the author's private keys.**
+You can view its saved examples without adding keys.
+Yahoo stock quotes, history, fundamentals, earnings and public option chains do not require a personal key.
+Selected Finviz, Zacks and GuruFocus fields also use public pages.
+
+FRED requires your own API key.
+Choose **Data settings → API keys…**, enter it in **FRED**, then click **Save keys**.
+The same form accepts Finnhub, Alpha Vantage, Twelve Data and CoinMarketCap keys for the original `CACHEFINANCE` / `CACHEFINANCES` functions.
+Those four keys do not change `CFQUOTE`, which uses Yahoo.
+
+Blank fields preserve saved keys. The form shows saved-status labels without revealing saved key values.
+Keys stay in the attached Apps Script project's Script Properties.
+Other editors of your spreadsheet can access its script and keys, so keep a copy with personal keys private.
+Do not put keys in worksheet cells, formulas or GitHub reports.
+
+If the menu is missing, reload your editable copy.
+See [INSTALL.md](INSTALL.md) for authorization and the [blank-sidebar workaround](INSTALL.md#if-the-sidebar-is-blank).
+
+## Guides
 
 | Guide | Purpose |
 |---|---|
-| [SAMPLE.md](SAMPLE.md) | Explore the sample spreadsheet and its controls, tabs and charts |
-| [INSTALL.md](INSTALL.md) | Copy the template or install the script, authorize requests and save API keys |
-| [FUNCTIONS.md](FUNCTIONS.md) | Find formula arguments, output columns, units, sources and limits |
-| [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) | Create custom tabs with one ticker input and copyable formulas |
-| [PROVIDERS.md](PROVIDERS.md) | Review data sources, API keys, dated results and testing instructions |
+| [INSTALL.md](INSTALL.md) | Copy the tutorial or install the functions in your own spreadsheet |
+| [SAMPLE.md](SAMPLE.md) | Learn from the single-tab tutorial |
+| [FUNCTIONS.md](FUNCTIONS.md) | Find every function, argument, supported field, unit and limit |
+| [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) | Copy simple formulas into your own worksheet |
+| [PROVIDERS.md](PROVIDERS.md) | Review sources and dated provider checks |
 
-Quotes can include regular, pre-market and after-hours prices, each with its own timestamp.
-Data updates when you request a refresh. The functions do not stream prices continuously.
-Provider availability varies by ticker and field. The function reference explains the current limits.
-
-## What works without API keys
-
-**The public NVDA sample contains no saved API keys and does not use the author's private keys.**
-You can view its saved example results without adding keys.
-In your own copy, you can refresh these sources without personal provider keys:
-
-| Source or feature | Available without a personal API key |
-|---|---|
-| Yahoo | Quotes, available pre-market/after-hours prices, daily history, fundamentals, earnings, published option expirations and option chains |
-| Finviz, Zacks and GuruFocus | Selected Finviz fields, Zacks price targets and public GuruFocus dividend yields |
-| Google Finance website and Globe & Mail | Comparison quotes, names and selected yields |
-| Calculations and workbook tabs | Technical indicators, RSI2 targets, native charts, option models, strategy calculators, watchlists and journal entries from available data |
-| Provider chart links | Links to chart pages that you open separately. The script does not download provider images. |
-
-Google still requires authorization for the Apps Script project in your copy.
-Provider access and returned fields can change. See [PROVIDERS.md](PROVIDERS.md) for tested fields and current limits.
-
-## Make your own copy
-
-1. Open the [sample copy link](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy) while signed in to your Google account.
-2. Click **Make a copy**.
-3. In your copy, choose **Stock analysis → Refresh selected ticker**.
-4. Complete Google's authorization steps for your copy.
-5. If the refresh does not run after authorization, choose **Refresh selected ticker** again.
-
-If the menus are missing, reload your copy once.
-Open **Start here** for a short walkthrough and examples you can trace with `FORMULATEXT`.
-To analyze another stock, change **Analysis!B4**, then refresh the selected ticker.
-The public sample stays read-only. You edit and refresh your own copy.
-
-## Add your own API keys
-
-You can add keys for these providers in your private copy:
-
-| Provider | Features that require your key |
-|---|---|
-| FRED | Economic observations, exact-date lookups and economic charts |
-| Finnhub, Alpha Vantage and Twelve Data | Optional quote lookups through `CACHEFINANCE` / `CACHEFINANCES` |
-| CoinMarketCap | Optional cryptocurrency quote lookups through `CACHEFINANCE` / `CACHEFINANCES` |
-
-Add only the keys for providers you want to use.
-Without a FRED key, FRED values report that a key is required.
-The stock and options features can still refresh.
-
-1. Get your own API key from the provider. FRED's [API key page](https://fred.stlouisfed.org/docs/api/api_key.html) explains its requirements.
-2. In your copy, choose **Data settings → API keys…**.
-3. Enter the key in the matching provider field.
-4. Click **Save keys**.
-5. Check that the provider shows **Saved**.
-6. For FRED, choose **Stock analysis → Refresh selected ticker** to load the economic data.
-
-You do not need to open the Apps Script editor or put keys in worksheet cells or formulas.
-Blank fields preserve saved keys, and the form never displays saved key values.
-**Saved** confirms storage. It does not confirm that the provider accepts the key.
-The script stores keys in your copy's Apps Script project.
-Other editors of that spreadsheet can access its script and keys, so keep copies with personal keys private.
-
-For the other keyed providers, see the [quote lookup formulas](FUNCTIONS.md#original-cachefinance-and-cachefinances).
-See [INSTALL.md](INSTALL.md#save-api-keys) for detailed setup and the [blank-sidebar workaround](INSTALL.md#if-the-sidebar-is-blank).
+Provider availability varies by ticker and field.
+The function reference explains missing results, timestamps and current limits.
 
 ## Acknowledgments
 
-This application builds on [CacheFinance](https://github.com/demmings/cachefinance), which supplies the original caching functions and quote adapters.
+TickerSheets builds on [CacheFinance](https://github.com/demmings/cachefinance), which supplies the original caching functions and quote adapters.
 See [UPSTREAM.md](UPSTREAM.md) for its attribution and preserved reference documentation.
 
-We also used ideas from [SMF (Stock Market Functions)](https://climbermel.github.io/SMF_Add-in/) for provider lookups, research formulas and example workbooks.
-SMF is an Excel add-in that retrieves web data into spreadsheet cells.
+We also used ideas from [SMF (Stock Market Functions)](https://climbermel.github.io/SMF_Add-in/) for provider lookups, research functions and spreadsheet examples.
+SMF is an Excel add-in that retrieves web data into cells.

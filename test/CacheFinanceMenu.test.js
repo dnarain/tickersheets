@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { onOpen, onEdit } from "../src/CacheFinanceMenu.js";
+import { onOpen } from "../src/CacheFinanceMenu.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -19,17 +19,9 @@ describe("spreadsheet menus", () => {
         expect(settings).toHaveBeenCalledOnce();
         expect(diagnostics).toHaveBeenCalledOnce();
     });
-    it("adds the stock analysis menu when its builder is installed", () => {
+    it("keeps the old stock analysis builder out of the spreadsheet menu", () => {
         const settings = vi.fn(), analysis = vi.fn();
         vi.stubGlobal("CFSettingsMenu_", settings); vi.stubGlobal("CFAnalysisMenu_", analysis);
-        onOpen(); expect(settings).toHaveBeenCalledOnce(); expect(analysis).toHaveBeenCalledOnce();
-    });
-    it("passes edits to the analysis invalidation handler without starting requests", () => {
-        const handler = vi.fn(), event = { value: "AAPL" };
-        vi.stubGlobal("CFAnalysisHandleEdit_", handler); onEdit(event);
-        expect(handler).toHaveBeenCalledWith(event);
-    });
-    it("ignores edits when the analysis module is absent", () => {
-        expect(() => onEdit({})).not.toThrow();
+        onOpen(); expect(settings).toHaveBeenCalledOnce(); expect(analysis).not.toHaveBeenCalled();
     });
 });

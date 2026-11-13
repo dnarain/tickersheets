@@ -3,16 +3,18 @@
 TickerSheets requests data from Google Apps Script. No hosted server is required.
 The table lists the fields this project reads and selected Google Sheets results from **November 11–12, 2026, Pacific time**.
 Those saved results do not guarantee access today, every ticker or every feature of a provider.
+The current public tutorial has one **Start here** tab.
+The historical workbook checks in this file used a former multi-tab layout.
 
 See [INSTALL.md](INSTALL.md) for setup and [FUNCTIONS.md](FUNCTIONS.md) for arguments, output columns and units.
 
 ## Providers
 
-| Provider | What the application reads | Authentication | Saved Google Sheets result and limits |
+| Provider | Available requests or former workbook use | Authentication | Saved Google Sheets result and limits |
 |---|---|---|---|
 | Yahoo Chart | Regular-session quotes, daily history and inputs for RSI2 targets; original quote adapter | No personal key | Prices/names passed for AAPL, NVDA, RY and XIC. Research history and RSI2 checks passed for selected NVDA/AAPL inputs. Optional bid/ask values were unavailable. |
 | Yahoo Finance website | Selected fundamentals, earnings, estimates, regular/pre-market/post-market quotes; original price/name/yield adapter | No personal key | Selected NVDA/AAPL tables passed. The repaired original adapter accepted price/name/yield for AAPL, NVDA, RY and XIC. Active-session NVDA checks passed. Some fields and source timestamps remain unavailable. |
-| Yahoo options | Published expirations, standard option chains and up to five maturity comparisons | Temporary anonymous Yahoo session; no personal login | November 11 overnight checks lacked usable ATM pairs. November 12 market-hours checks returned all five ATM comparisons and numeric calculator results for NVDA/AVGO. Availability depends on the returned quotes. |
+| Yahoo options | Published expirations and standard option chains | Temporary anonymous Yahoo session; no personal login | November 11 overnight checks lacked usable ATM pairs. The former workbook's November 12 market-hours checks returned all five ATM comparisons and numeric calculator results for NVDA/AVGO. Availability depends on the returned quotes. |
 | Google Finance website | Comparison price, name and selected yields; original quote adapter | No key | AAPL, NVDA, RY, XIC and USD/CAD prices passed after repairs. XIC yield remained missing. Website results do not establish Google's separate `GOOGLEFINANCE` worksheet results. |
 | Globe & Mail | Comparison price, name and yield; original quote adapter | No stored login | Selected fields passed for AAPL, NVDA, RY, XIC and DYN2752. The repaired parser matched quote identifiers and recorded trade time. Stock yield uses the provider's trailing basis. |
 | Finnhub | Price through the original adapter | Your API key | AAPL/NVDA prices and quote timestamps passed. This adapter does not implement Finnhub's broader API. |
@@ -23,7 +25,7 @@ See [INSTALL.md](INSTALL.md) for setup and [FUNCTIONS.md](FUNCTIONS.md) for argu
 | Finviz | 32 selected fields through `CFFIELD` | No stored login | All 32 fields returned accepted values for NVDA/AAPL. The deliberate invalid ticker returned no fields. Broader Finviz data and account features are outside this adapter. |
 | Zacks | Average price target through `CFFIELD` | No stored login | The selected field passed for NVDA/AAPL. The deliberate invalid ticker returned no fields. Other Zacks fields are outside this adapter. |
 | GuruFocus | Public forward/trailing dividend yields through `CFFIELD` | No stored login | Both fields passed for NVDA/AAPL after the parser repair. An invalid ticker returned no accepted fields. Premium datasets and subscription credentials are outside this adapter. |
-| StockCharts | Manual chart-page links | Open the page separately | The menu downloads no provider images and inserts no pictures. Native spreadsheet charts use accepted numeric tables. |
+| StockCharts | Manual chart-page links in the former workbook | Open the page separately | The former workbook downloaded no provider images and inserted no pictures. Its native charts used accepted numeric tables. |
 | ADVFN | Excluded | — | Our November 11 Apps Script requests received HTTP 403 from Cloudflare. This project does not include its adapter. |
 
 The three `CFFIELD` providers expose **35 named fields**, including **34 numeric field IDs**.
@@ -31,7 +33,10 @@ The full field list appears in [FUNCTIONS.md](FUNCTIONS.md#cffield).
 A successful request does not establish that every field in its response is usable.
 Yields, earnings bases and timestamps can differ between providers.
 
-### Latest research checks: November 12
+### Historical checks of the former workbook: November 12
+
+These checks used the former multi-tab analysis workbook.
+They describe that layout and its available sources. The current tutorial requires separate checks.
 
 The private AVGO workbook and public NVDA sample loaded quotes, history, fundamentals, earnings and option chains.
 Both accepted all five sampled option maturities and produced numeric option-model results.
@@ -70,7 +75,8 @@ FRED requires [each user to supply their own key](https://fred.stlouisfed.org/do
 The script stores keys in [Script Properties](https://developers.google.com/apps-script/guides/properties), outside worksheet cells.
 Other spreadsheet editors can access the bound script and its properties. Keep copies with personal keys private.
 Do not share keys, authenticated request URLs, cookies or raw response bodies in reports.
-The [installation guide](INSTALL.md#if-the-sidebar-is-blank) explains the blank-sidebar workaround and the separate FRED prompt.
+The [installation guide](INSTALL.md#if-the-sidebar-is-blank) explains the blank-sidebar workaround.
+All five keyed providers use **Data settings → API keys…**.
 
 ## Testing process
 
@@ -78,62 +84,83 @@ Local tests check parsers, calculations, caching and worksheet behavior with con
 A run inside Google Apps Script checks access from Google's network.
 A successful request from a local computer cannot replace a failed Google Sheets result.
 
-### Check the formula workbook
+### Check the current tutorial
 
-The generated workbook uses individual field functions for quote and fundamental values.
-History, earnings, options and economic histories use table functions.
-Spreadsheet formulas calculate indicators, comparisons and summaries from those results.
-The **Refresh selected ticker** menu requests new results and resets calculator assumptions.
-The direct field functions can reuse parsed provider data from their cache.
-The **Sources** tab reads those existing cells and makes no provider requests.
-The separate **Check provider data** command deliberately requests provider diagnostics.
+Use a private copy of the tutorial with the normal bundle from [INSTALL.md](INSTALL.md).
 
-1. Open **Start here** and follow its direct-formula examples.
-2. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!B8** for direct `CFQUOTE` formulas.
-3. Check that **Quote data!C8** shows the formula text for the price in **B8**.
-4. Inspect the visible indicator formulas and their labeled helpers in **Price history**.
-5. Change **Analysis!B4**, refresh, and wait for all source formulas to finish.
-6. Check **Sources** for source errors, missing rows and observation times.
-7. Choose **Stock analysis → Check formula workbook** for a read-only inspection.
-8. After formulas finish, choose **Record journal snapshot** to save the displayed observations.
+1. Enter `NVDA` in **Start here!B4** and wait for **B7:B15** to finish.
+2. Inspect **B7**, **B8** and **B9** for the latest, regular-session and after-hours price formulas.
+3. Check that **C7:C15** shows the formula text from the corresponding result cells.
+4. Choose **Data settings → Refresh formulas**, then wait for its results.
+5. Change **B4** to `AAPL` and inspect the formulas and returned values again.
+6. Try an invalid ticker. Unavailable prices and fields must not become numeric zeros.
+7. Restore the intended ticker after the checks.
 
-The **Refresh selected ticker** menu must recalculate the generated field functions and table functions.
-Normal refreshes must not call `CFAnalysisService.collect` or append journal rows.
-The selected stock's watchlist row must reference its existing formula results.
-Other watchlist tickers use one `CFWATCHROW` table each.
+An unavailable after-hours price or fundamental field can remain `N/A`.
+Inspect the selected session and quote timestamp before comparing prices.
+These checks exercise the installed functions in ordinary cells.
 
-Use these additional assertions for controlled data and native spreadsheet checks:
+For a developer readback, open Apps Script and run `CFInspectTutorial`.
+It compares the nine result formulas with their expected formulas, reads their values and reports loading or spreadsheet errors.
+It reads the actual worksheet cells and makes no provider requests.
+The report does not independently establish the accuracy of a financial value.
 
-| Area | Assertions |
+The single-tab update was checked in Google Sheets with `NVDA` and `AAPL`.
+All nine result formulas matched their expected text, with no spreadsheet errors or pending calculations.
+The unavailable AAPL earnings date remained `N/A`.
+A separate `=CFQUOTE(F1,"price")` call returned the AAPL price from a ticker in `F1`, independently of the tutorial's input cell.
+The public tutorial retained only **Start here**, and all five saved-key presence flags were false.
+
+### Check the library functions
+
+Use separate empty areas in a private worksheet for these calls.
+Only the first cell of each returned table contains its formula.
+
+| Area | Formula or assertion |
 |---|---|
-| Technical indicators | Compare SMA, EMA, Wilder RSI14, MACD, returns and volatility with controlled history. Include short, flat and missing-price series. Preserve valid zeros. |
-| Earnings | Keep GAAP/adjusted EPS and annual/quarterly financial periods separate. Require matching currencies and consecutive periods for growth. Reject conflicting duplicate periods. |
-| Options | Check nearest common strikes and lower-strike ties. Preserve partial legs and missing IV. **Options!Y4** must equal **Research!Q25**. |
-| Option capacity | Verify that a chain with more than 1,000 contracts produces a visible calculation-range warning. |
-| FRED | Check all four 400-observation sources, published units, missing dates and numeric zero. A missing key must remain unavailable. |
-| Journal | Record after calculations finish. Preserve old observations and compare entries for the same symbol and currency. |
-| Formula errors | Report unexpected `#REF!`, `#VALUE!` and circular-reference errors. Chart helper formulas deliberately use `#N/A` for unavailable points. |
+| Daily history | `=CFHISTORY("NVDA",252)`: seven columns, a header and chronological rows. Preserve missing closing prices and real zeros. |
+| Expiration dates | `=CFEXPIRATIONS("NVDA")`: a header and published dates in one column. |
+| Option chain | `=CFOPTIONS("NVDA")`: twelve columns for the default published expiration. Check ticker, expiration, option type, strike and units. |
+| Earnings | `=CFEARNINGS("NVDA","earnings")`: retain reported periods, EPS basis, currency and missing values. |
+| Other earnings sections | Repeat with `financials`, `estimates`, `dividends`, `splits` and `calendar` in separate empty areas. |
+| Recent FRED data | With your own saved key, `=CFFRED("DGS10",60)`: five columns with the published units and observation dates. |
+| Exact-date FRED | `=CFFREDVALUE("DGS10","2026-11-05")`: compare with that exact observation. Missing dates must not substitute an earlier business day. |
+| FRED missing values | Missing keys and published gaps remain unavailable. Preserve a numeric zero. |
+| Option and strategy models | Use fixed assumptions from [FUNCTIONS.md](FUNCTIONS.md) and compare with known results independently of live quotes. |
+| Formula errors | Report unexpected `#REF!`, `#VALUE!`, circular references or blocked table outputs. |
 
-Local tests inspect formula text and controlled results.
-A native Google Sheets run must separately check calculation results, expanded tables, chart ranges and loading behavior.
-The dated results in this file describe their stated runs. They do not establish a pass for a later formula-layout change.
+For source status, put `=CFDATASTATUS("NVDA","quote")` in an empty five-column area.
+It returns status, retrieval time, quote time, cache status and source.
+Use the same ticker and request arguments when comparing it with a data formula.
+`CFDATASTATUS` can request data if its cache is empty.
+Its result does not prove that the provider's quote is current.
+
+Local tests inspect parsers, formula text and controlled results.
+A Google Sheets run must separately check current provider access, returned tables and loading behavior.
+
+### Historical checks of the former formula workbook
+
+These results predate the single-tab tutorial and do not establish a pass for its current layout.
 
 The **November 12, 2026 formula-workbook checks** included:
 
 - AAPL: **5,534 checks passed**, including **5,102 numerical comparisons**, with no formula failures or pending calculations.
-- The public sample passed **5,534 checks** for AAPL and again after switching back to NVDA, with no formula failures or pending calculations. All five option tables waited for the current expiration response before requesting their chains.
+- The former public sample passed **5,534 checks** for AAPL and again after switching back to NVDA. No formula failures or pending calculations remained. All five option tables waited for the current expiration response before requesting their chains.
 - **26 controlled worksheet cases passed** for conflicting and repeated earnings records, missing periods, zero denominators, same-strike option pairs, partial IV, and FRED gaps and zeros.
 - All five AAPL maturities returned quotes and IV after removing volatile date dependencies. Option prices and Greeks recalculated after changing the selected expiration.
 - All nine invalid-ticker assertions passed. Missing prices, RSI targets and expiration dates stayed unavailable, with no false zeros or 1899 dates.
-- The public template's five provider-key settings were all empty.
+- That public template's five provider-key settings were all empty.
 
-These checks used public stock and option sources. This run checked FRED's worksheet calculations with controlled observations; it did not use a live FRED key.
-The sample uses a written calculation date in **Analysis!K4** because custom functions must have deterministic inputs. See [Google's argument rules](https://developers.google.com/apps-script/guides/sheets/functions#arguments).
+These checks used public stock and option sources.
+That run checked FRED's worksheet calculations with controlled observations and did not use a live FRED key.
+The former workbook used a written calculation date in **Analysis!K4** because custom functions require deterministic inputs.
+See [Google's argument rules](https://developers.google.com/apps-script/guides/sheets/functions#arguments).
 
-The **November 12 direct-field sample update** passed **5,535 worksheet checks** for the public NVDA sample, with no failed or pending checks after the normal Refresh action.
-The quote and fundamental value columns contain **29 `CFQUOTE` formulas** and **63 `CFFUNDAMENTALS` formulas**.
-Five copied AAPL formulas also passed on a separate tab using only a ticker cell, with no refresh argument.
-The sample exposes no refresh-number controls. Its menu reloads the existing formulas, and the public template still contains no saved provider keys.
+The **November 12 direct-field sample update** passed **5,535 worksheet checks** for the former public NVDA sample.
+No failed or pending checks remained after its normal Refresh action.
+Its value columns contained **29 `CFQUOTE` formulas** and **63 `CFFUNDAMENTALS` formulas**.
+Five copied AAPL formulas also passed on a separate tab with only a ticker cell and no refresh argument.
+That version exposed no refresh-number controls and contained no saved provider keys.
 
 ### Run the eight original adapter checks
 
@@ -162,25 +189,21 @@ Separate worksheet controls returned six passes and one failure: built-in `GOOGL
 That failure did not affect the repaired website adapter's direct USD/CAD result.
 These historical results cover selected cases and have not established every provider feature.
 
-### Check research data in the normal spreadsheet
+### Run developer provider probes
 
-1. Install the normal bundle using [INSTALL.md](INSTALL.md).
-2. Choose **Stock analysis → Refresh selected ticker**. Read **Sources** for statuses and source times.
-3. Choose **Check provider data** to request a summary for the selected ticker without writing analysis tabs.
-4. Choose **Check additional providers** to request Finviz, Zacks and GuruFocus fields for NVDA, AAPL and an invalid ticker.
-5. Open **Extensions → Apps Script → Executions** to read those commands' sanitized summaries.
-6. Choose **Build lookup checks**, wait for formulas to finish, then choose **Inspect lookup checks**.
-7. Open **Lookup tests** and review each result. Missing keys and blocked requests remain **BLOCKED**.
-8. Choose **Check formula workbook** to inspect source cells, formulas and charts without fetching provider data.
+The normal bundle retains these Apps Script functions for contributors.
+Open **Extensions → Apps Script**, select a function, click **Run** and read its execution log.
 
-The lookup tab checks RSI2 outputs and exact-date FRED results.
-Its fixed dates describe the November 2026 snapshot.
-The November 5 DGS10 reference comparison will fail after that observation leaves the latest 30 rows.
-That reference-window failure alone does not establish an exact-date lookup defect.
+- `CFCheckExpandedSources` requests Finviz, Zacks and GuruFocus fields for `NVDA`, `AAPL` and a deliberately invalid ticker.
+- `CFCheckAnalysisSources` runs the former analysis collector and prints its summary. It reads an existing `Analysis` tab's inputs when present. Otherwise, it uses `NVDA` and a blank expiration. It does not read **Start here!B4**.
+- `CFInspectTutorial` reads the current tutorial's actual formulas and results without requesting provider data.
+
+The first two functions request providers directly.
+Keep their results separate from worksheet results and record the ticker that each function actually used.
 
 ### Check cold and warm formula caches
 
-Use an empty test tab in the normal spreadsheet.
+Use an empty area in a private spreadsheet with the normal bundle.
 
 1. Enter a supported ticker that this project did not recently request in `A1`.
 2. Enter `=CFDATASTATUS($A$1,"history")` in `B1`. Wait for its two-row result.
@@ -218,9 +241,9 @@ npm run build:provider-tests:check
 Commit the relevant source, test and generated `dist/` changes together.
 The tests and public fixtures remain in [test/](test/).
 Use `npm run test:watch` while editing, or `npm run test:coverage` for the coverage report in `coverage/index.html`.
-The **November 12, 2026** local run passed **1,471 tests in 42 files**.
-Coverage was 92.84% of lines, 88.70% of branches and 94.16% of functions.
-The visible history formulas also passed 29,363 numerical comparisons against the existing indicator calculations.
+The local run for the single-tab tutorial passed **1,481 tests in 43 files**.
+Coverage was 91.33% of lines, 88.66% of branches and 94.16% of functions.
+The former workbook's visible history formulas also passed 29,363 numerical comparisons against the existing indicator calculations.
 Those comparisons included missing prices, flat prices, moving-average warm-up periods, RSI, MACD, returns and volatility.
 Those numbers describe controlled local tests, separate from the dated Google Sheets results above.
 
