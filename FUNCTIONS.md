@@ -1,10 +1,11 @@
 # TickerSheets functions
 
-This reference covers fifteen `TICKERSHEETS_...` worksheet functions.
+This reference covers sixteen `TICKERSHEETS_...` worksheet functions.
 All requests run in Google Apps Script. No hosted server is required.
 The [provider guide](PROVIDERS.md#providers) lists data sources, API key requirements and dated test results.
 
-See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the tutorial and stock-analysis showcase.
+See [INSTALL.md](INSTALL.md) for installation and API key settings.
+See [SAMPLE.md](SAMPLE.md) for the tutorial, stock analysis and options analysis.
 The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
 
 ## Start with one cell formula
@@ -31,7 +32,7 @@ Other individual fields use the same pattern:
 Choose **TickerSheets → Refresh data** to request new results from the installed functions.
 Google Sheets recalculates the field functions, table functions and formulas that read their results.
 
-The demo has a simple **Start here** tutorial and a **Stock analysis** showcase.
+The demo has three tabs: **Start here**, **Stock analysis** and **Options analysis**.
 **Start here!B4** contains its ticker, and **B7** contains `=TICKERSHEETS_QUOTE($B$4,"price")`.
 **C7:C15** shows the formulas beside their results.
 The functions can reuse parsed provider data from their cache.
@@ -88,6 +89,7 @@ Your own spreadsheet formulas can calculate from the returned tables.
 | Function | Result | Source |
 | --- | --- | --- |
 | `TICKERSHEETS_QUOTE` | Quote value or quote table | Yahoo Chart and quote page |
+| `TICKERSHEETS_PROVIDER_QUOTE` | Quote value or field table from one selected keyed provider | Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap |
 | `TICKERSHEETS_QUOTE_COMPARE` | Separate provider/session comparison rows | Yahoo, Finviz and GuruFocus |
 | `TICKERSHEETS_HISTORY` | Daily OHLCV table | Yahoo Chart |
 | `TICKERSHEETS_FUNDAMENTALS` | Fundamental value or field table | Yahoo quote page |
@@ -109,8 +111,9 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 
 | Function or output | Rows × columns |
 |---|---|
-| Scalar field from `TICKERSHEETS_QUOTE`, `TICKERSHEETS_FUNDAMENTALS`, `TICKERSHEETS_FIELD` or `TICKERSHEETS_RSI_TARGETS` | `1 × 1` |
+| Scalar field from `TICKERSHEETS_QUOTE`, `TICKERSHEETS_PROVIDER_QUOTE`, `TICKERSHEETS_FUNDAMENTALS`, `TICKERSHEETS_FIELD` or `TICKERSHEETS_RSI_TARGETS` | `1 × 1` |
 | `TICKERSHEETS_QUOTE(...,"all",...)` | `30 × 2`, including the header |
+| `TICKERSHEETS_PROVIDER_QUOTE(...,"all",...)` | `20 × 2`, including the header |
 | `TICKERSHEETS_QUOTE_COMPARE` | `7 × 10`: header and six comparison rows |
 | `TICKERSHEETS_HISTORY` | At most `(sessions + 1) × 7`, including the header |
 | `TICKERSHEETS_FUNDAMENTALS(...,"all",...)` | `(returned fields + 1) × 5` |
@@ -204,6 +207,79 @@ The quote cache lasts up to 60 seconds.
 Google Sheets does not automatically recalculate a formula when its cache entry expires.
 Choose **TickerSheets → Refresh data** to request new results.
 On your own tab, change the ticker or re-enter the formula.
+
+## TICKERSHEETS_PROVIDER_QUOTE
+
+```text
+TICKERSHEETS_PROVIDER_QUOTE(ticker, provider, field="price", refresh="")
+```
+
+This function requests one selected provider directly and requires your own key for that provider.
+`TICKERSHEETS_QUOTE` continues to use Yahoo without a personal key.
+Saving keys does not change that default source.
+
+Choose **TickerSheets → API keys…** to save keys before you enter these formulas:
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","FINNHUB","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","ALPHA_VANTAGE","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","TWELVE_DATA","price")
+=TICKERSHEETS_PROVIDER_QUOTE("BTC","COINMARKET","price")
+```
+
+Provider names are case-insensitive. Spaces, underscores and hyphens are optional:
+
+| Provider argument | Accepted alias | API key field |
+|---|---|---|
+| `FINNHUB` | — | Finnhub |
+| `ALPHA_VANTAGE` | `ALPHAVANTAGE` | Alpha Vantage |
+| `TWELVE_DATA` | `TWELVEDATA` | Twelve Data |
+| `COINMARKET` | `COINMARKETCAP` | CoinMarketCap |
+
+Stock requests accept symbols such as `NVDA`, `NASDAQ:NVDA` and `NYSE:IBM`.
+Alpha Vantage and Twelve Data also accept pairs such as `USD/EUR` and `CURRENCY:USDEUR`.
+CoinMarketCap accepts cryptocurrency symbols such as `BTC`, with USD as the default quote currency.
+An explicit cryptocurrency pair can use `BTC/USD` or `CURRENCY:BTCUSD`.
+The provider's plan and symbol permissions still control access.
+CoinMarketCap rejects an ambiguous symbol instead of choosing one cryptocurrency silently.
+
+The `price` field returns one value.
+The `all` field returns a two-column `Field`, `Value` table:
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE($B$1,"FINNHUB","all")
+```
+
+Supported fields:
+
+| Field | Meaning |
+|---|---|
+| `price` | Provider quote price or exchange rate |
+| `name`, `symbol`, `currency` | Name, symbol and quote currency, when supplied |
+| `quote_time` | Provider quote timestamp in UTC, when supplied |
+| `quote_date` | Published trading date, or the UTC date from `quote_time` |
+| `bar_time` | Twelve Data bar opening timestamp, distinct from the quote timestamp |
+| `price_basis` | Description of the provider's price and timing |
+| `previous_close`, `day_open`, `day_high`, `day_low` | Reported session prices, when supplied |
+| `volume` | Stock share volume, or CoinMarketCap's 24-hour turnover in the quote currency |
+| `change` | Reported price change, when supplied |
+| `change_fraction` | Reported percentage change as a fraction, so `0.01` means `1%` |
+| `change_period` | `previous_close` for stock quotes or `24_hours` for CoinMarketCap |
+| `source`, `status`, `retrieved_at` | Provider name, request status and retrieval time |
+
+Unavailable fields remain `N/A`.
+CoinMarketCap's `volume` uses different units from stock share volume.
+The `change_period` field identifies the comparison period for a reported change.
+
+The function preserves the provider's observation time or date.
+Alpha Vantage's default stock quote can describe an end-of-day session and lacks an intraday UTC timestamp.
+Twelve Data's bar opening time does not replace a missing quote timestamp.
+A recent request does not establish a recent trade.
+The function returns unavailable text for a missing key, rejected request or unavailable symbol.
+It does not substitute a quote from another provider.
+Accepted responses share a 60-second cache by provider and normalized symbol or currency pair.
+The cache contains public quote fields and no saved API keys.
+The **Refresh data** menu includes these formulas.
 
 ## TICKERSHEETS_HISTORY
 
@@ -674,6 +750,8 @@ The source can publish delayed or unchanged data.
 A provider can return some fields and leave others unavailable.
 This function has no exact-date FRED or RSI2 dataset selector.
 Its `fred` selector reports the recent-observation table from `TICKERSHEETS_FRED`, not a `TICKERSHEETS_FRED_VALUE` request.
+For keyed quotes, use `TICKERSHEETS_PROVIDER_QUOTE(...,"status")` or its `"all"` table.
+`TICKERSHEETS_DATA_STATUS` has no keyed-quote selector.
 This function can request data when its cache is empty.
 
 Successful public responses use these cache periods:
@@ -681,6 +759,7 @@ Successful public responses use these cache periods:
 | Request | Cache period |
 | --- | --- |
 | Chart data and separate session quotes | 60 seconds each |
+| Keyed provider quotes | 60 seconds |
 | RSI2 chart facts and optional bid/ask | 60 seconds each |
 | Fundamentals and earnings details | 15 minutes, with a shared 60-second parsed quote-page cache |
 | Watchlist summary for one other ticker | 60 seconds |
@@ -868,9 +947,18 @@ Volatile functions such as `NOW()`, `RAND()` and `RANDBETWEEN()` are not support
 
 ## Keys and sharing
 
-The **TickerSheets → API keys…** form contains only FRED.
-The form stores the key as `FRED_API_KEY` in Script Properties, outside worksheet cells.
-Leaving the field blank preserves the saved key.
+The **TickerSheets → API keys…** form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
+The form stores keys in Script Properties, outside worksheet cells:
+
+| Provider | Script Property |
+|---|---|
+| Finnhub | `FINNHUB_API_KEY` |
+| Alpha Vantage | `ALPHA_VANTAGE_API_KEY` |
+| Twelve Data | `TWELVE_DATA_API_KEY` |
+| CoinMarketCap | `COINMARKET_API_KEY` |
+| FRED | `FRED_API_KEY` |
+
+Leaving a field blank preserves its saved key.
 The sidebar deletes a key after you select **Remove saved key** and click **Save keys**.
 The sidebar shows saved-status flags without returning saved key values.
 

@@ -43,6 +43,10 @@ export function tutorialBook() {
     };
     book.deleteSheet = sheet => { book.deleted.push(sheet.getName()); book.sheets.delete(sheet.getName()); };
     book.setActiveSheet = sheet => { book.active = sheet; return sheet; };
-    book.moveActiveSheet = vi.fn();
+    book.moveActiveSheet = vi.fn(position => {
+        const entries = [...book.sheets].filter(([, sheet]) => sheet !== book.active);
+        entries.splice(position - 1, 0, [book.active.getName(), book.active]);
+        book.sheets = new Map(entries);
+    });
     return book;
 }

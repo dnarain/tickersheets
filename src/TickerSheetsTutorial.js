@@ -1,6 +1,7 @@
 /*  *** DEBUG START ***
 import { TickerSheetsPublicData } from "./TickerSheetsFunctions.js";
 import { TickerSheetsShowcase } from "./TickerSheetsShowcase.js";
+import { TickerSheetsOptionsShowcase } from "./TickerSheetsOptionsShowcase.js";
 export { TickerSheetsTutorial, TickerSheetsBuildDemo, TickerSheetsRefreshData, TickerSheetsInspectDemo };
 //  *** DEBUG END ***/
 
@@ -24,8 +25,10 @@ class TickerSheetsTutorial {
     static build(book) {
         if (!book || typeof book.getSheetByName !== "function") throw new Error("Open a spreadsheet first.");
         TickerSheetsShowcase.preflight(book);
+        TickerSheetsOptionsShowcase.preflight(book);
         let sheet = book.getSheetByName("Start here");
         if (sheet && sheet.getRange("Z1").getValue() !== TickerSheetsTutorial.marker) throw new Error("The existing Start here tab is not managed by TickerSheets. Rename it before creating the tutorial.");
+        const optionInputs = TickerSheetsOptionsShowcase.savedInputs(book);
         const previous = sheet?.getRange("Z2").getValue() === "TICKERSHEETS_TUTORIAL_V1"
             ? sheet.getRange("B4").getValue() : undefined;
         const ticker = typeof previous === "string" && /^[A-Za-z0-9.^=:/_-]{1,40}$/.test(previous.trim()) ? previous.trim().toUpperCase() : "NVDA";
@@ -58,31 +61,39 @@ class TickerSheetsTutorial {
             "Copy this tutorial: File → Make a copy includes its attached Apps Script. Reload your editable copy to see the TickerSheets menu. The public tutorial has no saved API keys.",
             "Start with a blank sheet: open Extensions → Apps Script and add a script file named TickerSheets. Paste dist/TickerSheets.js into that file, save and reload the spreadsheet. Keep any existing script files.",
             "Optional keys: choose TickerSheets → API keys… and enter your own provider key. FRED requires a FRED key. Keep a copy with saved keys private; spreadsheet editors can read those keys.",
-            "Get newer data: choose TickerSheets → Refresh data and wait for the results. Stock analysis shows more examples. You can also type the functions in your own cell layout."
+            "Get newer data: choose TickerSheets → Refresh data and wait for the results. Stock analysis shows company research; Options analysis shows option quotes and calculators. You can also type the functions in your own cell layout."
         ];
         setup.forEach((text, i) => { const row = 20 + i * 2; sheet.getRange("A" + row + ":D" + (row + 1)).merge().setValue(text).setWrap(true); sheet.setRowHeights(row, 2, 24); });
-        TickerSheetsTutorial.header(sheet, "A29:D29", ["Table functions to try", "", "Formula to enter", "What it returns"]);
+        TickerSheetsTutorial.header(sheet, "A29:D29", ["More functions to try", "", "Formula to enter", "What it returns"]);
         const tables = [
             ["Daily prices", '=TICKERSHEETS_HISTORY($B$4,30)', "Returns a header and up to 30 daily OHLCV rows."],
             ["Option expiration dates", '=TICKERSHEETS_EXPIRATIONS($B$4)', "Returns the dates published by the provider."],
             ["Option chain", '=TICKERSHEETS_OPTIONS($B$4)', "Returns the nearest available chain; an optional second argument chooses a date."],
             ["Reported earnings", '=TICKERSHEETS_EARNINGS($B$4,"earnings")', "Returns reported EPS, estimates and the accounting basis."],
-            ["FRED observations", '=TICKERSHEETS_FRED("DGS10",12)', "Requires your own FRED key; returns dates and observations."]
+            ["FRED observations", '=TICKERSHEETS_FRED("DGS10",12)', "Requires your own FRED key; returns dates and observations."],
+            ["Optional keyed quote", '=TICKERSHEETS_PROVIDER_QUOTE($B$4,"FINNHUB","price")', "Requires your own provider key. Choose Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap explicitly."]
         ];
-        sheet.getRange("A30:A34").setValues(tables.map(row => [row[0]]));
+        sheet.getRange("A30:A35").setValues(tables.map(row => [row[0]]));
         // A leading apostrophe keeps these examples as text, so no table requests run here.
-        sheet.getRange("C30:C34").setValues(tables.map(row => ["'" + row[1]])).setFontFamily("Courier New").setFontSize(10);
-        sheet.getRange("D30:D34").setValues(tables.map(row => [row[2]])); sheet.getRange("A30:D34").setWrap(true); sheet.setRowHeights(30, 5, 44);
+        sheet.getRange("C30:C35").setValues(tables.map(row => ["'" + row[1]])).setFontFamily("Courier New").setFontSize(10);
+        sheet.getRange("D30:D35").setValues(tables.map(row => [row[2]])); sheet.getRange("A30:D35").setWrap(true); sheet.setRowHeights(30, 6, 44);
         sheet.getRange("A36:D36").merge().setValue("Table functions fill neighboring cells. Try them in an empty area or a tab you create, with room for the returned rows and columns.").setWrap(true); sheet.setRowHeights(36, 1, 42);
         sheet.getRange("A38:D38").merge().setFormula('=HYPERLINK("https://github.com/dnarain/tickersheets/blob/main/FUNCTIONS.md","Open the full function reference")').setFontColor("#1155CC");
         sheet.getRange("A39:D39").merge().setFormula('=HYPERLINK("https://github.com/dnarain/tickersheets/blob/main/INSTALL.md","Installation and API-key instructions")').setFontColor("#1155CC");
         sheet.setColumnWidth(1, 205); sheet.setColumnWidth(2, 175); sheet.setColumnWidth(3, 535); sheet.setColumnWidth(4, 420);
         sheet.getRange("Z1:Z2").setValues([[TickerSheetsTutorial.marker], ["TICKERSHEETS_TUTORIAL_V1"]]); sheet.hideColumns(26);
+        TickerSheetsOptionsShowcase.build(book, optionInputs);
         TickerSheetsShowcase.build(book);
+        const stock = book.getSheetByName("Stock analysis"), options = book.getSheetByName("Options analysis");
+        stock.getRange("A3:N3").merge().setFormula('=HYPERLINK("#gid=' + options.getSheetId() + '&range=A6","Open Options analysis: quotes, expirations and strategy calculators →")').setFontColor("#1155CC");
+        if (typeof book.moveActiveSheet === "function") {
+            book.setActiveSheet(sheet); book.moveActiveSheet(1);
+            book.setActiveSheet(stock); book.moveActiveSheet(2);
+            book.setActiveSheet(options); book.moveActiveSheet(3);
+        }
         book.setActiveSheet(sheet);
-        if (typeof book.moveActiveSheet === "function") book.moveActiveSheet(1);
-        book.toast("Demo ready. Start here teaches the formulas; Stock analysis shows more examples.", "TickerSheets", 8);
-        return { ok: true, sheets: ["Start here", "Stock analysis"], ticker };
+        book.toast("Demo ready. Start here teaches formulas; Stock analysis and Options analysis show the research examples.", "TickerSheets", 8);
+        return { ok: true, sheets: ["Start here", "Stock analysis", "Options analysis"], ticker };
     }
 
     static header(sheet, address, values) {
@@ -95,7 +106,8 @@ class TickerSheetsTutorial {
         if (!sheet || TickerSheetsShowcase.readCell(sheet, "Z2", undefined, grid).value !== "TICKERSHEETS_TUTORIAL_V1") return { ok: false, error: "The tutorial is not installed." };
         const rows = TickerSheetsTutorial.examples().map(([label, expected], i) => ({ label, ...TickerSheetsShowcase.readCell(sheet, "B" + (i + 7), expected, grid) }));
         const showcase = TickerSheetsShowcase.inspect(book);
-        return { ok: rows.every(row => row.matches && !row.error && !row.pending && row.status !== "Not calculated") && typeof rows[0].value === "number" && Number.isFinite(rows[0].value) && rows[0].value > 0 && showcase.ok, showcase, sheets: book.getSheets().map(tab => tab.getName()), ticker: TickerSheetsShowcase.readCell(sheet, "B4", undefined, grid).value, rows };
+        const options = TickerSheetsOptionsShowcase.inspect(book);
+        return { ok: rows.every(row => row.matches && !row.error && !row.pending && row.status !== "Not calculated") && typeof rows[0].value === "number" && Number.isFinite(rows[0].value) && rows[0].value > 0 && showcase.ok && options.ok, showcase, options, sheets: book.getSheets().map(tab => tab.getName()), ticker: TickerSheetsShowcase.readCell(sheet, "B4", undefined, grid).value, rows };
     }
 }
 
@@ -110,8 +122,9 @@ function TickerSheetsInspectDemo() {
         unavailable: rows.filter(row => row.unavailable).map(row => row.cell), mismatched: rows.filter(row => !row.matches).map(row => row.cell),
         uncalculated: rows.filter(row => row.status === "Not calculated").map(row => row.cell) });
     const summary = { ok: result.ok, ticker: result.ticker, sheets: result.sheets,
-        tutorial: summarize(result.rows || []), showcase: summarize(result.showcase?.rows || []), charts: result.showcase?.charts,
-        options: result.showcase?.options };
+        tutorial: summarize(result.rows || []), showcase: summarize(result.showcase?.rows || []), optionsTab: summarize(result.options?.rows || []),
+        charts: { stock: result.showcase?.charts, options: result.options?.charts },
+        tickers: { tutorial: result.ticker, stock: result.showcase?.ticker, options: result.options?.ticker }, options: result.options?.options };
     if (result.error) summary.error = result.error;
     console.log("TICKERSHEETS_TUTORIAL_CHECK " + JSON.stringify(summary));
     return result;
@@ -121,7 +134,7 @@ function TickerSheetsInspectDemo() {
 function TickerSheetsRefreshData() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the spreadsheet before refreshing formulas.");
-    const saved = [], pattern = /\b(?:TICKERSHEETS_QUOTE|TICKERSHEETS_HISTORY|TICKERSHEETS_FUNDAMENTALS|TICKERSHEETS_OPTIONS|TICKERSHEETS_EXPIRATIONS|TICKERSHEETS_EARNINGS|TICKERSHEETS_FRED|TICKERSHEETS_FRED_VALUE|TICKERSHEETS_FIELD|TICKERSHEETS_RSI_TARGETS|TICKERSHEETS_WATCH_ROW|TICKERSHEETS_QUOTE_COMPARE|TICKERSHEETS_DATA_STATUS|TICKERSHEETS_STRATEGY|TICKERSHEETS_OPTION_MODEL)\s*\(/i;
+    const saved = [], pattern = /\b(?:TICKERSHEETS_QUOTE|TICKERSHEETS_PROVIDER_QUOTE|TICKERSHEETS_HISTORY|TICKERSHEETS_FUNDAMENTALS|TICKERSHEETS_OPTIONS|TICKERSHEETS_EXPIRATIONS|TICKERSHEETS_EARNINGS|TICKERSHEETS_FRED|TICKERSHEETS_FRED_VALUE|TICKERSHEETS_FIELD|TICKERSHEETS_RSI_TARGETS|TICKERSHEETS_WATCH_ROW|TICKERSHEETS_QUOTE_COMPARE|TICKERSHEETS_DATA_STATUS|TICKERSHEETS_STRATEGY|TICKERSHEETS_OPTION_MODEL)\s*\(/i;
     for (const sheet of book.getSheets()) {
         const formulas = sheet.getDataRange().getFormulas();
         for (let row = 0; row < formulas.length; row++) for (let col = 0; col < formulas[row].length; col++) {

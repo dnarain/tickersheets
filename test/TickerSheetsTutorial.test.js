@@ -35,10 +35,10 @@ afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 function formulasIn(sheet) { return [...sheet.formulas].sort(([a], [b]) => a.localeCompare(b)); }
 function noProviderOrKeyAccess() { expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled(); }
 
-describe("two-tab demo, imported Apps Script source", () => {
-    it("creates Start here and Stock analysis and teaches direct scalar formulas beside their formula text", () => {
+describe("three-tab demo, imported Apps Script source", () => {
+    it("creates Start here, Stock analysis and Options analysis and teaches direct scalar formulas beside their formula text", () => {
         api.TickerSheetsBuildDemo();
-        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis"]);
+        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis", "Options analysis"]);
         const sheet = book.getSheetByName("Start here");
         expect(sheet.getRange("Z1").getValue()).toBe("TICKERSHEETS_GUIDE_V1");
         expect(sheet.getRange("Z2").getValue()).toBe("TICKERSHEETS_TUTORIAL_V1");
@@ -54,6 +54,8 @@ describe("two-tab demo, imported Apps Script source", () => {
         expect(sheet.getRange("B30:B34").getFormulas().flat()).toEqual(Array(5).fill(""));
         expect(sheet.getRange("C30:C34").getFormulas().flat()).toEqual(Array(5).fill(""));
         expect(sheet.getRange("C30:C34").getValues().flat().every(value => value.startsWith("'="))).toBe(true);
+        expect(sheet.getRange("C35").getValue()).toBe('\'=TICKERSHEETS_PROVIDER_QUOTE($B$4,"FINNHUB","price")');
+        expect(sheet.getRange("C35").getFormula()).toBe("");
         expect(sheet.hideSheet).not.toHaveBeenCalled();
         noProviderOrKeyAccess();
     });
@@ -63,7 +65,7 @@ describe("two-tab demo, imported Apps Script source", () => {
         const personal = book.insertSheet("My portfolio");
         personal.getRange("A1:B1").setValues([["Keep me", 123]]); personal.getRange("C1").setFormula("=B1*2");
         api.TickerSheetsBuildDemo();
-        expect([...book.sheets.keys()]).toEqual(["Analysis", "My portfolio", "Start here", "Stock analysis"]);
+        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis", "Options analysis", "Analysis", "My portfolio"]);
         expect(book.deleted).toEqual([]); expect(analysis.getRange("Z1").getValue()).toBe("OTHER_ANALYSIS");
         expect(analysis.getRange("B4").getValue()).toBe("AAPL"); expect(book.getSheetByName("Start here").getRange("B4").getValue()).toBe("NVDA");
         expect(personal.getRange("A1:B1").getValues()).toEqual([["Keep me", 123]]); expect(personal.getRange("C1").getFormula()).toBe("=B1*2");
@@ -87,7 +89,7 @@ describe("two-tab demo, imported Apps Script source", () => {
         api.TickerSheetsBuildDemo();
         const guide = book.getSheetByName("Start here"); guide.getRange("B4").setValue(" aapl ");
         api.TickerSheetsBuildDemo();
-        expect([...book.sheets.keys()]).toEqual(["Sheet1", "Notes", "Start here", "Stock analysis"]); expect(book.getSheetByName("Start here")).toBe(guide);
+        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis", "Options analysis", "Sheet1", "Notes"]); expect(book.getSheetByName("Start here")).toBe(guide);
         expect(book.getSheetByName("Sheet1")).toBe(defaultSheet); expect(book.getSheetByName("Notes")).toBe(notes);
         expect(defaultSheet.events).toEqual([]); expect(notes.events).toEqual([]); expect(book.deleted).toEqual([]);
         expect(notes.drawings).toEqual([{ label: "Keep this drawing" }]); expect(notes.notes.get("A1")).toBe("Keep this note");
@@ -151,7 +153,7 @@ describe("two-tab demo, imported Apps Script source", () => {
         const guide = book.getSheetByName("Start here"); guide.getRange("B4").setValue("AAPL");
         const formulas = formulasIn(guide);
         api.TickerSheetsRefreshData();
-        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis"]); expect(guide.getRange("B4").getValue()).toBe("AAPL");
+        expect([...book.sheets.keys()]).toEqual(["Start here", "Stock analysis", "Options analysis"]); expect(guide.getRange("B4").getValue()).toBe("AAPL");
         expect(formulasIn(guide)).toEqual(formulas); noProviderOrKeyAccess();
     });
 

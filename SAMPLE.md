@@ -2,9 +2,11 @@
 
 [View the tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
 
-The demo has two tabs: **Start here** and **Stock analysis**.
+The demo has three tabs: **Start here**, **Stock analysis** and **Options analysis**.
 **Start here** shows simple custom functions and the formula text beside their results.
-**Stock analysis** shows how the same library can supply charts and further research examples.
+**Stock analysis** shows company data, earnings, technical indicators and a price chart.
+**Options analysis** shows option quotes, model Greeks, strategy calculations and a payoff chart.
+All three tabs use the ticker in **Start here!B4**.
 The public tutorial contains saved NVDA examples and no saved API keys.
 
 ## Open your copy and its menu
@@ -57,9 +59,8 @@ They also work in a new spreadsheet after you install the Apps Script bundle.
 
 ## Explore Stock analysis
 
-**Stock analysis!B4** references **Start here!B4**, so the demo has one ticker input.
-The showcase contains cell formulas, their returned tables, charts and editable model assumptions.
-Its data and calculations stay visible on the same tab.
+**Stock analysis!B4** references **Start here!B4**.
+The tab contains cell formulas, their returned tables and a closing-price chart.
 
 | Area | Where to look |
 |---|---|
@@ -70,31 +71,40 @@ Its data and calculations stay visible on the same tab.
 | Stock summary returned by TICKERSHEETS_WATCH_ROW | I52:J82 |
 | Reported EPS | A178:J190 |
 | Financial results | A196:H204 |
-| Option expiration input | B214; blank requests the nearest available expiration |
-| Published option dates | A218:A258 |
-| Returned chain expiration | B216 |
-| Selected option quotes | C218:N299; strikes within ±20% of regular-session price, up to 40 calls and 40 puts |
-| Option model | Inputs B304:B310, results E304:E311 |
-| Strategy selector | B315: covered call, cash-secured put, call vertical or put vertical |
-| Strategy assumptions | B316:B321: long/short strikes and premiums, contracts and multiplier |
-| Strategy results | E316:E318: maximum profit, maximum loss and breakeven |
-| Provider comparison | A326:J332 |
-| Source status | A338:E350 |
-| Optional FRED history | A356:E368 |
-| Exact-date FRED value | B373 |
-| Strategy-payoff table and chart | A380:B421 and E381 |
+| Provider comparison | A214:J220 |
+| Quote and fundamentals status | A226:E228 and A230:E232 |
+| Optional FRED history | A240:E252 |
+| Exact-date FRED value | B257 |
 
 Click a result to inspect its formula.
 Table functions start in the first cell of their displayed table.
-The closing-price chart reads historical prices. The payoff chart reads the strategy's calculated expiration values.
-The option model and strategy formulas calculate from their nearby assumptions.
+The closing-price chart reads historical prices.
 FRED examples remain unavailable until you save your own key.
+
+## Explore Options analysis
+
+**Options analysis!B4** also references **Start here!B4**.
+Change the stock on **Start here** and the expiration or calculator assumptions on **Options analysis**.
+Each result uses a visible formula. The yellow cells contain editable assumptions.
+
+| Area | Where to look |
+|---|---|
+| Option expiration input | B8; blank requests the nearest available expiration |
+| Published option dates | A12:A52 |
+| Returned chain expiration | B10 |
+| Selected option quotes | C12:N93; strikes within ±20% of regular-session price, up to 40 calls and 40 puts |
+| Option model | Inputs B98:B104, results E98:E103 |
+| Strategy selector | B109: covered call, cash-secured put, call vertical or put vertical |
+| Strategy assumptions | B110:B115: long/short strikes and premiums, contracts and multiplier |
+| Strategy results | E110:E112: maximum profit, maximum loss and breakeven |
+| Strategy-payoff table and chart | A120:B161 and E121 |
+| Options source status | A170:E172 |
 
 ### Option quotes and calculated values
 
 The expiration selector chooses the chain's maturity date.
-The link at the top of the showcase jumps to this options section.
-The showcase filters strikes to within ±20% of regular-session price, sorts them by strike and displays up to 40 calls and 40 puts.
+The tab filters strikes to within ±20% of regular-session price and sorts them by strike.
+It shows up to 40 calls and 40 puts.
 The reusable chain function returns the unfiltered chain.
 The returned chain contains call/put type, strike, bid, ask, last, IV, volume and open interest.
 Read each contract's last-trade time before treating its last price as current.
@@ -103,9 +113,10 @@ The underlying stock quote and the option quotes can describe different observat
 The option model calculates a theoretical premium and Greeks from the entered spot, strike, days, volatility, rate and dividend yield.
 Its premium and Greeks are model results. Bid, ask and last are provider quotes.
 The strategy calculator uses its own entered assumptions to calculate position results and expiration payoff.
+The payoff chart reads the strategy's calculated expiration values.
 See [option model units](FUNCTIONS.md#tickersheets_option_model) and [strategy arguments](FUNCTIONS.md#tickersheets_strategy) before changing those inputs.
 
-Use the showcase as an example of arranging the functions in a larger worksheet.
+Use both analysis tabs as examples of arranging the functions in a larger worksheet.
 The [function reference](FUNCTIONS.md) describes each field and calculation independently of this layout.
 
 ## Prices, timestamps and missing data
@@ -136,9 +147,11 @@ See [BUILD-YOUR-OWN.md](BUILD-YOUR-OWN.md) for recipes and [FUNCTIONS.md](FUNCTI
 ## API keys
 
 Public Yahoo stock and option functions do not require personal API keys.
-FRED requires your own key.
-Choose **TickerSheets → API keys…**, enter it in **FRED**, then click **Save keys**.
-The form contains only FRED. Other supported providers use public pages or endpoints.
+The **TickerSheets → API keys…** form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
+Enter your own keys in the matching fields and click **Save keys**.
+FRED functions require a FRED key.
+`TICKERSHEETS_PROVIDER_QUOTE` requests quotes from a selected keyed provider.
+The demo's Yahoo quotes do not switch providers when you save these keys.
 
 If the form is blank, use the [browser-profile workaround](INSTALL.md#if-the-sidebar-is-blank), then open it again.
 Keep copies with personal keys private. Spreadsheet editors can access the attached script and its keys.

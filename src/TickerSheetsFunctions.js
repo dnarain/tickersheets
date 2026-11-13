@@ -4,7 +4,8 @@ import { TickerSheetsDetails } from "./TickerSheetsDetails.js";
 import { TickerSheetsOptions } from "./TickerSheetsOptions.js";
 import { TickerSheetsFred } from "./TickerSheetsFred.js";
 import { TickerSheetsProviderFields } from "./TickerSheetsProviderFields.js";
-export { TickerSheetsPublicData, TICKERSHEETS_QUOTE, TICKERSHEETS_HISTORY, TICKERSHEETS_FUNDAMENTALS, TICKERSHEETS_OPTIONS, TICKERSHEETS_EXPIRATIONS, TICKERSHEETS_FRED, TICKERSHEETS_FIELD, TICKERSHEETS_DATA_STATUS, TICKERSHEETS_STRATEGY };
+import { TickerSheetsKeyedQuotes } from "./TickerSheetsKeyedQuotes.js";
+export { TickerSheetsPublicData, TICKERSHEETS_QUOTE, TICKERSHEETS_PROVIDER_QUOTE, TICKERSHEETS_HISTORY, TICKERSHEETS_FUNDAMENTALS, TICKERSHEETS_OPTIONS, TICKERSHEETS_EXPIRATIONS, TICKERSHEETS_FRED, TICKERSHEETS_FIELD, TICKERSHEETS_DATA_STATUS, TICKERSHEETS_STRATEGY };
 //  *** DEBUG END ***/
 
 /** Public data only enters this cache. Keys, cookies and request URLs never enter it. */
@@ -18,6 +19,15 @@ class TickerSheetsPublicData {
     }
 
     static ticker(input) { return TickerSheetsData.normalizeTicker(input).yahooSymbol; }
+    static keyedQuote(input, provider, overrides = {}, refresh = "") {
+        const id = TickerSheetsKeyedQuotes.provider(provider), identity = TickerSheetsKeyedQuotes.identity(input, id), metadata = TickerSheetsKeyedQuotes.providers[id];
+        if (refresh != null && typeof refresh !== "string" && typeof refresh !== "number" || String(refresh ?? "") !== "" && (!/^\d{1,10}$/.test(String(refresh)) || Number(refresh) > 2147483647)) return TickerSheetsPublicData.failure("Use a whole refresh number from 0 to 2147483647.", metadata.label);
+        let key;
+        try { key = overrides.getKey ? overrides.getKey(metadata.property) : PropertiesService.getScriptProperties().getProperty(metadata.property); } catch { key = ""; }
+        if (typeof key !== "string" || !key.trim() || /[\s\x00-\x1F]/.test(key) || key.length > 512) return TickerSheetsPublicData.failure(metadata.label + " API key required. Use TickerSheets → API keys….", metadata.label);
+        return TickerSheetsPublicData.cached("keyed-quote:v1", id + ":" + identity.identity, 60,
+            deps => TickerSheetsKeyedQuotes.fetch(id, identity, key, deps), overrides, refresh);
+    }
     static safe(value) { return typeof value === "number" && !Number.isFinite(value) ? "N/A" : typeof value === "string" && /^\s*[=+@-]/.test(value) ? "'" + value : value ?? "N/A"; }
     static failure(error, source = "") { return { ok: false, status: error, source, retrievedAt: null, cacheHit: false }; }
     static error(result) { return "N/A: " + (result?.status || result?.error || "Data unavailable"); }
@@ -250,6 +260,19 @@ function TICKERSHEETS_QUOTE(ticker, field = "price", refresh = "") {
         const fields = TickerSheetsPublicData.quoteFields(data);
         return wanted === "all" ? [["Field", "Value"], ...Object.entries(fields).map(([id, value]) => [id, TickerSheetsPublicData.safe(value)])] : TickerSheetsPublicData.safe(fields[wanted]);
     } catch { return "N/A: Enter a supported ticker and quote field"; }
+}
+
+/** Quote from an explicitly selected keyed provider. Save keys through TickerSheets → API keys…. @customfunction */
+function TICKERSHEETS_PROVIDER_QUOTE(ticker, provider, field = "price", refresh = "") {
+    try {
+        if (typeof field !== "string") return "N/A: Unsupported provider quote field";
+        const wanted = field.trim().toLowerCase();
+        if (wanted !== "all" && !TickerSheetsKeyedQuotes.fields.includes(wanted)) return "N/A: Unsupported provider quote field";
+        const data = TickerSheetsPublicData.keyedQuote(ticker, provider, {}, refresh);
+        if (!data.ok) return TickerSheetsPublicData.error(data);
+        const fields = { ...data.fields, status: data.status, retrieved_at: data.retrievedAt };
+        return wanted === "all" ? [["Field", "Value"], ...TickerSheetsKeyedQuotes.fields.map(id => [id, TickerSheetsPublicData.safe(fields[id])])] : TickerSheetsPublicData.safe(fields[wanted]);
+    } catch { return "N/A: Enter a supported provider, ticker and quote field"; }
 }
 
 /** Daily OHLCV and adjusted close, up to two years. @customfunction */

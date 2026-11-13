@@ -92,6 +92,31 @@ RSI values run from `0` to `100`.
 Forward dividend yield uses a fraction.
 The [function reference](FUNCTIONS.md) explains each field and its limits.
 
+## Request a quote from a keyed provider
+
+1. Choose **TickerSheets → API keys…**.
+2. Enter your own key for Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap.
+3. Click **Save keys**.
+
+With a stock ticker in `A1`, choose one provider explicitly:
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE($A$1,"FINNHUB","price")
+=TICKERSHEETS_PROVIDER_QUOTE($A$1,"ALPHA_VANTAGE","price")
+=TICKERSHEETS_PROVIDER_QUOTE($A$1,"TWELVE_DATA","price")
+```
+
+CoinMarketCap uses a cryptocurrency symbol:
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE("BTC","COINMARKET","price")
+```
+
+The formula returns one field from the selected provider.
+The provider plan controls symbol access, request limits and quote delays.
+The default `TICKERSHEETS_QUOTE` formula still uses Yahoo without a personal key.
+See [the keyed-quote reference](FUNCTIONS.md#tickersheets_provider_quote) for fields and supported symbol formats.
+
 ## Add FRED data
 
 1. Choose **TickerSheets → API keys…**.
@@ -145,5 +170,5 @@ Keep unavailable values visible instead of converting them to zero.
 The optional `TICKERSHEETS_DATA_STATUS` function returns status and source times for its requested dataset.
 A recent retrieval does not prove that the underlying quote is recent.
 
-The full [function reference](FUNCTIONS.md) includes all fifteen TickerSheets functions, including watchlist summaries and strategy calculations.
+The full [function reference](FUNCTIONS.md) includes all sixteen TickerSheets functions, including watchlist summaries and strategy calculations.
 You can use them in cells with your own layout.

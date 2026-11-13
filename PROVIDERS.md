@@ -1,7 +1,8 @@
 # Data providers and testing
 
 TickerSheets requests data from Apps Script in your Google account.
-It uses five sources: Yahoo Finance, Finviz, Zacks, GuruFocus and FRED.
+It uses public Yahoo Finance, Finviz, Zacks and GuruFocus data.
+Optional keyed functions request Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
 It requires no hosted server.
 
 ## Providers
@@ -12,6 +13,10 @@ It requires no hosted server.
 | Finviz | 32 selected fields through `TICKERSHEETS_FIELD`; spot price and forward yield in quote comparisons | No |
 | Zacks | Average analyst price target through `TICKERSHEETS_FIELD` | No |
 | GuruFocus | Public forward and trailing dividend yields through `TICKERSHEETS_FIELD`; forward yield only in quote comparisons | No |
+| Finnhub | Selected quote fields through `TICKERSHEETS_PROVIDER_QUOTE` | Your Finnhub API key |
+| Alpha Vantage | Selected quote fields through `TICKERSHEETS_PROVIDER_QUOTE` | Your Alpha Vantage API key |
+| Twelve Data | Selected quote fields through `TICKERSHEETS_PROVIDER_QUOTE` | Your Twelve Data API key |
+| CoinMarketCap | Selected cryptocurrency quote fields through `TICKERSHEETS_PROVIDER_QUOTE` | Your CoinMarketCap API key |
 | FRED | Recent economic observations and exact-date observation values | Your FRED API key |
 
 Yahoo requests use its [Chart endpoint](https://query1.finance.yahoo.com/v8/finance/chart/NVDA), [quote pages](https://finance.yahoo.com/quote/NVDA/) and option endpoints.
@@ -39,12 +44,18 @@ Yahoo can omit an after-hours price, an option leg or a company statistic.
 A recent request does not establish a recent trade.
 Keep unavailable values distinct from numeric zeros.
 
-### FRED key
+### API keys
 
-Choose **TickerSheets → API keys…**, enter your own key in **FRED** and click **Save keys**.
-The script stores it as `FRED_API_KEY` in Script Properties.
-The form never returns the saved value to the browser.
+Choose **TickerSheets → API keys…** and enter your own keys in the matching provider fields.
+Click **Save keys**.
+The form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
+The script stores keys in Script Properties and never returns saved key values to the browser.
 A **Saved** label confirms storage and does not test provider access.
+The [function reference](FUNCTIONS.md#keys-and-sharing) lists the property names.
+
+`TICKERSHEETS_PROVIDER_QUOTE` requests only the provider selected in its formula.
+The function requires that provider's key. Your plan controls access, request limits and quote delays.
+These keys do not change the Yahoo source used by `TICKERSHEETS_QUOTE`.
 
 Keep copies with keys private. Spreadsheet editors can access the attached script and its properties.
 Do not include keys, authenticated request URLs, cookies or raw response bodies in reports.
@@ -79,7 +90,29 @@ Current release checks must separately confirm access from Google's network.
 
 Read the selected session and quote timestamp before comparing prices.
 An unavailable field can remain `N/A` without a spreadsheet syntax error.
-The Stock analysis showcase uses the same functions. Check the formulas behind its results and chart ranges separately.
+The **Stock analysis** and **Options analysis** tabs use the same functions.
+Check the formulas behind their results and chart ranges separately.
+
+### Test keyed quotes
+
+The restored keyed adapters require separate checks with your own keys in a private copy.
+The public demo has no saved keys and does not establish access to these four quote APIs.
+
+1. Save your key through **TickerSheets → API keys…**.
+2. Enter a formula for that provider in an empty cell.
+3. Compare its result with the provider's response for the same symbol and observation time.
+4. Read the returned timestamp or observation date before comparing providers.
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","FINNHUB","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","ALPHA_VANTAGE","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","TWELVE_DATA","price")
+=TICKERSHEETS_PROVIDER_QUOTE("BTC","COINMARKET","price")
+```
+
+Use `"all"` for the field argument to inspect the provider's returned fields in a two-column table.
+Missing keys, blocked requests, exhausted quotas and unavailable symbols must remain unavailable results.
+The adapters do not silently substitute Yahoo quotes for a failed keyed request.
 
 ### Exercise each dataset
 

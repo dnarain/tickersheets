@@ -8,7 +8,7 @@ export const DEBUG_BLOCK_END = "//  *** DEBUG END ***/";
 const DEBUG_BLOCK_PATTERN = /\/\*\s+\*\*\* DEBUG START \*\*\*[\s\S]*?\/\/\s+\*\*\* DEBUG END \*\*\*\//g;
 const NODE_TEST_BANNER = "Remove comments for testing in NODE";
 
-export const PUBLIC_FUNCTIONS = Object.freeze(["QUOTE", "HISTORY", "FUNDAMENTALS", "OPTIONS", "EXPIRATIONS", "FRED", "FIELD", "DATA_STATUS", "STRATEGY", "EARNINGS", "QUOTE_COMPARE", "RSI_TARGETS", "FRED_VALUE", "OPTION_MODEL", "WATCH_ROW"].map(name => "TICKERSHEETS_" + name));
+export const PUBLIC_FUNCTIONS = Object.freeze(["QUOTE", "PROVIDER_QUOTE", "HISTORY", "FUNDAMENTALS", "OPTIONS", "EXPIRATIONS", "FRED", "FIELD", "DATA_STATUS", "STRATEGY", "EARNINGS", "QUOTE_COMPARE", "RSI_TARGETS", "FRED_VALUE", "OPTION_MODEL", "WATCH_ROW"].map(name => "TICKERSHEETS_" + name));
 
 /** @type {readonly string[]} */
 export const SOURCE_FILES = Object.freeze([
@@ -19,6 +19,7 @@ export const SOURCE_FILES = Object.freeze([
     "TickerSheetsOptions.js",
     "TickerSheetsOptionModel.js",
     "TickerSheetsProviderFields.js",
+    "TickerSheetsKeyedQuotes.js",
     "TickerSheetsFunctions.js",
     "TickerSheetsTables.js",
     "TickerSheetsRsiTargets.js",
@@ -26,6 +27,7 @@ export const SOURCE_FILES = Object.freeze([
     "TickerSheetsStrategies.js",
     "TickerSheetsWatchRow.js",
     "TickerSheetsShowcase.js",
+    "TickerSheetsOptionsShowcase.js",
     "TickerSheetsTutorial.js",
     "TickerSheetsMenu.js"
 ]);

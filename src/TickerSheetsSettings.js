@@ -4,6 +4,10 @@ export { TickerSheetsMenu, TickerSheetsShowApiKeys, TickerSheetsGetApiKeyStatus,
 //  *** DEBUG END ***/
 
 const TICKERSHEETS_KEY_PROVIDERS_ = Object.freeze([
+    { id: "FINNHUB", label: "Finnhub", property: "FINNHUB_API_KEY" },
+    { id: "ALPHA_VANTAGE", label: "Alpha Vantage", property: "ALPHA_VANTAGE_API_KEY" },
+    { id: "TWELVE_DATA", label: "Twelve Data", property: "TWELVE_DATA_API_KEY" },
+    { id: "COINMARKET", label: "CoinMarketCap", property: "COINMARKET_API_KEY" },
     { id: "FRED", label: "FRED", property: "FRED_API_KEY" }
 ]);
 
@@ -111,15 +115,14 @@ const TICKERSHEETS_API_KEYS_HTML_ = `<!DOCTYPE html>
 <html><head><base target="_top"><meta charset="utf-8">
 <style>
 body{font:14px Arial,sans-serif;color:#202124;padding:12px;line-height:1.4}
-h2{font-size:18px;margin:0 0 12px}p{margin:10px 0}.provider{border-top:1px solid #dadce0;padding:12px 0}
+p{margin:10px 0}.provider{border-top:1px solid #dadce0;padding:8px 0}
 .heading{display:flex;justify-content:space-between;gap:8px}.status{font-size:12px;color:#5f6368}
-input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
+input[type=password]{box-sizing:border-box;width:100%;padding:6px;margin:4px 0}
+input[type=password]::placeholder{color:#9aa0a6;opacity:1}
 .remove{font-size:12px;display:block}button{padding:8px 12px;margin:8px 8px 0 0;cursor:pointer}
 #message{min-height:36px}button:disabled{cursor:default}#privacy{font-size:12px;color:#5f6368}
 </style></head><body>
-<h2>TickerSheets</h2>
-<p>API keys</p>
-<p>Enter a new key to save or replace it. Leave a field blank to keep its saved key. Select Remove to delete a saved key.</p>
+<p>Leave a field blank to keep its saved key. Select Remove to delete it.</p>
 <form id="settings"><div id="providers"></div>
 <button id="save" type="submit" disabled>Save keys</button><button id="reload" type="button">Reload status</button></form>
 <p id="message" role="status" aria-live="polite">Loading settings…</p>
@@ -127,8 +130,8 @@ input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
 <script>
 (function () {
   'use strict';
-  var ids = ['FRED'];
-  var labels = ['FRED'];
+  var ids = ['FINNHUB', 'ALPHA_VANTAGE', 'TWELVE_DATA', 'COINMARKET', 'FRED'];
+  var labels = ['Finnhub', 'Alpha Vantage', 'Twelve Data', 'CoinMarketCap', 'FRED'];
   var root = document.getElementById('providers');
   var form = document.getElementById('settings');
   var message = document.getElementById('message');
@@ -142,7 +145,7 @@ input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
     var label = document.createElement('label'); label.htmlFor = 'key-' + id; label.textContent = labels[index];
     var status = document.createElement('span'); status.id = 'status-' + id; status.className = 'status'; status.textContent = 'Loading…';
     heading.appendChild(label); heading.appendChild(status); row.appendChild(heading);
-    var input = document.createElement('input'); input.id = 'key-' + id; input.type = 'password'; input.autocomplete = 'new-password'; input.maxLength = 2048; input.placeholder = 'New key (leave blank to keep)';
+    var input = document.createElement('input'); input.id = 'key-' + id; input.type = 'password'; input.autocomplete = 'new-password'; input.maxLength = 2048; input.placeholder = 'Enter API key';
     row.appendChild(input);
     var removalLabel = document.createElement('label'); removalLabel.className = 'remove';
     var remove = document.createElement('input'); remove.type = 'checkbox'; remove.id = 'remove-' + id;
@@ -165,6 +168,7 @@ input[type=password]{box-sizing:border-box;width:100%;padding:8px;margin:7px 0}
     if (!valid) return false;
     result.providers.forEach(function (provider) {
       document.getElementById('status-' + provider.id).textContent = provider.configured ? 'Saved' : 'Not set';
+      document.getElementById('key-' + provider.id).placeholder = provider.configured ? '•••••••• — saved key' : 'Enter API key';
     });
     ready = true;
     return true;

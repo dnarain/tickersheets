@@ -2,8 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import vm from "node:vm";
 import { TickerSheetsMenu, TickerSheetsShowApiKeys, TickerSheetsGetApiKeyStatus, TickerSheetsSaveApiKeys } from "../src/TickerSheetsSettings.js";
 
-const ids = ["FRED"], propertyNames = ["FRED_API_KEY"];
-const expectedStatus = (configured = false) => ({ ok: true, providers: [{ id: "FRED", label: "FRED", configured }] });
+const ids = ["FINNHUB", "ALPHA_VANTAGE", "TWELVE_DATA", "COINMARKET", "FRED"];
+const labels = ["Finnhub", "Alpha Vantage", "Twelve Data", "CoinMarketCap", "FRED"];
+const propertyNames = ["FINNHUB_API_KEY", "ALPHA_VANTAGE_API_KEY", "TWELVE_DATA_API_KEY", "COINMARKET_API_KEY", "FRED_API_KEY"];
+const expectedStatus = (configured = false) => ({ ok: true, providers: ids.map((id, index) => ({
+    id, label: labels[index], configured: Array.isArray(configured) ? configured.includes(id) : configured
+})) });
 let values, properties, lock, menu, ui, output, html;
 beforeEach(() => {
     values = new Map();
@@ -21,16 +25,18 @@ beforeEach(() => {
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
-describe("FRED-only private settings", () => {
-    it("returns only a FRED presence flag and never reads other saved properties", () => {
-        values.set("FRED_API_KEY", "secret-fred-value"); values.set("FINNHUB_API_KEY", "unrelated-secret");
+describe("private API key settings", () => {
+    it("returns five presence flags and never reads unrelated saved properties", () => {
+        propertyNames.forEach((property, index) => values.set(property, `secret-provider-${index}`));
+        values.set("UNRELATED", "unrelated-secret");
         expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus(true));
-        expect(properties.getProperty.mock.calls).toEqual([["FRED_API_KEY"]]);
+        expect(properties.getProperty.mock.calls).toEqual(propertyNames.map(property => [property]));
         expect(JSON.stringify(TickerSheetsGetApiKeyStatus())).not.toContain("secret");
     });
-    it("reports missing and empty FRED keys as not set", () => {
+    it("reports missing and empty keys as not set", () => {
         expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus());
-        values.set("FRED_API_KEY", ""); expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus());
+        propertyNames.forEach(property => values.set(property, ""));
+        expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus());
     });
     it("returns a fixed status error", () => {
         properties.getProperty.mockImplementation(() => { throw new Error("secret-exception"); });
@@ -38,26 +44,51 @@ describe("FRED-only private settings", () => {
     });
     it.each([{ updates: [] }, { updates: [{ provider: "FRED", action: "replace", value: "  " }] }])("preserves existing keys for blank updates (%#)", request => {
         values.set("FRED_API_KEY", "saved"); values.set("UNRELATED", "keep");
-        expect(TickerSheetsSaveApiKeys(request)).toEqual(expectedStatus(true));
+        expect(TickerSheetsSaveApiKeys(request)).toEqual(expectedStatus(["FRED"]));
         expect([...values]).toEqual([["FRED_API_KEY", "saved"], ["UNRELATED", "keep"]]);
         expect(properties.setProperties).not.toHaveBeenCalled(); expect(properties.deleteProperty).not.toHaveBeenCalled();
     });
     it("trims a replacement and preserves unrelated properties", () => {
         values.set("FINNHUB_API_KEY", "keep-finnhub"); values.set("UNRELATED", "keep");
-        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "replace", value: "  new-key  " }] })).toEqual(expectedStatus(true));
+        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "replace", value: "  new-key  " }] })).toEqual(expectedStatus(["FINNHUB", "FRED"]));
         expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: "new-key" }, false);
         expect(values.get("FINNHUB_API_KEY")).toBe("keep-finnhub"); expect(values.get("UNRELATED")).toBe("keep");
         expect(lock.releaseLock).toHaveBeenCalledOnce();
     });
     it("removes only FRED after an explicit removal", () => {
         values.set("FRED_API_KEY", "old"); values.set("FINNHUB_API_KEY", "keep");
-        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "remove" }] })).toEqual(expectedStatus());
+        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "remove" }] })).toEqual(expectedStatus(["FINNHUB"]));
         expect(values.has("FRED_API_KEY")).toBe(false); expect(values.get("FINNHUB_API_KEY")).toBe("keep");
+    });
+    it("saves all five providers in one update without replacing unrelated properties", () => {
+        values.set("UNRELATED", "keep");
+        const updates = ids.map((provider, index) => ({ provider, action: "replace", value: `synthetic-provider-${index}` }));
+        const result = TickerSheetsSaveApiKeys({ updates });
+        expect(result).toEqual(expectedStatus(true));
+        expect(properties.setProperties).toHaveBeenCalledWith(Object.fromEntries(propertyNames.map((property, index) => [property, `synthetic-provider-${index}`])), false);
+        expect(values.get("UNRELATED")).toBe("keep");
+        expect(JSON.stringify(result)).not.toContain("synthetic-");
+    });
+    it.each(ids)("keeps blank fields and explicitly removes only %s", provider => {
+        propertyNames.forEach((property, index) => values.set(property, `saved-provider-${index}`));
+        const updates = ids.map(id => id === provider ? { provider: id, action: "remove" } : { provider: id, action: "replace", value: "  " });
+        expect(TickerSheetsSaveApiKeys({ updates })).toEqual(expectedStatus(ids.filter(id => id !== provider)));
+        expect(properties.setProperties).not.toHaveBeenCalled();
+        expect(properties.deleteProperty).toHaveBeenCalledExactlyOnceWith(propertyNames[ids.indexOf(provider)]);
+        propertyNames.forEach((property, index) => expect(values.get(property)).toBe(ids[index] === provider ? undefined : `saved-provider-${index}`));
+    });
+    it("validates the complete batch before saving any provider", () => {
+        expect(TickerSheetsSaveApiKeys({ updates: [
+            { provider: "FINNHUB", action: "replace", value: "synthetic-new-key" },
+            { provider: "TWELVE_DATA", action: "replace", value: "invalid key with spaces" }
+        ] }).ok).toBe(false);
+        expect(properties.setProperties).not.toHaveBeenCalled();
+        expect(PropertiesService.getScriptProperties).not.toHaveBeenCalled();
     });
     it.each([
         undefined, null, [], {}, { updates: null }, { updates: {} }, { updates: [], extra: true },
         { updates: [null] }, { updates: [[]] }, { updates: ["secret"] },
-        { updates: [{ provider: "FINNHUB", action: "remove" }] },
+        { updates: [{ provider: "UNKNOWN", action: "remove" }] },
         { updates: [{ provider: "__proto__", action: "remove" }] },
         { updates: [{ provider: "FRED", action: "unknown" }] },
         { updates: [{ provider: "FRED", action: "remove", value: "ambiguous" }] },
@@ -135,6 +166,7 @@ describe("API key menu and sidebar", () => {
         expect(html).not.toContain("never-in-html");
         expect(html).toContain("People who can edit this script can access its keys.");
         expect(html).toContain("your private copy");
+        expect(html).toContain("input[type=password]::placeholder{color:#9aa0a6;opacity:1}");
     });
 
     it("shows a fixed error if the sidebar cannot open", () => {
@@ -155,7 +187,17 @@ describe("API key menu and sidebar", () => {
         ids.forEach(id => {
             expect(view.get(`status-${id}`).textContent).toBe("Saved");
             expect(view.get(`key-${id}`).value).toBe("");
+            expect(view.get(`key-${id}`).placeholder).toBe("•••••••• — saved key");
             expect(view.get(`key-${id}`).disabled).toBe(false);
+        });
+    });
+
+    it("shows a saved-key placeholder only for configured providers without filling any input", () => {
+        const view = sidebar();
+        view.calls[0].success(expectedStatus(["FINNHUB", "FRED"]));
+        ids.forEach(id => {
+            expect(view.get(`key-${id}`).placeholder).toBe(["FINNHUB", "FRED"].includes(id) ? "•••••••• — saved key" : "Enter API key");
+            expect(view.get(`key-${id}`).value).toBe("");
         });
     });
 
@@ -175,11 +217,54 @@ describe("API key menu and sidebar", () => {
         expect(JSON.stringify(result)).not.toContain("synthetic-"); expect(ui.prompt).not.toHaveBeenCalled();
     });
 
-    it("sends an empty update when fields are blank", () => {
+    it("keeps stored keys when saved placeholders are visible and all fields are blank", () => {
+        propertyNames.forEach((property, index) => values.set(property, `saved-synthetic-${index}`));
         const view = sidebar();
-        view.calls[0].success(expectedStatus(true));
+        view.calls[0].success(TickerSheetsGetApiKeyStatus());
         view.get("settings").trigger("submit");
-        expect(JSON.parse(JSON.stringify(view.calls[1].request))).toEqual({ updates: [] });
+        const call = view.calls[1];
+        expect(JSON.parse(JSON.stringify(call.request))).toEqual({ updates: [] });
+        call.success(TickerSheetsSaveApiKeys(call.request));
+        propertyNames.forEach((property, index) => expect(values.get(property)).toBe(`saved-synthetic-${index}`));
+        expect(properties.setProperties).not.toHaveBeenCalled();
+        expect(properties.deleteProperty).not.toHaveBeenCalled();
+        ids.forEach(id => expect(view.get(`key-${id}`).value).toBe(""));
+    });
+
+    it("submits all five provider fields through one form and clears them after saving", () => {
+        const view = sidebar(); view.calls[0].success(expectedStatus());
+        ids.forEach((id, index) => { view.get(`key-${id}`).value = `synthetic-provider-${index}`; });
+        view.get("settings").trigger("submit");
+        const call = view.calls[1];
+        expect(JSON.parse(JSON.stringify(call.request))).toEqual({ updates: ids.map((provider, index) => ({ provider, action: "replace", value: `synthetic-provider-${index}` })) });
+        call.success(TickerSheetsSaveApiKeys(call.request));
+        ids.forEach(id => {
+            expect(view.get(`key-${id}`).value).toBe("");
+            expect(view.get(`status-${id}`).textContent).toBe("Saved");
+            expect(view.get(`key-${id}`).placeholder).toBe("•••••••• — saved key");
+        });
+    });
+
+    it("clears the saved-key placeholder after explicit removal", () => {
+        values.set("FRED_API_KEY", "saved-synthetic-fred");
+        const view = sidebar(); view.calls[0].success(TickerSheetsGetApiKeyStatus());
+        expect(view.get("key-FRED").placeholder).toBe("•••••••• — saved key");
+        view.get("remove-FRED").checked = true; view.get("settings").trigger("submit");
+        const call = view.calls[1]; call.success(TickerSheetsSaveApiKeys(call.request));
+        expect(values.has("FRED_API_KEY")).toBe(false);
+        expect(view.get("status-FRED").textContent).toBe("Not set");
+        expect(view.get("key-FRED").placeholder).toBe("Enter API key");
+        expect(view.get("key-FRED").value).toBe("");
+        expect(view.get("remove-FRED").checked).toBe(false);
+    });
+
+    it("updates saved-key placeholders when status reloads", () => {
+        const view = sidebar(); view.calls[0].success(expectedStatus(["FINNHUB"]));
+        view.get("reload").trigger("click");
+        view.calls[1].success(expectedStatus(["FRED"]));
+        expect(view.get("key-FINNHUB").placeholder).toBe("Enter API key");
+        expect(view.get("key-FRED").placeholder).toBe("•••••••• — saved key");
+        ids.forEach(id => expect(view.get(`key-${id}`).value).toBe(""));
     });
 
     it("rejects remove and replacement together without calling the server", () => {

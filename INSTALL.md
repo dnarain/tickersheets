@@ -19,9 +19,10 @@ You can copy the tutorial or install the functions in a spreadsheet that you alr
 
 Google copies the attached Apps Script with the spreadsheet.
 **Start here** contains working formulas and formula text beside each result.
-**Stock analysis** shows charts and further examples built with the same functions.
-Both tabs use the ticker in **Start here!B4**.
-It contains saved example results and no saved API keys.
+**Stock analysis** shows company data, earnings, technical indicators and a price chart.
+**Options analysis** shows expiration dates, call/put quotes, model Greeks, strategies and a payoff chart.
+All three tabs use the ticker in **Start here!B4**.
+The demo contains saved example results and no saved API keys.
 Your private copy can request new results and use your own keys.
 
 The script's `onOpen` function adds the **TickerSheets** menu.
@@ -65,7 +66,7 @@ TickerSheets does not include CacheFinance. Get it separately from the [original
 
 Use `TICKERSHEETS_…` for this library and `CACHEFINANCE` / `CACHEFINANCES` for the original library.
 TickerSheets' **Refresh data** command leaves CacheFinance formulas unchanged.
-Configure CacheFinance's provider keys through its own instructions. The TickerSheets key form manages FRED only.
+Configure CacheFinance through its own instructions. The TickerSheets key form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
 
 Both load orders were checked with a separately downloaded CacheFinance bundle.
 Contributors can repeat the check with `npm run check:coexistence -- /path/to/CacheFinance.js`.
@@ -116,18 +117,20 @@ Google Workspace administrators can also restrict scripts or external requests.
 ## Save API keys
 
 Yahoo quotes, history, fundamentals, earnings and public options do not require a personal API key in this library.
-FRED requires your own key.
-The API key form contains only FRED.
 Finviz, Zacks and GuruFocus field lookups also use public pages without personal keys.
+The API key form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
+Each keyed provider requires your own key for its requests.
 
 1. Choose **TickerSheets → API keys…**.
-2. Enter your key in **FRED**.
+2. Enter your own keys in the matching provider fields.
 3. Click **Save keys**.
 4. Check that the provider shows **Saved**.
 
-Leaving the field blank preserves the saved key.
-Selecting **Remove saved key** deletes it after you click **Save keys**.
-The form never puts the saved key back into its input field.
+Leaving a field blank preserves its saved key.
+Selecting **Remove saved key** deletes that provider's key after you click **Save keys**.
+The form never puts saved keys back into its input fields.
+Configured fields show the gray placeholder **•••••••• — saved key**. Empty fields show **Enter API key**.
+These placeholders do not contain the saved key.
 **Saved** confirms storage. It does not test the key or provider connection.
 
 The script stores keys in [Script Properties](https://developers.google.com/apps-script/guides/properties), outside worksheet cells.
@@ -135,6 +138,22 @@ Script Properties belong to the attached project and are shared by its users.
 People who can edit the spreadsheet can access its script and keys.
 Keep a copy with personal keys private.
 Do not put keys in formulas, worksheet cells, GitHub files or issue reports.
+
+### Quotes from keyed providers
+
+Save the matching key before you enter one of these formulas:
+
+```excel
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","FINNHUB","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","ALPHA_VANTAGE","price")
+=TICKERSHEETS_PROVIDER_QUOTE("NVDA","TWELVE_DATA","price")
+=TICKERSHEETS_PROVIDER_QUOTE("BTC","COINMARKET","price")
+```
+
+Each formula requests the named provider directly.
+`TICKERSHEETS_QUOTE` continues to use Yahoo and requires no personal key.
+Your provider plan controls symbol access, request limits and quote delays.
+See [FUNCTIONS.md](FUNCTIONS.md#tickersheets_provider_quote) for fields and supported symbols.
 
 ### FRED
 
@@ -155,10 +174,10 @@ A browser profile signed in only to the spreadsheet's account can resolve this p
 1. Open a browser profile or private window signed in only to that Google account.
 2. Open your private spreadsheet copy there.
 3. Choose **TickerSheets → API keys…** again.
-4. Enter the key in **FRED**.
+4. Enter your keys in the matching provider fields.
 5. Click **Save keys**.
 
-FRED uses this same form.
+All five keyed providers use this same form.
 
 ## Updates
 

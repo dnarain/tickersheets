@@ -42,8 +42,9 @@ An updated price formula is:
 =TICKERSHEETS_QUOTE(A1,"price")
 ```
 
-The menu is now **TickerSheets**. Use **API keys…** for your FRED key and **Refresh data** for new results.
-The key form contains only FRED.
+The menu is now **TickerSheets**. Use **API keys…** for your provider keys and **Refresh data** for new results.
+The same form contains Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
+Existing key property names remain unchanged. Saved keys show a gray masked hint in their fields.
 
 ## Original CacheFinance functions
 
