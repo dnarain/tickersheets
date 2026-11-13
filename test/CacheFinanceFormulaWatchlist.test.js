@@ -9,10 +9,11 @@ import { ManagedBook } from "./helpers/ManagedSheetMock.js";
 
 let book, main, quote, details;
 beforeEach(() => {
+    vi.stubGlobal("SpreadsheetApp", { flush: vi.fn() });
     vi.useFakeTimers(); vi.setSystemTime(new Date("2026-11-12T22:00:00.000Z"));
     book = new ManagedBook(); main = book.insertSheet("Analysis");
     main.getRange("Z1").setValue("CACHEFINANCE_ANALYSIS_V1"); main.getRange("Z2").setValue("TICKERSHEETS_FORMULAS_V1");
-    main.getRange("B4").setValue("NVDA"); main.getRange("E4").setValue(5);
+    main.getRange("B4").setValue("NVDA"); main.getRange("Z4").setValue(5);
     book.insertSheet("Quote data").getRange("Z1").setValue("TICKERSHEETS_QUOTE_DATA_V1");
     vi.spyOn(CFFormulaWorkbook, "prepareSheet").mockImplementation((target, name, marker) => {
         const sheet = CFFormulaWorkbook.ensureSheet(target, name, marker);
@@ -92,9 +93,9 @@ describe("other-ticker watchlist function", () => {
 describe("formula-driven watchlist layout and refresh", () => {
     it("uses source formulas and references the selected stock without a second custom-function call", () => {
         services(); const result = W.build(book), sheet = book.getSheetByName("Watchlist"), source = book.getSheetByName("Watchlist data");
-        expect(result.sharedRefresh).toBe("Analysis!E4"); expect(sheet.getRange("E4").getFormula()).toBe("=Analysis!E4");
+        expect(result.sharedRefresh).toBe("Analysis!Z4"); expect(sheet.getRange("Z4").getFormula()).toBe("=Analysis!Z4");
         expect(sheet.getRange("A8:A12").getValues()).toEqual([["NVDA"], ["AAPL"], ["MSFT"], ["GOOGL"], ["AMZN"]]);
-        expect(source.getRange("A7").getFormula()).toBe('=IF(Watchlist!A8="","",IF(UPPER(TRIM(Watchlist!A8))=UPPER(TRIM(Analysis!$B$4)),ARRAYFORMULA(\'Quote data\'!$AA$7:$AB$37),CFWATCHROW(Watchlist!A8,Watchlist!$E$4)))');
+        expect(source.getRange("A7").getFormula()).toBe('=IF(Watchlist!A8="","",IF(UPPER(TRIM(Watchlist!A8))=UPPER(TRIM(Analysis!$B$4)),ARRAYFORMULA(\'Quote data\'!$AA$7:$AB$37),CFWATCHROW(Watchlist!A8,Watchlist!$Z$4)))');
         expect(source.getRange("A767").getFormula()).toContain('Watchlist!A27');
         expect(source.getRange("A8:B37").getValues().every(row => row.every(value => value === ""))).toBe(true);
         expect(sheet.getRange("C8").getFormula()).toContain('MATCH("price",\'Watchlist data\'!$A$8:$A$37,0)');
@@ -132,8 +133,8 @@ describe("formula-driven watchlist layout and refresh", () => {
         services(); W.build(book); const sheet = book.getSheetByName("Watchlist"), journal = book.getSheetByName("Journal");
         const tickerBefore = sheet.getRange("A8:A27").getValues(), formulaBefore = sheet.getRange("C8").getFormula(), journalBefore = journal.getRange("A1:R8").getValues();
         const result = W.refresh(book);
-        expect(result).toMatchObject({ ok: true, refresh: 6, sharedRefresh: "Analysis!E4" }); expect(main.getRange("E4").getValue()).toBe(6);
-        expect(sheet.getRange("E4").getFormula()).toBe("=Analysis!E4"); expect(sheet.getRange("A8:A27").getValues()).toEqual(tickerBefore);
+        expect(result).toMatchObject({ ok: true, refresh: 6, sharedRefresh: "Analysis!Z4" }); expect(main.getRange("Z4").getValue()).toBe(6);
+        expect(sheet.getRange("Z4").getFormula()).toBe("=Analysis!Z4"); expect(sheet.getRange("A8:A27").getValues()).toEqual(tickerBefore);
         expect(sheet.getRange("C8").getFormula()).toBe(formulaBefore); expect(journal.getRange("A1:R8").getValues()).toEqual(journalBefore);
         expect(CFPublicData.quote).not.toHaveBeenCalled(); expect(CFPublicData.details).not.toHaveBeenCalled();
     });

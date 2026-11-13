@@ -16,6 +16,7 @@ export class ManagedRange {
     getValues() { return Array.from({ length: this.height }, (_, r) => Array.from({ length: this.width }, (_, c) => this.sheet.cells.get((this.row + r) + ":" + (this.col + c)) ?? "")); }
     getValue() { return this.getValues()[0][0]; }
     getFormula() { return this.sheet.formulas.get(this.row + ":" + this.col) || ""; }
+    getFormulas() { return Array.from({ length: this.height }, (_value, r) => Array.from({ length: this.width }, (_value, c) => this.sheet.formulas.get((this.row + r) + ":" + (this.col + c)) || "")); }
     setFormula(value) { this.sheet.formulas.set(this.row + ":" + this.col, value); return this.setValue(value); }
     setFormulas(values) { values.forEach((line, r) => line.forEach((value, c) => this.sheet.formulas.set((this.row + r) + ":" + (this.col + c), value))); return this.setValues(values); }
     clearContent() { this.each((r, c) => { this.sheet.cells.delete(r + ":" + c); this.sheet.formulas.delete(r + ":" + c); }); return this.event("clearContent"); }
@@ -43,9 +44,11 @@ export class ManagedSheet {
     constructor(name, book = null, id = 1) { this.name = name; this.book = book; this.id = id; this.cells = new Map(); this.formulas = new Map(); this.events = []; this.maxRows = 1000; this.maxCols = 26; }
     getName() { return this.name; } getMaxRows() { return this.maxRows; } getMaxColumns() { return this.maxCols; }
     getSheetId() { return this.id; }
+    getDataRange() { const width = Math.max(1, ...[...this.cells.keys()].map(key => Number(key.split(":")[1]))); return this.getRange(1, 1, Math.max(1, this.getLastRow()), width); }
     createTextFinder(pattern) {
-        const finder = { useRegularExpression() { return this; }, matchCase() { return this; }, matchFormulaText() { return this; },
-            findAll: () => [...this.cells].filter(([, value]) => typeof value === "string" && new RegExp(pattern).test(value))
+        let matchCase = false, formulas = false;
+        const finder = { useRegularExpression() { return this; }, matchCase(value) { matchCase = value; return this; }, matchFormulaText(value) { formulas = value; return this; },
+            findAll: () => [...this.cells].filter(([key, value]) => { const text = formulas ? this.formulas.get(key) || value : value; return typeof text === "string" && new RegExp(pattern, matchCase ? "" : "i").test(text); })
                 .map(([key]) => { const [row, col] = key.split(":").map(Number); return this.getRange(row, col); }) };
         return finder;
     }
@@ -75,6 +78,7 @@ export class ManagedSheet {
 export class ManagedBook {
     constructor() { this.sheets = new Map(); this.toasts = []; this.nextSheetId = 1; }
     getSheetByName(name) { return this.sheets.get(name) || null; }
+    getSheets() { return [...this.sheets.values()]; }
     insertSheet(name) { const sheet = new ManagedSheet(name, this, this.nextSheetId++); this.sheets.set(name, sheet); return sheet; }
     getSpreadsheetTimeZone() { return "America/Los_Angeles"; }
     toast(...values) { this.toasts.push(values); }

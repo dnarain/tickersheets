@@ -1,5 +1,6 @@
 /*  *** DEBUG START ***
 import { CFWorkbookNames } from "./CacheFinanceSheetNames.js";
+import { CFPublicData } from "./CacheFinanceResearchFunctions.js";
 export { CFFormulaWorkbook, CFRecordJournalSnapshot, CFInspectFormulaWorkbook };
 //  *** DEBUG END ***/
 
@@ -59,12 +60,44 @@ class CFFormulaWorkbook {
     static technical(label) { return CFFormulaWorkbook.lookup(label, "'Price history'!$BK$4:$BK$40", "'Price history'!$BL$4:$BL$40"); }
     static metric(key) { return CFFormulaWorkbook.lookup(key, "'Quote data'!$AA$8:$AA$40", "'Quote data'!$AB$8:$AB$40"); }
     static optionSource(expiration, requireDate = false) {
-        const generation = "'Quote data'!$P$8", ready = 'IFERROR(AND(ISNUMBER(' + generation + '),' + generation + '=Analysis!$E$4),FALSE)';
+        const generation = "'Quote data'!$P$8", ready = 'IFERROR(AND(ISNUMBER(' + generation + '),' + generation + '=Analysis!$Z$4),FALSE)';
         const request = 'CFOPTIONS(Analysis!$B$4,' + expiration + ',' + generation + ')';
         const result = requireDate ? 'IF(AND(' + expiration + '<>"",ISNUMBER(IFERROR(DATEVALUE(' + expiration + '),""))),' + request + ',"N/A: No additional expiration")' : request;
         return '=IF(' + ready + ',' + result + ',"N/A: Expiration dates loading or unavailable; see Quote data!O7")';
     }
     static counter(value) { return Number.isInteger(value) && value >= 0 && value < 2147483647 ? value + 1 : 1; }
+    static recalculateDataFunctions(book) {
+        const pattern = /\bCF(?:QUOTE|QUOTECOMPARE|HISTORY|FUNDAMENTALS|EARNINGS|OPTIONS|EXPIRATIONS|RSITARGETS|FIELD|FRED|FREDVALUE|WATCHROW)\s*\(/i;
+        const sheets = typeof book.getSheets === "function" ? book.getSheets() : Object.keys(CFFormulaWorkbook.markers()).map(name => book.getSheetByName(name)).filter(Boolean);
+        const saved = [];
+        for (const sheet of sheets) {
+            const matrix = sheet.getDataRange().getFormulas();
+            const runs = [];
+            for (let r = 0; r < matrix.length; r++) for (let c = 0; c < matrix[r].length; c++) {
+                const formula = matrix[r][c];
+                if (formula && pattern.test(formula) && !/^=FORMULATEXT\(/i.test(formula)) runs.push({ row: r + 1, column: c + 1, formulas: [[formula]] });
+            }
+            runs.sort((a, b) => a.column - b.column || a.row - b.row);
+            const groups = [];
+            for (const run of runs) {
+                const prior = groups.at(-1);
+                if (prior && prior.column === run.column && prior.row + prior.formulas.length === run.row) prior.formulas.push(run.formulas[0]);
+                else groups.push(run);
+            }
+            for (const group of groups) saved.push({ range: sheet.getRange(group.row, group.column, group.formulas.length, 1), formulas: group.formulas });
+        }
+        // Clearing and restoring the formulas makes Sheets run unchanged two-argument calls again.
+        // Preserve the exact formulas, formatting, validation and returned-table boundaries.
+        try {
+            for (const item of saved) item.range.clearContent();
+            SpreadsheetApp.flush();
+        } finally {
+            let failed = false;
+            for (const item of saved) { try { item.range.setFormulas(item.formulas); } catch { failed = true; } }
+            if (failed) throw new Error("Unable to restore a data formula. Check sheet permissions before refreshing again.");
+        }
+        return saved.reduce((count, item) => count + item.formulas.length, 0);
+    }
     static setCalculationDate(book) {
         const date = Utilities.formatDate(new Date(), book.getSpreadsheetTimeZone(), "yyyy-MM-dd");
         book.getSheetByName("Analysis").getRange("K4").setNumberFormat("@").setValue(date);
@@ -79,12 +112,14 @@ class CFFormulaWorkbook {
         if (!modules?.views || !modules.history || !modules.research || !modules.options) throw new Error("The complete TickerSheets bundle is required.");
         CFFormulaWorkbook.preflight(book);
         const existing = book.getSheetByName("Analysis"), ticker = String(existing?.getRange("B4").getValue() || "NVDA").trim().toUpperCase();
-        const previousCounter = CFFormulaWorkbook.isFormulaBook(book) ? existing.getRange("E4").getValue() : 0;
+        const previousCounter = CFFormulaWorkbook.isFormulaBook(book) ? existing.getRange("Z4").getValue() : 0;
         const expiration = book.getSheetByName("Options")?.getRange("B4").getValue() || "";
         const watchlist = book.getSheetByName("Watchlist")?.getRange("A8:A27").getValues();
         // Every referenced tab exists before any source formula is installed.
         for (const [name, marker] of Object.entries(CFFormulaWorkbook.markers())) CFFormulaWorkbook.ensureSheet(book, name, marker);
-        modules.views.buildControl(book, { ticker, refresh: CFFormulaWorkbook.counter(previousCounter) });
+        const refresh = CFFormulaWorkbook.counter(previousCounter);
+        CFPublicData.setAutomaticRefresh(refresh);
+        modules.views.buildControl(book, { ticker, refresh });
         modules.views.buildQuoteData(book);
         modules.views.buildFundamentals(book);
         modules.history.build(book);
@@ -110,13 +145,15 @@ class CFFormulaWorkbook {
     static refresh(book, modules) {
         if (!CFFormulaWorkbook.isFormulaBook(book)) return CFFormulaWorkbook.build(book, modules);
         CFFormulaWorkbook.preflight(book);
-        const main = book.getSheetByName("Analysis"), value = CFFormulaWorkbook.counter(main.getRange("E4").getValue());
+        const main = book.getSheetByName("Analysis"), value = CFFormulaWorkbook.counter(main.getRange("Z4").getValue());
         const chartTitles = CFFormulaWorkbook.updateChartTitles(book);
         CFFormulaWorkbook.setCalculationDate(book);
         modules.options.resetInputs(book);
-        main.getRange("E4").setValue(value);
+        CFPublicData.setAutomaticRefresh(value);
+        main.getRange("Z4").setValue(value);
+        const recalculated = CFFormulaWorkbook.recalculateDataFunctions(book);
         book.toast(chartTitles.pending ? "Refresh requested. Some chart titles are pending; refresh again after data loads to retry." : "Refresh requested. Wait for source formulas to finish. Record a journal snapshot after the results load.", "TickerSheets", 10);
-        return { ok: true, mode: "formulas", refresh: value, chartTitles };
+        return { ok: true, mode: "formulas", refresh: value, recalculated, chartTitles };
     }
     static updateChartTitles(book) {
         const main = book.getSheetByName("Analysis"), ticker = String(main?.getRange("B4").getValue() || "").trim().toUpperCase().replace(/[\r\n]/g, " ").slice(0, 60);
@@ -150,7 +187,10 @@ class CFFormulaWorkbook {
         if (name === "Analysis" && range.getRow() <= 4 && range.getLastRow() >= 4 && range.getColumn() <= 2 && range.getLastColumn() >= 2) {
             const main = event.source.getSheetByName("Analysis"), ticker = String(main.getRange("B4").getValue() || "").trim().toUpperCase();
             const changed = event.oldValue === undefined || ticker !== String(event.oldValue).trim().toUpperCase();
-            if (changed) main.getRange("E4").setValue(CFFormulaWorkbook.counter(main.getRange("E4").getValue()));
+            if (changed) {
+                const refresh = CFFormulaWorkbook.counter(main.getRange("Z4").getValue());
+                main.getRange("Z4").setValue(refresh); CFPublicData.setAutomaticRefresh(refresh);
+            }
             event.source.getSheetByName("Options").getRange("B4").setFormula('=IF(\'Quote data\'!$O$8="","",\'Quote data\'!$O$8)');
             modules.options.resetInputs(event.source);
             if (changed) {
@@ -159,11 +199,12 @@ class CFFormulaWorkbook {
                 modules.images?.invalidate(event.source);
             }
         } else if (name === "Options" && range.getRow() <= 4 && range.getLastRow() >= 4 && range.getColumn() <= 2 && range.getLastColumn() >= 2) modules.options.resetInputs(event.source);
-        else if (name === "Analysis" && range.getRow() <= 4 && range.getLastRow() >= 4 && range.getColumn() <= 5 && range.getLastColumn() >= 5) modules.options.resetInputs(event.source);
     }
     static inspect(book) {
         const main = book.getSheetByName("Analysis"), errors = [], formulas = [];
-        for (const [name, cells] of Object.entries({ "Analysis": ["B9", "B16", "B17", "E17"], "Formulas": ["B23", "B24", "G34"], "Quote data": ["A7", "D7", "O7"], "Price history": ["A7", "I57", "P22"], "Options": ["A7", "S4"], "Earnings": ["A7"], "Strategies": ["E4"] })) {
+        // Older copies use A7 for a whole table. New copies put each value's formula in column B.
+        const fieldCell = name => /^=CF(?:QUOTE|FUNDAMENTALS)\(/i.test(book.getSheetByName(name)?.getRange("A7").getFormula() || "") ? "A7" : "B8";
+        for (const [name, cells] of Object.entries({ "Analysis": ["B9", "B16", "B17", "E17"], "Formulas": ["B23", "B24", "G34"], "Quote data": [fieldCell("Quote data"), "D7", "O7"], "Fundamentals": [fieldCell("Fundamentals")], "Price history": ["A7", "I57", "P22"], "Options": ["A7", "S4"], "Earnings": ["A7"], "Strategies": ["E4"] })) {
             const sheet = book.getSheetByName(name);
             if (!sheet) { errors.push({ sheet: name, error: "Missing sheet" }); continue; }
             for (const cell of cells) {
@@ -178,7 +219,7 @@ class CFFormulaWorkbook {
                 if (typeof value === "string" && /^#(?:REF!|ERROR!|NAME\?|VALUE!|NUM!|DIV\/0!)/.test(value)) errors.push({ sheet: name, cell, error: value });
             }
         }
-        return { ok: errors.length === 0, mode: CFFormulaWorkbook.isFormulaBook(book) ? "formulas" : "legacy", ticker: main?.getRange("B4").getValue(), refresh: main?.getRange("E4").getValue(), formulas, errors };
+        return { ok: errors.length === 0, mode: CFFormulaWorkbook.isFormulaBook(book) ? "formulas" : "legacy", ticker: main?.getRange("B4").getValue(), refresh: main?.getRange("Z4").getValue(), formulas, errors };
     }
 }
 
@@ -191,7 +232,7 @@ function CFRecordJournalSnapshot() {
     const metric = key => displayed.find(row => row[0] === key)?.[1] ?? "N/A";
     const price = metric("price"), symbol = String(main.getRange("B4").getValue()).trim().toUpperCase(), currency = metric("currency");
     if (typeof price !== "number" || !Number.isFinite(price) || displayed.some(row => typeof row[1] === "string" && /^(?:#|Loading|Thinking)/i.test(row[1]))) throw new Error("Wait for source formulas to finish before recording the journal.");
-    for (const [name, cell] of [["Quote data", "A7"], ["Price history", "A7"], ["Fundamentals", "A7"], ["Options", "A7"]]) {
+    for (const [name, cell] of [["Quote data", "B8"], ["Price history", "A7"], ["Fundamentals", "B8"], ["Options", "A7"]]) {
         const value = book.getSheetByName(name).getRange(cell).getValue();
         if (typeof value === "string" && /^(?:#|Loading|Thinking)/i.test(value)) throw new Error("Wait for source formulas to finish before recording the journal.");
     }
@@ -208,7 +249,7 @@ function CFRecordJournalSnapshot() {
     sheet.getRange(row, 1, 1, 12).setValues([[new Date(), symbol, price, currency, metric("quote_time"), metric("indicator_as_of"), metric("rsi14"), metric("trailing_pe"), metric("eps_ttm"), metric("target_price"), metric("next_earnings"), metric("atm_iv")]]);
     for (const [column, source] of [[13, "C"], [14, "G"], [15, "I"], [16, "J"], [18, "L"]]) sheet.getRange(row, column).setFormula(previous === null ? '="N/A"' : '=IF(AND(ISNUMBER(' + source + row + '),ISNUMBER(' + source + previous + ')),(' + source + row + '-' + source + previous + ')' + (column === 18 ? '*100' : '') + ',"N/A")');
     sheet.getRange(row, 17).setFormula(previous === null ? '="N/A"' : '=IF(OR(K' + row + '="",K' + previous + '="",K' + row + '="N/A",K' + previous + '="N/A"),"N/A",K' + row + '<>K' + previous + ')');
-    sheet.getRange("S7").setValue("Refresh number recorded"); sheet.getRange(row, 19).setValue(main.getRange("E4").getValue());
+    sheet.hideColumns(19); sheet.getRange(row, 19).setValue(main.getRange("Z4").getValue());
     sheet.getRange(row, 1).setNumberFormat("yyyy-mm-dd hh:mm:ss"); sheet.getRange(row, 3).setNumberFormat("0.00"); sheet.getRange(row, 7, 1, 4).setNumberFormat("0.00"); sheet.getRange(row, 12).setNumberFormat("0.00%");
     book.toast("Recorded the displayed values. Journal entries remain fixed when source formulas refresh.", "Journal", 8);
     return { ok: true, row, ticker: symbol };

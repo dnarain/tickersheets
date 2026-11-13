@@ -37,15 +37,17 @@ beforeEach(() => {
     book.getSheetByName("Analysis").getRange("B4").setValue("NVDA");
     book.getSheetByName("Analysis").getRange("Z2").setValue("TICKERSHEETS_FORMULAS_V1");
     // Cached cell values are separate from formulas in a real spreadsheet.
-    const inspected = { "Analysis": ["B9", "B16", "B17", "E17"], "Formulas": ["B23", "B24", "G34"], "Quote data": ["A7", "D7", "O7"], "Price history": ["A7", "I57", "P22"], "Options": ["A7", "S4"], "Earnings": ["A7"], "Strategies": ["E4"] };
+    const inspected = { "Analysis": ["B9", "B16", "B17", "E17"], "Formulas": ["B23", "B24", "G34"], "Quote data": ["B8", "D7", "O7"], "Fundamentals": ["B8"], "Price history": ["A7", "I57", "P22"], "Options": ["A7", "S4"], "Earnings": ["A7"], "Strategies": ["E4"] };
     for (const [name, addresses] of Object.entries(inspected)) for (const address of addresses) set(book.getSheetByName(name), address, "N/A", "=1");
-    set(book.getSheetByName("Quote data"), "A7", "Field", '=CFQUOTE(Analysis!B4,"all",Analysis!E4)');
+    book.getSheetByName("Quote data").getRange("A7").setValue("Field");
     set(book.getSheetByName("Quote data"), "D7", "Provider", '=CFQUOTECOMPARE(Analysis!B4,Analysis!E4)');
     set(book.getSheetByName("Quote data"), "O7", "Expiration", '=CFEXPIRATIONS(Analysis!B4,Analysis!E4)');
     set(book.getSheetByName("Price history"), "A7", "Date", '=CFHISTORY(Analysis!B4,510,Analysis!E4)');
     set(book.getSheetByName("Options"), "A7", "Contract", '=CFOPTIONS(Analysis!B4,B4,Analysis!E4)');
     set(book.getSheetByName("Earnings"), "A7", "Period", '=CFEARNINGS(Analysis!B4,"earnings",Analysis!E4)');
     book.getSheetByName("Quote data").getRange("A8:B8").setValues([["price", 123.45]]);
+    set(book.getSheetByName("Quote data"), "B8", 123.45, '=CFQUOTE($B$4,"price",$E$4)');
+    set(book.getSheetByName("Fundamentals"), "B8", "N/A", '=CFFUNDAMENTALS($B$4,"market_cap",$E$4)');
     book.getSheetByName("Analysis").getRange("B9").setValue(123.45); book.getSheetByName("Formulas").getRange("B23").setValue(123.45);
     book.getSheetByName("Options").getRange("Y4").setValue("N/A"); book.getSheetByName("Research").getRange("Q25").setValue("N/A");
     fetch = vi.fn(() => { throw new Error("Checker must not request providers"); }); properties = vi.fn(() => { throw new Error("Checker must not read or write keys"); });
@@ -79,10 +81,19 @@ describe("read-only formula workbook checks", () => {
         const report = C.validate(book);
         expect(report).toMatchObject({ ok: true, ticker: "NVDA", failed: 0, pending: 0, historyRows: 240 });
         expect(report.numericComparisons).toBe(gold.series.reduce((total, row) => total + keys.filter(key => typeof row[key] === "number").length, 0));
-        expect(report.expectedGaps).toBeGreaterThan(0); expect(report.passed).toBe(240 * 11 + 6 + 17);
-        expect(report.sourceFormulaAddresses).toEqual(expect.arrayContaining(["Quote data!A7", "Price history!A7", "Options!A7", "Earnings!A7"]));
+        expect(report.expectedGaps).toBeGreaterThan(0); expect(report.passed).toBe(240 * 11 + 6 + 18);
+        expect(report.sourceFormulaAddresses).toEqual(expect.arrayContaining(["Quote data!B8", "Fundamentals!B8", "Price history!A7", "Options!A7", "Earnings!A7"]));
         expect([...book.sheets].map(([name, sheet]) => [name, sheet.events.length, [...sheet.cells], [...sheet.formulas]])).toEqual(before);
         expect(fetch).not.toHaveBeenCalled(); expect(properties).not.toHaveBeenCalled();
+    });
+    it("also checks older copies that still return whole quote and fundamental tables", () => {
+        historyFixture();
+        for (const [name, fn] of [["Quote data", "CFQUOTE"], ["Fundamentals", "CFFUNDAMENTALS"]]) {
+            const sheet = book.getSheetByName(name);
+            sheet.formulas.delete("8:2");
+            set(sheet, "A7", "Field", '=' + fn + '(Analysis!B4,"all",Analysis!E4)');
+        }
+        expect(C.validate(book)).toMatchObject({ ok: true, failed: 0, pending: 0 });
     });
     it.each(keys.map((key, index) => [key, index]))("finds a wrong %s value at its worksheet column", (_key, index) => {
         historyFixture(280);

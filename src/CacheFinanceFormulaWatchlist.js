@@ -55,7 +55,7 @@ class CFFormulaWatchlist {
         return [["Field", "Value"], ...CFFormulaWatchlist.keys().map(key => [key, CFPublicData.safe(fields[key] === "" ? null : fields[key])])];
     }
     static sourceFormula_(row) {
-        return '=IF(Watchlist!A' + row + '="","",IF(UPPER(TRIM(Watchlist!A' + row + '))=UPPER(TRIM(Analysis!$B$4)),ARRAYFORMULA(\'Quote data\'!$AA$7:$AB$37),CFWATCHROW(Watchlist!A' + row + ',Watchlist!$E$4)))';
+        return '=IF(Watchlist!A' + row + '="","",IF(UPPER(TRIM(Watchlist!A' + row + '))=UPPER(TRIM(Analysis!$B$4)),ARRAYFORMULA(\'Quote data\'!$AA$7:$AB$37),CFWATCHROW(Watchlist!A' + row + ',Watchlist!$Z$4)))';
     }
     static lookup_(row, key, first) {
         const last = first + CFFormulaWatchlist.keys().length, values = '\'Watchlist data\'!$B$' + (first + 1) + ':$B$' + last;
@@ -86,8 +86,8 @@ class CFFormulaWatchlist {
         sheet.setFrozenRows(7); sheet.setFrozenColumns(0);
         sheet.getRange("A1:L1").merge().setValue("Stock watchlist").setFontSize(15).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2:X2").merge().setValue("Rows matching Analysis!B4 reuse its source tables. Other tickers use CFWATCHROW. Quote timestamps ending Z use UTC.").setWrap(true);
-        sheet.getRange("D4").setValue("Shared refresh number"); sheet.getRange("E4").setFormula('=Analysis!E4').setBackground("#EEF2F6").setFontColor("#596579");
-        sheet.getRange("A5:X5").merge().setValue("Edit the yellow tickers. Both refresh menus change Analysis!E4 and update the workbook together. Wait for source results before recording the journal.").setWrap(true);
+        sheet.getRange("Z4").setFormula('=Analysis!Z4');
+        sheet.getRange("A5:X5").merge().setValue("Edit the yellow tickers, then choose Refresh watchlist or Refresh selected ticker. Wait for source results before recording the journal.").setWrap(true);
         sheet.getRange("A6:X6").merge().setValue("Changes compare the latest saved Journal observation for the same ticker and currency. Refreshes do not create journal entries.").setWrap(true);
         const headers = CFWatchlist.headers().slice(); headers[19] = "Price change since saved snapshot"; headers[20] = "RSI change since saved snapshot"; headers[21] = "Target change since saved snapshot";
         W.header(sheet, "A7:X7", headers); W.header(sheet, "Y7", ["Journal row used"]); W.header(sheet, "AA7", ["Latest saved observation"]);
@@ -129,16 +129,17 @@ class CFFormulaWatchlist {
         journal.getRange("A2").setValue("Recorded at uses the spreadsheet's time zone. Provider ISO timestamps ending in Z use UTC.");
         journal.getRange("A4").setValue("After source results load, choose Stock analysis → Record journal snapshot. Change columns compare the latest prior saved observation for the same ticker and currency.").setWrap(true);
         journal.getRange("M7").setValue("Price change since prior saved observation").setWrap(true);
-        return { ok: true, inputs: 20, selectedSource: "'Quote data'!AA7:AB37", sharedRefresh: "Analysis!E4", journal: "Record journal snapshot" };
+        return { ok: true, inputs: 20, selectedSource: "'Quote data'!AA7:AB37", sharedRefresh: "Analysis!Z4", journal: "Record journal snapshot" };
     }
     static refresh(book) {
         CFFormulaWorkbook.preflight(book);
         const main = book.getSheetByName("Analysis"), sheet = book.getSheetByName("Watchlist");
         if (!main || !sheet) throw new Error("Build the formula sample before refreshing the watchlist.");
-        const refresh = CFFormulaWorkbook.counter(main.getRange("E4").getValue());
-        main.getRange("E4").setValue(refresh);
+        const refresh = CFFormulaWorkbook.counter(main.getRange("Z4").getValue());
+        main.getRange("Z4").setValue(refresh);
+        CFPublicData.setAutomaticRefresh(refresh); CFFormulaWorkbook.recalculateDataFunctions(book);
         book.toast("Shared refresh requested. Wait for source formulas to finish before recording a journal snapshot.", "Watchlist", 8);
-        return { ok: true, refresh, sharedRefresh: "Analysis!E4" };
+        return { ok: true, refresh, sharedRefresh: "Analysis!Z4" };
     }
 }
 

@@ -52,8 +52,10 @@ No command line, local build or developer account is required.
 11. Complete Google's authorization steps for your copy.
 12. If the build does not run after authorization, choose **Build analysis sheets** again.
 
-The menu creates the analysis tabs, source formulas and charts.
-Google Sheets calculates the source formulas and their dependent cells.
+The menu creates the analysis tabs, cell formulas and charts.
+Quote and fundamental value cells contain individual field formulas.
+History, earnings and option chains use table formulas in their first cells.
+Google Sheets calculates those formulas and their dependent cells.
 The default ticker is `NVDA`.
 The first refresh can take longer than later refreshes.
 
@@ -218,7 +220,7 @@ The builder creates these tabs:
 | **Watchlist** | Up to 20 ticker inputs and summary values |
 | **Watchlist data** | One source table per other ticker; the selected ticker reuses its existing sources |
 | **Journal** | Explicitly recorded observations and formulas for changes between entries |
-| **Formulas** | Function reference, linked examples and formula-text examples |
+| **Formulas** | Function reference, direct field examples and formula-text examples |
 | **Strategies** | Editable covered call, cash-secured put and vertical payoff models |
 
 The strategy worksheet uses the selected expiration.
@@ -240,7 +242,7 @@ For the watchlist:
 2. Choose **Stock analysis → Refresh watchlist**.
 
 Watchlist formulas request quote, history and fundamental data for the other tickers.
-The selected stock's row references its existing source tables.
+The selected stock's row references its existing formula results.
 `CFWATCHROW` calculates compact indicators for the other tickers inside Apps Script.
 The journal compares earlier rows for the same symbol and currency.
 The first snapshot has no prior change value.
@@ -251,20 +253,22 @@ For cell formulas:
 
 1. Open **Formulas**.
 2. Review the example formulas and their units.
-3. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!A7** to follow the displayed price.
+3. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!B8** for direct `CFQUOTE` price formulas.
 4. To request new results, choose **Stock analysis → Refresh formula examples**.
 
 The [function reference](FUNCTIONS.md) gives every public signature and its supported arguments.
 The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and copyable formulas for custom tabs.
 Google limits each custom function to [30 seconds](https://developers.google.com/apps-script/guides/sheets/functions#return_values).
-Each source function returns its own table. Ordinary spreadsheet formulas read those tables.
+An individual field function returns one value in the cell that contains its formula.
+For example, `=CFQUOTE(A1,"price")` returns the price for the ticker in `A1`.
+History, earnings and option functions return tables that expand from their first cells.
+Ordinary spreadsheet formulas calculate from those results.
 
 The functions cache results. They do not stream prices continuously or refresh your custom tabs on a schedule.
-All generated source formulas share **Analysis!E4** as their refresh number.
-The refresh menus increment that number and reset the generated calculator assumptions.
-**Formulas!E4** and **Watchlist!E4** reference **Analysis!E4**.
-A custom tab can reference that cell or use its own manual refresh number.
-The [build-your-own guide](BUILD-YOUR-OWN.md#1-create-the-controls) explains this input.
+Choose **Stock analysis → Refresh selected ticker** to refresh the generated sample tabs.
+The menu also resets the generated calculator assumptions.
+For your own tabs, change the ticker or re-enter the formula that you want to recalculate.
+The [build-your-own guide](BUILD-YOUR-OWN.md) gives direct formulas for custom tabs.
 
 ## Check the added lookups
 
@@ -326,7 +330,7 @@ Resolve the name conflict, then run the refresh again. Do not delete your older 
 
 Replacing the code file keeps the saved keys in the same project's Script Properties.
 The first refresh of an older layout rebuilds the managed tabs with source formulas and formula-driven views.
-Later refreshes preserve that layout and increment **Analysis!E4**.
+Later refreshes preserve that layout and request new results.
 Custom tabs remain separate, and the journal keeps its prior snapshots.
 Keep custom notes and formulas on your own tabs.
 
@@ -336,6 +340,7 @@ For the added diagnostics, choose **Stock analysis → Build lookup checks**.
 That command replaces **Lookup tests**.
 
 If an update requires new analysis layouts, choose **Stock analysis → Build analysis sheets**.
+Use this command to replace the older quote-table layout with individual quote and fundamental formulas.
 The builder preserves other tabs and keeps watchlist ticker inputs and prior journal rows.
 It can replace generated analysis contents, example formulas, formatting and strategy assumptions.
 Keep custom notes and formulas on your own tabs before rebuilding managed tabs.

@@ -11,7 +11,8 @@ FRED requires your own key in your copy.
 
 The analysis runs in the spreadsheet owner's Apps Script project.
 The script creates the tabs, source formulas and charts.
-Data-returning cell functions request provider data. Other cells calculate from those source tables.
+Cell functions request individual provider fields or tables.
+Other spreadsheet formulas calculate indicators, comparisons and summaries from those results.
 The [installation guide](INSTALL.md) includes the template workflow.
 The [function reference](FUNCTIONS.md) lists reusable formulas and supported provider fields.
 The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs from those formulas.
@@ -23,32 +24,43 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs
 - Earnings, fundamentals and published option chains provide more detail when their providers supply it.
 - A watchlist, option calculators and economic series show other ways to use the functions.
 
-## Follow a result through its formulas
+## Copy a formula from a result cell
 
 Open **Start here** for the walkthrough inside the workbook.
 Click each of these cells and inspect the formula bar:
 
 | Cell | What it contains |
 |---|---|
-| Analysis!B9 | `=Formulas!B23`, the dashboard price reference |
-| Formulas!B23 | An `INDEX` / `MATCH` lookup of the price in Quote data |
-| Quote data!A7 | `=CFQUOTE(Analysis!$B$4,"all",Analysis!$E$4)`, the quote source table |
+| Analysis!B9 | `=CFQUOTE($B$4,"price")`, the price formula and its result in one cell |
+| Formulas!B23 | A direct `CFQUOTE` price example with the local ticker cell |
+| Quote data!B8 | A direct `CFQUOTE` price formula, with its text visible in C8 |
+| Fundamentals, column B | An individual `CFFUNDAMENTALS` formula for each field |
 | Price history!A7 | `CFHISTORY`, the source for daily prices and volume |
 | Price history!I57 | A visible SMA50 formula |
 | Price history!P22 | A visible Wilder RSI14 formula |
 
-Only the top-left cell of a returned table contains its data function.
-The neighboring cells contain that function's expanded results.
+The quote and fundamental value cells each contain their own formula.
+For example, enter `NVDA` in `A1` on your own tab and use `=CFQUOTE(A1,"price")` in another cell.
+The simplest formula needs only the ticker and field name.
+Choose **Stock analysis → Refresh selected ticker** to request new results for the sample.
+
+**Fundamentals!F8:F70** shows each value formula as text.
+Column G retains the provider's currency code for each field when available.
+The metadata table at **Fundamentals!I7** supplies units and currencies for these labels.
+The value cells in **B8:B70** still contain individual `CFFUNDAMENTALS` formulas.
+
+History, earnings, expirations, option chains and economic histories return whole tables.
+Only the first cell of each returned table contains its formula.
+Google Sheets fills the neighboring cells with that formula's results.
 The indicator columns contain ordinary spreadsheet formulas, with labeled helpers to the right.
 Options and strategy results use cell formulas that call `CFOPTIONMODEL` and `CFSTRATEGY`.
 
-All generated source formulas use one refresh number: **Analysis!E4**.
-**Formulas!E4** and **Watchlist!E4** reference that same cell.
-The refresh menu changes the number and resets calculator assumptions.
+The **Refresh selected ticker** menu requests new source results and resets calculator assumptions.
 Google Sheets then recalculates the dependent formulas.
-The dashboard and examples read those same source tables.
+The dashboard and examples use direct field functions where those functions return individual values.
+The functions can reuse recent parsed provider data from their cache.
 **Analysis!K4** holds the calculation date for option days and maturity selection.
-The refresh menu resets this date. If you increase the refresh number manually on a later day, update K4 too.
+The refresh menu resets this date to the current date in the spreadsheet's time zone.
 
 ## Try the sample
 
@@ -77,11 +89,11 @@ Use **Sources** to inspect unavailable data and source timestamps.
 
 | Tab | Contents |
 |---|---|
-| Start here | A short walkthrough, formula trace and controls for learning from the workbook. |
+| Start here | A short walkthrough, copyable formulas and controls for learning from the workbook. |
 | Analysis | Current quote, indicator summary, provider comparison and three trend charts. |
 | Price history | A CFHISTORY source table, visible moving-average/RSI/MACD/return formulas, helpers and SPY/QQQ source tables. |
-| Quote data | CFQUOTE, CFQUOTECOMPARE, CFEXPIRATIONS and CFRSITARGETS source formulas used by other tabs. |
-| Fundamentals | Sourced valuation, financial, ownership and trading fields from the selected quote page. |
+| Quote data | One CFQUOTE formula per field, visible formula text, and separate comparison, expiration and RSI2 tables. |
+| Fundamentals | Individual CFFUNDAMENTALS value formulas, formula text, units, availability, source and currency codes. A separate metadata table supplies units and currencies. |
 | Earnings | Separate GAAP and adjusted EPS results, annual/quarterly financial data, estimates, earnings dates, dividends and splits when supplied. |
 | Options | Expiration selector, selected-expiration quotes, implied volatility, volume/open interest and an editable option calculator. |
 | Macro | FRED series levels, observation dates and histories. |
@@ -90,7 +102,7 @@ Use **Sources** to inspect unavailable data and source timestamps.
 | Strategies | Editable covered-call, cash-secured-put and call/put vertical calculations, source bids/asks and payoff chart. |
 | Watchlist | Up to 20 ticker inputs, quotes, returns, indicators, valuation and changes since the latest saved journal observation. |
 | Journal | Saved observations recorded explicitly after formulas finish, plus formulas for changes between entries. |
-| Formulas | Function reference, linked examples and FORMULATEXT examples that trace the existing source tables. |
+| Formulas | Function reference, direct field examples and FORMULATEXT examples for learning and copying. |
 | Watchlist data | One CFWATCHROW source for each other ticker. The selected stock reuses Quote data. |
 | Chart links | Provider chart links and manual-copy guidance, created by **Provider chart links**. |
 
@@ -195,7 +207,7 @@ Enter up to 20 tickers in the yellow cells on **Watchlist**.
 Choose **Stock analysis → Refresh watchlist** to load the table.
 Ticker edits update the corresponding source formula. Wait for its result before reading the row.
 The watchlist uses Yahoo history and fundamentals, with no option-chain request for every stock.
-The selected stock's watchlist row references its existing source data.
+The selected stock's watchlist row references its existing formula results.
 Other tickers use `CFWATCHROW`; that function calculates their compact indicator summaries in Apps Script.
 
 After the source formulas finish, choose **Stock analysis → Record journal snapshot** to append displayed values to **Journal**.
@@ -215,25 +227,25 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) gives recipes for separate custom 
 `CFOPTIONMODEL` and `CFSTRATEGY` calculate from their entered assumptions.
 The original `CACHEFINANCE` and `CACHEFINANCES` functions remain available.
 
-The generated workbook uses **Analysis!E4** as its editable refresh number.
-The other refresh-number cells reference it.
-Incrementing the number requests new results without a volatile `NOW()` argument.
-The examples reference the same source tables as the dashboard.
+The sample's refresh menu requests new results for its generated tabs.
+Individual quote and fundamental examples use direct field calls.
+History, earnings and option calculations read their returned tables.
 The formula cache stores public parsed data and retrieval times.
 It excludes API keys, anonymous Yahoo cookies, crumbs and raw provider pages.
 The function reference lists cache periods and text missing-data results.
 
-The main source formulas occupy these cells:
+The main formulas occupy these cells:
 
-| Source table | Formula cell |
+| Data | Formula cells |
 |---|---|
-| Selected quote and sessions | Quote data!A7 — `CFQUOTE` |
+| Selected quote and sessions | Quote data, column B — one `CFQUOTE` formula per field |
 | Provider/session comparison | Quote data!D7 — `CFQUOTECOMPARE` |
 | Published option expirations | Quote data!O7 — `CFEXPIRATIONS` |
 | RSI2 trigger targets | Quote data!A70 — `CFRSITARGETS` |
 | Daily prices and volume | Price history!A7 — `CFHISTORY` |
 | SPY and QQQ history | Price history!AA7 and AI7 — `CFHISTORY` |
-| Fundamental fields | Fundamentals!A7 — `CFFUNDAMENTALS` |
+| Fundamental fields | Fundamentals, column B — one `CFFUNDAMENTALS` formula per field |
+| Fundamental units and currencies | Fundamentals!I7 — `CFFUNDAMENTALS` metadata table |
 | EPS, financials, estimates, dividends, splits, calendar | Earnings!A7, L7, U7, AF7, AK7 and AP7 — `CFEARNINGS` |
 | Selected-expiration contracts | Options!A7 — `CFOPTIONS` |
 | Additional provider fields | Research!A190, G190 and A230 — `CFFIELD` for Finviz, GuruFocus and Zacks |
@@ -269,6 +281,8 @@ FRED rate values retain their published units: `4.88` means 4.88 percent.
 The change column compares the latest two available observations in the series' units.
 CPI is an index level here. The sheet does not label that level as an inflation rate.
 FRED observation dates identify periods, not publication times. A `.` observation remains missing.
+**Formulas!B27** and **B30** show the most recent returned FRED observation, which can be `N/A`.
+The Macro summary uses the latest numeric observation, so its date can precede a newer missing observation.
 
 ## Provider and coverage limits
 

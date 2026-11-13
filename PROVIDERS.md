@@ -80,25 +80,26 @@ A successful request from a local computer cannot replace a failed Google Sheets
 
 ### Check the formula workbook
 
-The generated workbook uses source functions for provider tables and spreadsheet formulas for its displayed calculations.
-Normal refreshes increment **Analysis!E4** and reset calculator assumptions.
-The dashboard and examples read the same source tables.
+The generated workbook uses individual field functions for quote and fundamental values.
+History, earnings, options and economic histories use table functions.
+Spreadsheet formulas calculate indicators, comparisons and summaries from those results.
+The **Refresh selected ticker** menu requests new results and resets calculator assumptions.
+The direct field functions can reuse parsed provider data from their cache.
 The **Sources** tab reads those existing cells and makes no provider requests.
 The separate **Check provider data** command deliberately requests provider diagnostics.
 
-1. Open **Start here** and follow its price trace.
-2. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!A7** in the formula bar.
-3. Check that the displayed price equals the `price` row in the quote table.
+1. Open **Start here** and follow its direct-formula examples.
+2. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!B8** for direct `CFQUOTE` formulas.
+3. Check that **Quote data!C8** shows the formula text for the price in **B8**.
 4. Inspect the visible indicator formulas and their labeled helpers in **Price history**.
 5. Change **Analysis!B4**, refresh, and wait for all source formulas to finish.
 6. Check **Sources** for source errors, missing rows and observation times.
 7. Choose **Stock analysis → Check formula workbook** for a read-only inspection.
 8. After formulas finish, choose **Record journal snapshot** to save the displayed observations.
 
-**Formulas!E4** and **Watchlist!E4** must reference **Analysis!E4**.
-Changing the shared number must recalculate the generated source tables.
+The **Refresh selected ticker** menu must recalculate the generated field functions and table functions.
 Normal refreshes must not call `CFAnalysisService.collect` or append journal rows.
-The selected stock's watchlist row must reference its existing source tables.
+The selected stock's watchlist row must reference its existing formula results.
 Other watchlist tickers use one `CFWATCHROW` table each.
 
 Use these additional assertions for controlled data and native spreadsheet checks:
@@ -120,7 +121,7 @@ The dated results in this file describe their stated runs. They do not establish
 The **November 12, 2026 formula-workbook checks** included:
 
 - AAPL: **5,534 checks passed**, including **5,102 numerical comparisons**, with no formula failures or pending calculations.
-- The public sample passed **5,534 checks** for AAPL and again after switching back to NVDA, with no formula failures or pending calculations. All five option tables waited for the expiration response for the current refresh number before requesting their chains.
+- The public sample passed **5,534 checks** for AAPL and again after switching back to NVDA, with no formula failures or pending calculations. All five option tables waited for the current expiration response before requesting their chains.
 - **26 controlled worksheet cases passed** for conflicting and repeated earnings records, missing periods, zero denominators, same-strike option pairs, partial IV, and FRED gaps and zeros.
 - All five AAPL maturities returned quotes and IV after removing volatile date dependencies. Option prices and Greeks recalculated after changing the selected expiration.
 - All nine invalid-ticker assertions passed. Missing prices, RSI targets and expiration dates stayed unavailable, with no false zeros or 1899 dates.
@@ -128,6 +129,11 @@ The **November 12, 2026 formula-workbook checks** included:
 
 These checks used public stock and option sources. This run checked FRED's worksheet calculations with controlled observations; it did not use a live FRED key.
 The sample uses a written calculation date in **Analysis!K4** because custom functions must have deterministic inputs. See [Google's argument rules](https://developers.google.com/apps-script/guides/sheets/functions#arguments).
+
+The **November 12 direct-field sample update** passed **5,535 worksheet checks** for the public NVDA sample, with no failed or pending checks after the normal Refresh action.
+The quote and fundamental value columns contain **29 `CFQUOTE` formulas** and **63 `CFFUNDAMENTALS` formulas**.
+Five copied AAPL formulas also passed on a separate tab using only a ticker cell, with no refresh argument.
+The sample exposes no refresh-number controls. Its menu reloads the existing formulas, and the public template still contains no saved provider keys.
 
 ### Run the eight original adapter checks
 
@@ -176,14 +182,14 @@ That reference-window failure alone does not establish an exact-date lookup defe
 
 Use an empty test tab in the normal spreadsheet.
 
-1. Enter `NVDA` in `A1` and a new manual whole number in `A2`.
-2. Enter `=CFDATASTATUS($A$1,"history","",$A$2)` in `B1`. Wait for its two-row result.
-3. Immediately enter `=CFDATASTATUS($A$1,"HISTORY","",$A$2)` in `B5`.
-4. Compare **Cached** and **Retrieved at**. A successful first request should show `false`; the second can show `true` and reuse the retrieval time.
-5. Increase `A2` and repeat to request a new cache entry.
+1. Enter a supported ticker that this project did not recently request in `A1`.
+2. Enter `=CFDATASTATUS($A$1,"history")` in `B1`. Wait for its two-row result.
+3. Immediately enter `=CFDATASTATUS($A$1,"HISTORY")` in `B5`.
+4. Compare **Cached** and **Retrieved at**. An uncached first result shows `false`; a cached second result retains its retrieval time.
 
 The uppercase dataset string makes the second formula's arguments different while selecting the same internal history cache.
 Run the second call within the 60-second history cache period.
+If the first call finds an existing cache entry, both results can show `true`.
 Google can [remove cache entries early](https://developers.google.com/apps-script/reference/cache/cache), so a repeated miss alone does not establish a provider failure.
 A cache hit does not establish a fresh trade. Compare **Quote time** with **Retrieved at**.
 The original `CACHEFINANCE` functions have separate caches and fallback behavior, described in [FUNCTIONS.md](FUNCTIONS.md#original-cachefinance-and-cachefinances).
@@ -212,8 +218,8 @@ npm run build:provider-tests:check
 Commit the relevant source, test and generated `dist/` changes together.
 The tests and public fixtures remain in [test/](test/).
 Use `npm run test:watch` while editing, or `npm run test:coverage` for the coverage report in `coverage/index.html`.
-The **November 12, 2026** local run passed **1,428 tests in 41 files**.
-Coverage was 93.38% of lines, 88.56% of branches and 94.41% of functions.
+The **November 12, 2026** local run passed **1,473 tests in 42 files**.
+Coverage was 92.92% of lines, 88.69% of branches and 94.16% of functions.
 The visible history formulas also passed 29,363 numerical comparisons against the existing indicator calculations.
 Those comparisons included missing prices, flat prices, moving-average warm-up periods, RSI, MACD, returns and volatility.
 Those numbers describe controlled local tests, separate from the dated Google Sheets results above.

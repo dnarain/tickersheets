@@ -22,12 +22,21 @@ class CFPublicData {
     static failure(error, source = "") { return { ok: false, status: error, source, retrievedAt: null, cacheHit: false }; }
     static error(result) { return "N/A: " + (result?.status || result?.error || "Data unavailable"); }
 
-    static cached(kind, identity, ttl, load, overrides = {}, refresh = "") {
-        const deps = CFPublicData.dependencies(overrides);
-        if (refresh != null && typeof refresh !== "string" && typeof refresh !== "number") return CFPublicData.failure("Use a whole refresh number from 0 to 2147483647.");
-        const token = String(refresh ?? "");
-        if (token !== "" && (!/^\d{1,10}$/.test(token) || Number(token) > 2147483647)) return CFPublicData.failure("Use a whole refresh number from 0 to 2147483647.");
-        const key = "CFPUBLIC:v1:" + kind + ":" + identity + ":" + token;
+    static setAutomaticRefresh(number) {
+        if (!Number.isInteger(number) || number < 0 || number > 2147483647) return false;
+        try { CacheService.getScriptCache().put("CFPUBLIC:auto-refresh:v1", String(number), 21600); return true; }
+        catch { return false; }
+    }
+
+    static automaticRefresh_(cache) {
+        try {
+            const value = cache?.get("CFPUBLIC:auto-refresh:v1");
+            if (typeof value === "string" && /^\d{1,10}$/.test(value) && Number(value) <= 2147483647) return String(Number(value));
+        } catch { /* Default formulas can run without a saved automatic refresh number. */ }
+        return "";
+    }
+
+    static readCache_(deps, key, ttl) {
         try {
             const stored = deps.cache?.get(key);
             if (stored) {
@@ -42,6 +51,10 @@ class CFPublicData {
                 if (data.ok === true && age >= 0 && age < ttl * 1000) return { ...data, cacheHit: true };
             }
         } catch { /* A cache miss must not block a public request. */ }
+        return null;
+    }
+
+    static loadCached_(deps, key, ttl, load) {
         let data;
         try { data = load(deps); } catch { return CFPublicData.failure("Request or response unavailable."); }
         const completedAt = deps.clock(), receivedAt = Date.parse(data?.retrievedAt);
@@ -58,6 +71,35 @@ class CFPublicData {
             } catch { /* Public results can be used without caching. */ }
         }
         return data;
+    }
+
+    static cached(kind, identity, ttl, load, overrides = {}, refresh = "") {
+        const deps = CFPublicData.dependencies(overrides);
+        if (refresh != null && typeof refresh !== "string" && typeof refresh !== "number") return CFPublicData.failure("Use a whole refresh number from 0 to 2147483647.");
+        let token = String(refresh ?? "");
+        if (token !== "" && (!/^\d{1,10}$/.test(token) || Number(token) > 2147483647)) return CFPublicData.failure("Use a whole refresh number from 0 to 2147483647.");
+        if (token === "") token = CFPublicData.automaticRefresh_(deps.cache);
+        const key = "CFPUBLIC:v1:" + kind + ":" + identity + ":" + token;
+        const ready = CFPublicData.readCache_(deps, key, ttl);
+        if (ready) return ready;
+        // Scalar quote and fundamental formulas share these two leaf requests.
+        // Other loaders can call cached() themselves, so they must not hold this lock.
+        if (!deps.cache || !["chart:v2", "quote-page:v1"].includes(kind)) return CFPublicData.loadCached_(deps, key, ttl, load);
+        let lock;
+        try { lock = LockService.getScriptLock(); } catch { /* Allow environments without the Apps Script lock service. */ }
+        if (!lock) return CFPublicData.loadCached_(deps, key, ttl, load);
+        let acquired = false;
+        try {
+            try { acquired = lock.tryLock(10000); }
+            catch { return CFPublicData.failure("Request coordination unavailable. Try refreshing again."); }
+            // Another formula can fill this cache while this execution waits.
+            const completed = CFPublicData.readCache_(deps, key, ttl);
+            if (completed) return completed;
+            if (!acquired) return CFPublicData.failure("Another request is still loading public data. Refresh again when it finishes.");
+            return CFPublicData.loadCached_(deps, key, ttl, load);
+        } finally {
+            if (acquired) { try { lock.releaseLock(); } catch { /* Apps Script also releases locks when execution ends. */ } }
+        }
     }
 
     static request(url, deps) {

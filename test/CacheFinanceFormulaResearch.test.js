@@ -70,7 +70,7 @@ describe("formula-driven earnings sources", () => {
     it("authors six source formulas with the common ticker/refresh controls and no provider calls", () => {
         const sheet = R.buildEarnings(book);
         for (const [anchor, section] of [["A7", "earnings"], ["L7", "financials"], ["U7", "estimates"], ["AF7", "dividends"], ["AK7", "splits"], ["AP7", "calendar"]]) {
-            expect(formulaAt(sheet, anchor)).toBe('=CFEARNINGS(Analysis!$B$4,"' + section + '",Analysis!$E$4)');
+            expect(formulaAt(sheet, anchor)).toBe('=CFEARNINGS(Analysis!$B$4,"' + section + '",Analysis!$Z$4)');
         }
         expect([...sheet.formulas.values()].filter(value => value.startsWith("=CFEARNINGS("))).toHaveLength(6);
         expect(globalThis.CFEARNINGS).not.toHaveBeenCalled();
@@ -121,7 +121,7 @@ describe("formula-driven research calculations and charts", () => {
         expect([...sheet.formulas.values()].filter(value => value.includes('CFOPTIONS('))).toHaveLength(4);
         expect(formulaAt(sheet, "AA600")).toContain('CFOPTIONS(Analysis!$B$4,$A26,\'Quote data\'!$P$8)');
         for (const [index, anchor] of ["AA600", "AQ600", "BG600", "BW600"].entries()) {
-            expect(formulaAt(sheet, anchor)).toContain('AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$E$4)');
+            expect(formulaAt(sheet, anchor)).toContain('AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$Z$4)');
             expect(formulaAt(sheet, anchor)).toContain('ISNUMBER(IFERROR(DATEVALUE($A' + (26 + index) + '),""))');
         }
         expect(formulaAt(sheet, "AQ600")).toContain('$A27');
@@ -168,7 +168,7 @@ describe("formula-driven research calculations and charts", () => {
 
     it("requests the three public field tables once and creates source-linked chart ranges", () => {
         const sheet = R.buildResearch(book);
-        expect(formulaAt(sheet, "A190")).toBe('=CFFIELD("FINVIZ",Analysis!$B$4,"all",Analysis!$E$4)');
+        expect(formulaAt(sheet, "A190")).toBe('=CFFIELD("FINVIZ",Analysis!$B$4,"all",Analysis!$Z$4)');
         expect(formulaAt(sheet, "G190")).toContain('"GURUFOCUS"'); expect(formulaAt(sheet, "A230")).toContain('"ZACKS"');
         expect([...sheet.formulas.values()].filter(value => value.startsWith("=CFFIELD("))).toHaveLength(3);
         expect(globalThis.CFFIELD).not.toHaveBeenCalled();
@@ -192,7 +192,7 @@ describe("formula-driven research calculations and charts", () => {
 describe("formula-driven economic series and source report", () => {
     it("requests each FRED series once and calculates latest/prior values without treating zero as missing", () => {
         const sheet = R.buildMacro(book);
-        for (const [anchor, id] of [["A15", "DGS10"], ["G15", "FEDFUNDS"], ["M15", "CPIAUCSL"], ["S15", "UNRATE"]]) expect(formulaAt(sheet, anchor)).toBe('=CFFRED("' + id + '",400,Analysis!$E$4)');
+        for (const [anchor, id] of [["A15", "DGS10"], ["G15", "FEDFUNDS"], ["M15", "CPIAUCSL"], ["S15", "UNRATE"]]) expect(formulaAt(sheet, anchor)).toBe('=CFFRED("' + id + '",400,Analysis!$Z$4)');
         expect([...sheet.formulas.values()].filter(value => value.startsWith("=CFFRED("))).toHaveLength(4);
         expect(formulaAt(sheet, "AB8")).toContain('ISNUMBER($B$16:$B$415)');
         expect(formulaAt(sheet, "AB8")).toContain('MAX(FILTER(ROW(');
@@ -218,8 +218,8 @@ describe("formula-driven economic series and source report", () => {
         expect([...sheet.formulas.values()].every(value => !/\bCF(?:DATASTATUS|QUOTE|HISTORY|OPTIONS|FIELD|FRED|EARNINGS)\(/.test(value))).toBe(true);
         expect(globalThis.CFDATASTATUS).not.toHaveBeenCalled();
         expect(formulaAt(sheet, "B8")).toContain('HYPERLINK("#gid=');
-        expect(formulaAt(sheet, "B8")).toContain('&range=A7","Quote data!A7")');
-        expect(formulaAt(sheet, "C8")).toContain("IF(ISERROR('Quote data'!A7),'Quote data'!A7");
+        expect(formulaAt(sheet, "B8")).toContain('&range=B8","Quote data!B8")');
+        expect(formulaAt(sheet, "C8")).toContain("IF(ISERROR('Quote data'!B8),'Quote data'!B8");
         expect(formulaAt(sheet, "C15")).toContain("COUNT('Research'!$B$191:$B$222)>0");
         expect(formulaAt(sheet, "C16")).toContain("COUNT('Research'!$H$191:$H$192)>0");
         expect(formulaAt(sheet, "C17")).toContain("COUNT('Research'!$B$231:$B$231)>0");

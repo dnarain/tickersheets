@@ -31,7 +31,7 @@ class CFFormulaChecks {
     static ranges() {
         // Data, ordinary formulas and chart helpers. The checker does not inspect unrelated tabs.
         return { "Analysis": [4, 155, 18], "Quote data": [4, 207, 28], "Price history": [4, 517, 64],
-            "Fundamentals": [7, 200, 5], "Earnings": [4, 507, 56], "Options": [4, 2007, 31],
+            "Fundamentals": [4, 200, 13], "Earnings": [4, 507, 56], "Options": [4, 2007, 31],
             "Strategies": [4, 1055, 25], "Research": [4, 1600, 100], "Macro": [7, 415, 34],
             "Sources": [7, 30, 6], "Formulas": [4, 47, 21], "Watchlist": [4, 27, 27], "Watchlist data": [4, 1000, 26] };
     }

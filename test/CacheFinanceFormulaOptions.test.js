@@ -50,7 +50,7 @@ describe("formula option source and selection", () => {
         const { sheet, firstRow, lastRow } = O.buildOptions(book);
         expect(prepare).toHaveBeenCalledWith(book, "Options", "CACHEFINANCE_ANALYSIS_V1"); expect([firstRow, lastRow]).toEqual([8, 1007]);
         expect(sheet.getRange("A7").getFormula()).toBe(CFFormulaWorkbook.optionSource('$B$4'));
-        expect(sheet.getRange("A7").getFormula()).toContain('AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$E$4)');
+        expect(sheet.getRange("A7").getFormula()).toContain('AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$Z$4)');
         expect(sheet.getRange("A7").getFormula()).toContain('CFOPTIONS(Analysis!$B$4,$B$4,\'Quote data\'!$P$8)');
         expect(sheet.getRange("B4").getFormula()).toBe('=IF(\'Quote data\'!$O$8="","",\'Quote data\'!$O$8)');
         expect([...sheet.formulas.values()].filter(value => /CFOPTIONS\(/.test(value))).toHaveLength(1);

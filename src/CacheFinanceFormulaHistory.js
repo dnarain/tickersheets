@@ -147,9 +147,9 @@ class CFFormulaHistory {
         sheet.getRange("H7:W7").setValues([headers]); sheet.getRange("AQ7:BJ7").setValues([helpers]);
         for (const range of ["A7:W7", "AA7:AG7", "AI7:AO7", "AQ7:BJ7", "BK3:BL3"]) sheet.getRange(range).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold").setWrap(true);
         sheet.setRowHeights(7, 1, 42);
-        sheet.getRange("A7").setFormula('=CFHISTORY(Analysis!$B$4,510,Analysis!$E$4)');
-        sheet.getRange("AA7").setFormula('=CFHISTORY("SPY",510,Analysis!$E$4)');
-        sheet.getRange("AI7").setFormula('=CFHISTORY("QQQ",510,Analysis!$E$4)');
+        sheet.getRange("A7").setFormula('=CFHISTORY(Analysis!$B$4,510,Analysis!$Z$4)');
+        sheet.getRange("AA7").setFormula('=CFHISTORY("SPY",510,Analysis!$Z$4)');
+        sheet.getRange("AI7").setFormula('=CFHISTORY("QQQ",510,Analysis!$Z$4)');
         const rows = Array.from({ length: 510 }, (_, index) => index + CFFormulaHistory.firstRow);
         sheet.getRange("H8:W517").setFormulas(rows.map(row => CFFormulaHistory.formulas_(row)));
         sheet.getRange("AQ8:BJ517").setFormulas(rows.map(row => CFFormulaHistory.helpers_(row)));

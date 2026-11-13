@@ -12,7 +12,6 @@ class CFFormulaResearch {
         sheet.getRange("A1:N1").merge().setFormula('=UPPER(TRIM(Analysis!$B$4))&" — ' + name + '"').setFontSize(14).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2:N2").merge().setValue(subtitle).setWrap(true).setFontColor("#596579");
         sheet.getRange("A3").setValue("Ticker"); sheet.getRange("B3").setFormula("=UPPER(TRIM(Analysis!$B$4))");
-        sheet.getRange("D3").setValue("Refresh number"); sheet.getRange("E3").setFormula("=Analysis!$E$4");
         return sheet;
     }
 
@@ -49,7 +48,7 @@ class CFFormulaResearch {
         sheet.getRange("D4").setValue("Date status");
         sheet.getRange("E4").setFormula('=IFNA(INDEX($AQ$8:$AQ$20,MATCH("date_status",$AP$8:$AP$20,0)),"N/A")');
         for (const [anchor, section] of [["A7", "earnings"], ["L7", "financials"], ["U7", "estimates"], ["AF7", "dividends"], ["AK7", "splits"], ["AP7", "calendar"]]) {
-            sheet.getRange(anchor).setFormula('=CFEARNINGS(Analysis!$B$4,"' + section + '",Analysis!$E$4)');
+            sheet.getRange(anchor).setFormula('=CFEARNINGS(Analysis!$B$4,"' + section + '",Analysis!$Z$4)');
         }
         for (const range of ["A7:J7", "L7:S7", "U7:AD7", "AF7:AI7", "AK7:AN7", "AP7:AS7"]) sheet.getRange(range).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold").setWrap(true);
         sheet.getRange("C8:F507").setNumberFormat("0.00"); sheet.getRange("O8:P507").setNumberFormat('#,##0.00'); sheet.getRange("Q8:Q507").setNumberFormat("0.00%");
@@ -143,9 +142,9 @@ class CFFormulaResearch {
         sheet.getRange("A21:N21").merge().setValue("EPS chart helpers start at O40. Financial chart helpers start at AA7. Summary helpers start at A301. Earnings period keys and duplicate checks are visible at Earnings!AU7:BD507.").setWrap(true);
         CFFormulaResearch.buildMaturities_(book, sheet);
         CFFormulaResearch.buildChartHelpers_(book, sheet);
-        sheet.getRange("A189").setValue("Finviz source formula"); sheet.getRange("A190").setFormula('=CFFIELD("FINVIZ",Analysis!$B$4,"all",Analysis!$E$4)');
-        sheet.getRange("G189").setValue("GuruFocus source formula"); sheet.getRange("G190").setFormula('=CFFIELD("GURUFOCUS",Analysis!$B$4,"all",Analysis!$E$4)');
-        sheet.getRange("A229").setValue("Zacks source formula"); sheet.getRange("A230").setFormula('=CFFIELD("ZACKS",Analysis!$B$4,"all",Analysis!$E$4)');
+        sheet.getRange("A189").setValue("Finviz source formula"); sheet.getRange("A190").setFormula('=CFFIELD("FINVIZ",Analysis!$B$4,"all",Analysis!$Z$4)');
+        sheet.getRange("G189").setValue("GuruFocus source formula"); sheet.getRange("G190").setFormula('=CFFIELD("GURUFOCUS",Analysis!$B$4,"all",Analysis!$Z$4)');
+        sheet.getRange("A229").setValue("Zacks source formula"); sheet.getRange("A230").setFormula('=CFFIELD("ZACKS",Analysis!$B$4,"all",Analysis!$Z$4)');
         sheet.getRange("A299:L299").merge().setValue("These helper formulas select one reporting currency at the latest accepted period. Missing periods and conflicting records remain unavailable.").setWrap(true);
         return sheet;
     }
@@ -248,7 +247,7 @@ class CFFormulaResearch {
         const series = [["DGS10", "10-year Treasury yield", 1], ["FEDFUNDS", "Federal funds effective rate", 7], ["CPIAUCSL", "Consumer price index", 13], ["UNRATE", "Unemployment rate", 19]];
         for (const [i, [id, label, column]] of series.entries()) {
             const row = 8 + i, date = CFFormulaResearch.column_(column), value = CFFormulaResearch.column_(column + 1), unit = CFFormulaResearch.column_(column + 2), level = '$' + value + '$16:$' + value + '$415';
-            sheet.getRange(15, column).setFormula('=CFFRED("' + id + '",400,Analysis!$E$4)'); sheet.getRange(15, column, 1, 5).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold");
+            sheet.getRange(15, column).setFormula('=CFFRED("' + id + '",400,Analysis!$Z$4)'); sheet.getRange(15, column, 1, 5).setBackground("#17365D").setFontColor("#FFFFFF").setFontWeight("bold");
             sheet.getRange(16, column + 1, 400, 1).setNumberFormat("0.00");
             sheet.getRange(row, 27).setValue(id); sheet.getRange(row, 28).setFormula('=IFNA(MAX(FILTER(ROW(' + level + '),ISNUMBER(' + level + '))),0)');
             sheet.getRange(row, 29).setFormula('=IFNA(MAX(FILTER(ROW(' + level + '),ISNUMBER(' + level + '),ROW(' + level + ')<$AB' + row + ')),0)'); sheet.getRange(row, 30).setFormula('=COUNT(' + level + ')');
@@ -280,10 +279,10 @@ class CFFormulaResearch {
         const sheet = CFFormulaResearch.prepare_(book, "Sources", "CACHEFINANCE_ANALYSIS_V1", "These formulas inspect existing source tables. They do not call providers again. Open a source cell to inspect its data-returning formula.");
         CFFormulaResearch.header_(sheet, 7, 1, ["Dataset", "Source formula cell", "Result", "Observation / quote time", "Public source", "Meaning"]);
         const rows = [
-            ["Selected quote", "Quote data", "A7", "A8", 58, "B", '=IFNA(INDEX(\'Quote data\'!$B$8:$B$65,MATCH("quote_time",\'Quote data\'!$A$8:$A$65,0)),"N/A")', '=IFNA(INDEX(\'Quote data\'!$B$8:$B$65,MATCH("source",\'Quote data\'!$A$8:$A$65,0)),"N/A")', "The quote timestamp identifies the returned price observation."],
+            ["Selected quote", "Quote data", "B8", "A8", 58, "B", '=IFNA(INDEX(\'Quote data\'!$B$8:$B$65,MATCH("quote_time",\'Quote data\'!$A$8:$A$65,0)),"N/A")', '=IFNA(INDEX(\'Quote data\'!$B$8:$B$65,MATCH("source",\'Quote data\'!$A$8:$A$65,0)),"N/A")', "Each value in column B has its own CFQUOTE formula. Column C shows the formula text."],
             ["Comparison quotes", "Quote data", "D7", "D8", 9, "E", '="See Quote data comparison rows"', '="Provider URLs are in Quote data column L"', "Each provider keeps its own timestamp and yield definition."],
             ["Daily history", "Price history", "A7", "A8", 510, "E", "='Price history'!$BL$5", '="Yahoo Chart via CFHISTORY"', "This is the last priced indicator date. A current-day bar can have a missing close."],
-            ["Fundamentals", "Fundamentals", "A7", "A8", 200, "B", '="Publication time not supplied"', '=IF(COUNTA(Fundamentals!$E$8)=0,"N/A",Fundamentals!$E$8)', "Returned fields can use different earnings or dividend bases."],
+            ["Fundamentals", "Fundamentals", "B8", "A8", 193, "B", '="Publication time not supplied"', '=IF(COUNTA(Fundamentals!$E$8)=0,"N/A",Fundamentals!$E$8)', "Each value in column B has its own CFFUNDAMENTALS formula. Column F shows the formula text."],
             ["Earnings", "Earnings", "A7", "A8", 500, "C", '=Research!F8', '=IF(COUNTA(Earnings!$J$8)=0,"N/A",Earnings!$J$8)', "The reported date and fiscal period have separate meanings."],
             ["Selected option chain", "Options", "A7", "A8", 1000, "C", '="Each contract has its own last-trade time"', '="Yahoo options via CFOPTIONS"', "The source does not establish a timestamp for bid/ask quotes."],
             ["Published expirations", "Quote data", "O7", "O8", 200, "", '="Published expiration dates"', '="Yahoo options via CFEXPIRATIONS"', "The selected chain and extra maturity sources use these dates."],

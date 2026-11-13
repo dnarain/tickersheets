@@ -19,9 +19,9 @@ describe("formula-driven history sources", () => {
     it("writes one function per stock or benchmark history and leaves source output cells empty", () => {
         const { sheet } = H.build(book);
         expect(prepare).toHaveBeenCalledWith(book, "Price history", "CACHEFINANCE_ANALYSIS_V1");
-        expect(sheet.getRange("A7").getFormula()).toBe('=CFHISTORY(Analysis!$B$4,510,Analysis!$E$4)');
-        expect(sheet.getRange("AA7").getFormula()).toBe('=CFHISTORY("SPY",510,Analysis!$E$4)');
-        expect(sheet.getRange("AI7").getFormula()).toBe('=CFHISTORY("QQQ",510,Analysis!$E$4)');
+        expect(sheet.getRange("A7").getFormula()).toBe('=CFHISTORY(Analysis!$B$4,510,Analysis!$Z$4)');
+        expect(sheet.getRange("AA7").getFormula()).toBe('=CFHISTORY("SPY",510,Analysis!$Z$4)');
+        expect(sheet.getRange("AI7").getFormula()).toBe('=CFHISTORY("QQQ",510,Analysis!$Z$4)');
         expect([...sheet.formulas.values()].filter(formula => /CFHISTORY\(/.test(formula))).toHaveLength(3);
         for (const address of ["A8:G517", "AA8:AG517", "AI8:AO517"]) {
             expect(sheet.getRange(address).getValues().every(row => row.every(value => value === ""))).toBe(true);

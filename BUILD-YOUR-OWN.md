@@ -18,22 +18,44 @@ The generated analysis tabs keep their own ticker input in **Analysis!B4**.
 The custom tabs in this guide read **Setup!B2**.
 To share the generated tabs' ticker, enter `='Analysis'!B4` in **Setup!B2**.
 
+## Start with one formula
+
+After installation, enter `NVDA` in cell `A1` on your own tab.
+Enter this formula in `B1`:
+
+```excel
+=CFQUOTE(A1,"price")
+```
+
+Cell `B1` contains the formula and shows the price.
+These functions also return one value in their own cell:
+
+```excel
+=CFQUOTE(A1,"post_market_price")
+=CFFUNDAMENTALS(A1,"trailing_pe")
+=CFFUNDAMENTALS(A1,"eps_ttm")
+```
+
+The functions work without the generated analysis tabs.
+The numbered recipes add shared inputs for a larger workbook.
+
 ## Learn from the sample first
 
 Open **Start here** in the sample and inspect the formula bar for these cells:
 
 | Cell | What you can learn |
 |---|---|
-| Analysis!B9 | The displayed price references Formulas!B23. |
-| Formulas!B23 | `INDEX` and `MATCH` find the price in the existing quote table. |
-| Quote data!A7 | One `CFQUOTE(...,"all",...)` formula supplies that table. |
+| Analysis!B9 | `=CFQUOTE($B$4,"price")` returns the price in the cell that contains the formula. |
+| Formulas!B23 | A direct `CFQUOTE` example reads the local ticker cell. |
+| Quote data!B8 | An individual price formula appears in the value cell, with its text beside it. |
+| Fundamentals, column B | Individual `CFFUNDAMENTALS` formulas request the named fields. |
 | Price history!I57 | `AVERAGE` calculates SMA50 from the close column. |
 | Price history!P22 | A spreadsheet formula calculates Wilder RSI14 from visible average-gain/loss helpers. |
 
-**Formulas** also contains `FORMULATEXT` examples that show the source formulas.
-Each source function occupies the top-left cell of its expanded table.
-Other cells can reference those results with normal Google Sheets formulas.
-This pattern lets several views share one source table.
+**Quote data**, **Fundamentals** and **Formulas** show formula text beside their results.
+For an individual value, copy the direct function and change its ticker-cell reference.
+For tables such as history and option chains, the formula occupies the first cell of its expanded result.
+Keep the neighboring cells empty so Google Sheets can place the returned rows and columns there.
 
 ## 1. Create the controls
 
@@ -43,7 +65,6 @@ Enter the following labels and values:
 | Cell | Label in column A | Value in column B |
 |---|---|---|
 | B2 | Ticker | `AVGO` |
-| B3 | Refresh number | `1` |
 | B4 | Option expiration | Leave blank initially |
 | B5 | FRED series | `DGS10` |
 | B6 | Observation date | `=DATE(2026,11,5)` |
@@ -52,17 +73,11 @@ Format **B6** as a date.
 Use a typed date or a `DATE(...)` formula for custom-function inputs.
 Avoid `TODAY()`, `NOW()` and `RAND()` in their arguments or dependent input cells; Google can leave those functions on `Loading...`.
 The sample uses a written date in **Analysis!K4**, which its refresh menu updates.
-For an independent refresh control, keep **B3** as a manually entered whole number.
-To request new results, change **B3** from `1` to `2`, then to `3` on the next refresh.
-To share the sample's refresh control, enter `='Analysis'!E4` in **Setup!B3** instead.
-
 The functions do not continuously stream prices.
-After you change the refresh number, the functions request data again.
+Changing the ticker or re-entering a formula requests its result again.
 The provider can return the same published values.
-`NOW()` and `RAND()` are not supported refresh arguments.
-The analysis refresh menus increment **Analysis!E4**.
-Your custom formulas share that refresh when **Setup!B3** references **Analysis!E4**.
-**Formulas!E4** and **Watchlist!E4** already reference the shared number.
+The sample's **Refresh selected ticker** menu refreshes its generated tabs.
+For your own tabs, change the ticker or re-enter the formulas that you want to recalculate.
 
 Each table formula expands into neighboring cells.
 Keep its output area empty, and use separate tabs for the data types in this guide.
@@ -71,29 +86,25 @@ Before requesting a larger table, add enough empty rows for its header and data.
 ## 2. Build a quote summary
 
 Create a tab named **Quote**.
-Enter this source formula in **D1**:
-
-```excel
-=CFQUOTE(Setup!$B$2,"all",Setup!$B$3)
-```
-
-Keep **D1:E60** empty for its two-column field table.
 Enter `Metric` in **A1** and `Value` in **B1**.
 Enter each label in column A and its formula in the matching cell in column B:
 
 | Cell | Label | Formula |
 |---|---|---|
-| B2 | Selected price | `=IFNA(INDEX($E$2:$E$60,MATCH("price",$D$2:$D$60,0)),"N/A")` |
-| B3 | Selected session | `=IFNA(INDEX($E$2:$E$60,MATCH("price_session",$D$2:$D$60,0)),"N/A")` |
-| B4 | Selected quote time | `=IFNA(INDEX($E$2:$E$60,MATCH("quote_time",$D$2:$D$60,0)),"N/A")` |
-| B5 | Regular-market price | `=IFNA(INDEX($E$2:$E$60,MATCH("regular_price",$D$2:$D$60,0)),"N/A")` |
-| B6 | Regular-market time | `=IFNA(INDEX($E$2:$E$60,MATCH("regular_time",$D$2:$D$60,0)),"N/A")` |
-| B7 | Pre-market price | `=IFNA(INDEX($E$2:$E$60,MATCH("pre_market_price",$D$2:$D$60,0)),"N/A")` |
-| B8 | Pre-market time | `=IFNA(INDEX($E$2:$E$60,MATCH("pre_market_time",$D$2:$D$60,0)),"N/A")` |
-| B9 | After-hours price | `=IFNA(INDEX($E$2:$E$60,MATCH("post_market_price",$D$2:$D$60,0)),"N/A")` |
-| B10 | After-hours time | `=IFNA(INDEX($E$2:$E$60,MATCH("post_market_time",$D$2:$D$60,0)),"N/A")` |
-| B11 | Currency | `=IFNA(INDEX($E$2:$E$60,MATCH("currency",$D$2:$D$60,0)),"N/A")` |
-| B12 | Market state | `=IFNA(INDEX($E$2:$E$60,MATCH("market_state",$D$2:$D$60,0)),"N/A")` |
+| B2 | Selected price | `=CFQUOTE(Setup!$B$2,"price")` |
+| B3 | Selected session | `=CFQUOTE(Setup!$B$2,"price_session")` |
+| B4 | Selected quote time | `=CFQUOTE(Setup!$B$2,"quote_time")` |
+| B5 | Regular-market price | `=CFQUOTE(Setup!$B$2,"regular_price")` |
+| B6 | Regular-market time | `=CFQUOTE(Setup!$B$2,"regular_time")` |
+| B7 | Pre-market price | `=CFQUOTE(Setup!$B$2,"pre_market_price")` |
+| B8 | Pre-market time | `=CFQUOTE(Setup!$B$2,"pre_market_time")` |
+| B9 | After-hours price | `=CFQUOTE(Setup!$B$2,"post_market_price")` |
+| B10 | After-hours time | `=CFQUOTE(Setup!$B$2,"post_market_time")` |
+| B11 | Currency | `=CFQUOTE(Setup!$B$2,"currency")` |
+| B12 | Market state | `=CFQUOTE(Setup!$B$2,"market_state")` |
+
+Each value cell contains its own formula.
+For visible formula text beside the price, enter `=FORMULATEXT(B2)` in **C2**.
 
 `price_session` identifies the session selected for `price`.
 `CFQUOTE` can select an accepted newer pre-market or after-hours quote.
@@ -110,7 +121,7 @@ A timestamp ending in `Z` identifies UTC.
 For a separate provider comparison, create **Quote comparisons** and enter this formula in **A1**:
 
 ```excel
-=CFQUOTECOMPARE(Setup!$B$2,Setup!$B$3)
+=CFQUOTECOMPARE(Setup!$B$2)
 ```
 
 Keep **A1:J7** empty for the header and six provider/session rows.
@@ -122,7 +133,7 @@ Create a tab named **History**.
 Enter this formula in **A1**:
 
 ```excel
-=CFHISTORY(Setup!$B$2,252,Setup!$B$3)
+=CFHISTORY(Setup!$B$2,252)
 ```
 
 The table has seven columns: Date, Open, High, Low, Close, Adjusted close and Volume.
@@ -132,31 +143,26 @@ A recent listing can have fewer rows.
 The regular-market historical close and a current after-hours quote describe different observations.
 
 Create a tab named **Company fields**.
-Enter this formula in **A1**:
+Enter `Metric` in **A1** and `Value` in **B1**.
+Enter these labels in column A and formulas in column B:
 
-```excel
-=CFFUNDAMENTALS(Setup!$B$2,"all",Setup!$B$3)
-```
-
-Keep columns **A:E** empty for the resulting field table.
-The table includes each field's units, currency and source.
-For a small summary, enter these labels in column H and formulas in column I:
-
-| Cell | Label in column H | Formula |
+| Cell | Label | Formula |
 |---|---|---|
-| I2 | Market cap | `=IFNA(INDEX($B$2:$B$100,MATCH("market_cap",$A$2:$A$100,0)),"N/A")` |
-| I3 | Trailing P/E | `=IFNA(INDEX($B$2:$B$100,MATCH("trailing_pe",$A$2:$A$100,0)),"N/A")` |
-| I4 | Trailing EPS | `=IFNA(INDEX($B$2:$B$100,MATCH("eps_ttm",$A$2:$A$100,0)),"N/A")` |
-| I5 | Dividend yield | `=IFNA(INDEX($B$2:$B$100,MATCH("dividend_yield",$A$2:$A$100,0)),"N/A")` |
+| B2 | Market cap | `=CFFUNDAMENTALS(Setup!$B$2,"market_cap")` |
+| B3 | Trailing P/E | `=CFFUNDAMENTALS(Setup!$B$2,"trailing_pe")` |
+| B4 | Trailing EPS | `=CFFUNDAMENTALS(Setup!$B$2,"eps_ttm")` |
+| B5 | Dividend yield | `=CFFUNDAMENTALS(Setup!$B$2,"dividend_yield")` |
 
-Format **I5** as a percentage.
+Format **B5** as a percentage.
 P/E is a ratio, and EPS is currency per share.
 Unavailable fields remain `N/A`.
+For formula text beside each value, enter `=FORMULATEXT(B2)` in **C2** and copy it down.
+The [field reference](FUNCTIONS.md#cffundamentals) lists other fields and their units.
 
 Create a tab named **Reported results** and enter this formula in **A1**:
 
 ```excel
-=CFEARNINGS(Setup!$B$2,"earnings",Setup!$B$3)
+=CFEARNINGS(Setup!$B$2,"earnings")
 ```
 
 Keep columns **A:J** clear for the earnings table.
@@ -171,7 +177,7 @@ Create a tab named **Expirations**.
 Enter this formula in **A1**:
 
 ```excel
-=CFEXPIRATIONS(Setup!$B$2,Setup!$B$3)
+=CFEXPIRATIONS(Setup!$B$2)
 ```
 
 The first row is a header.
@@ -182,7 +188,7 @@ The dates start in **A2**.
 3. Enter the following formula in **'Option chain'!A1**.
 
 ```excel
-=CFOPTIONS(Setup!$B$2,Setup!$B$4,Setup!$B$3)
+=CFOPTIONS(Setup!$B$2,Setup!$B$4)
 ```
 
 Keep columns **A:L** clear for the chain.
@@ -197,24 +203,19 @@ A missing quote does not become zero.
 ## 5. Add RSI2 targets
 
 Create a tab named **RSI2**.
-Enter this formula in **A1**:
-
-```excel
-=CFRSITARGETS(Setup!$B$2,20,80,"all",Setup!$B$3)
-```
-
-The output occupies **A1:L2**: one header row and one value row.
-The twelve fields cover RSI2, both target prices, quote fields, previous close and previous RSI2.
-Bid and ask can remain unavailable while the RSI2 calculations return values.
-
-For individual values, enter these labels in column A and formulas in column B:
+Enter `Metric` in **A1** and `Value` in **B1**.
+Enter these labels in column A and formulas in column B:
 
 | Cell | Label | Formula |
 |---|---|---|
-| B6 | Current RSI2 | `=A2` |
-| B7 | Buy-trigger target | `=B2` |
-| B8 | Sell-trigger target | `=C2` |
-| B9 | Previous RSI2 | `=L2` |
+| B2 | Current RSI2 | `=CFRSITARGETS(Setup!$B$2,20,80,"rsi2")` |
+| B3 | Buy-trigger target | `=CFRSITARGETS(Setup!$B$2,20,80,"buy_target")` |
+| B4 | Sell-trigger target | `=CFRSITARGETS(Setup!$B$2,20,80,"sell_target")` |
+| B5 | Previous RSI2 | `=CFRSITARGETS(Setup!$B$2,20,80,"previous_rsi2")` |
+
+Each formula returns one value.
+The optional `"all"` selector returns a twelve-column table instead.
+Bid and ask can remain unavailable while the RSI2 calculations return values.
 
 The `20` and `80` arguments are the low and high RSI trigger levels.
 They must be whole numbers from `1` through `99`, with the low trigger less than the high trigger.
@@ -251,7 +252,7 @@ Create a tab named **FRED History**.
 Enter this formula in **A1**:
 
 ```excel
-=CFFRED(Setup!$B$5,60,Setup!$B$3)
+=CFFRED(Setup!$B$5,60)
 ```
 
 The table includes Date, Value, Unit, Series and Source.
@@ -262,14 +263,14 @@ Create a tab named **FRED Exact**.
 Enter `Value on requested date` in **A2** and this formula in **B2**:
 
 ```excel
-=CFFREDVALUE(Setup!$B$5,Setup!$B$6,Setup!$B$3)
+=CFFREDVALUE(Setup!$B$5,Setup!$B$6)
 ```
 
 You can also specify the date directly:
 
 ```excel
-=CFFREDVALUE("DGS10",DATE(2026,11,5),Setup!$B$3)
-=CFFREDVALUE("DGS10","2026-11-05",Setup!$B$3)
+=CFFREDVALUE("DGS10",DATE(2026,11,5))
+=CFFREDVALUE("DGS10","2026-11-05")
 ```
 
 `CFFREDVALUE` returns a value only for the exact requested observation date.
@@ -292,9 +293,9 @@ Enter these labels in column A and formulas in column B:
 
 | Cell | Label | Formula |
 |---|---|---|
-| B2 | Finviz price | `=CFFIELD("FINVIZ",Setup!$B$2,4074,Setup!$B$3)` |
-| B3 | Zacks average price target | `=CFFIELD("ZACKS",Setup!$B$2,849,Setup!$B$3)` |
-| B4 | GuruFocus forward yield | `=CFFIELD("GURUFOCUS",Setup!$B$2,2727,Setup!$B$3)` |
+| B2 | Finviz price | `=CFFIELD("FINVIZ",Setup!$B$2,4074)` |
+| B3 | Zacks average price target | `=CFFIELD("ZACKS",Setup!$B$2,849)` |
+| B4 | GuruFocus forward yield | `=CFFIELD("GURUFOCUS",Setup!$B$2,2727)` |
 
 Format **B4** as a percentage.
 
@@ -311,10 +312,10 @@ Enter each formula in the listed cell, with the surrounding output area empty:
 
 | Cell | Formula |
 |---|---|
-| A1 | `=CFDATASTATUS(Setup!$B$2,"quote","",Setup!$B$3)` |
-| A5 | `=CFDATASTATUS(Setup!$B$2,"history","",Setup!$B$3)` |
-| A9 | `=CFDATASTATUS(Setup!$B$2,"options",Setup!$B$4,Setup!$B$3)` |
-| A13 | `=CFDATASTATUS(Setup!$B$2,"provider","FINVIZ",Setup!$B$3)` |
+| A1 | `=CFDATASTATUS(Setup!$B$2,"quote","")` |
+| A5 | `=CFDATASTATUS(Setup!$B$2,"history","")` |
+| A9 | `=CFDATASTATUS(Setup!$B$2,"options",Setup!$B$4)` |
+| A13 | `=CFDATASTATUS(Setup!$B$2,"provider","FINVIZ")` |
 
 Each status table occupies five columns and two rows.
 It shows the status, retrieval time, quote time, cache flag and source.
@@ -327,14 +328,13 @@ Use these checks before calculations or comparisons:
 - Check the units before formatting yields, FRED rates or option IV.
 - Keep explanatory `N/A` results visible instead of converting them to zero.
 - Keep each table's output cells empty to prevent `#REF!` overlap errors.
-- When you want new requests, change the refresh number manually.
+- To request another result on your own tab, re-enter the formula or change its ticker input.
 - If the script stores your API keys, keep the spreadsheet private.
 
 The functions can reuse recent public results from the cache.
-The functions use a new cache entry after you change the refresh number.
 The functions retain provider timestamps, which describe the age of the underlying information.
 Google limits cell functions to 30 seconds, so start with a few tables and scalar lookups.
-The supplied analysis refresh menu changes the shared refresh number for the generated source formulas.
+The supplied **Refresh selected ticker** menu refreshes the generated sample tabs.
 
 ## 9. Chart the daily close
 
@@ -380,7 +380,7 @@ The two zero long-leg arguments are unused for a covered call.
 These examples use entered assumptions and do not depend on accepted market quotes or generated calculator seeds.
 Changing **Setup!B2** does not change these fixed examples.
 For your own calculations, replace the entered assumptions with references to numeric input cells.
-Neither function accepts the data-request refresh number.
+Neither function requests provider data.
 See [option model arguments](FUNCTIONS.md#cfoptionmodel) and [strategy arguments](FUNCTIONS.md#cfstrategy) for other metrics and limitations.
 
 See [FUNCTIONS.md](FUNCTIONS.md) for every public argument.

@@ -11,13 +11,16 @@ The **Single Stock Analysis** sample demonstrates one-ticker research tabs, char
 You can also create your own spreadsheet with the same functions.
 
 Open **Start here** in your copy to learn from the working formulas.
-The displayed price follows **Analysis!B9 → Formulas!B23 → Quote data!A7**.
-`CFQUOTE` supplies the source table. The other cells reference that table.
+**Analysis!B9** contains `=CFQUOTE($B$4,"price")` and displays the returned price in that same cell.
+**Quote data** and **Fundamentals** show individual field formulas beside their results.
+For your own sheet, enter a ticker in `A1` and use `=CFQUOTE(A1,"price")` in another cell.
+You can use these functions without the sample's tab layout.
+History, earnings, option chains and economic histories return tables with a formula in the first cell.
 **Price history** contains visible formulas for moving averages, RSI, MACD, returns and volatility.
-The **Refresh selected ticker** menu changes the shared refresh number in **Analysis!E4**.
-Google Sheets then recalculates the source tables and their dependent formulas.
+Choose **Stock analysis → Refresh selected ticker** to request new results for the sample.
+Google Sheets then recalculates the individual values, returned tables and their dependent formulas.
 
-[![NVDA formula-driven sample showing quotes, fundamentals, options and a price trend chart](img/tickersheets-formula-analysis.png)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
+[![NVDA quote values with simple, copyable formulas beside each result](img/tickersheets-simple-formulas.png)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
 
 *NVDA example with saved results from November 12, 2026. Refresh your own copy to request newer data.*
 

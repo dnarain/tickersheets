@@ -60,27 +60,30 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         expect([...book.sheets.keys()]).toEqual(["Quote data"]); expect(sheet.getRange("A1").getValue()).toBe("User work"); expect(fetch).not.toHaveBeenCalled();
     });
 
-    it("builds one source path and linked teaching examples without collecting a snapshot", () => {
+    it("builds direct custom-function examples without collecting a market snapshot", () => {
         const collect = vi.spyOn(api.CFAnalysisService, "collect"); const result = api.CFBuildAnalysis();
         expect(result.mode).toBe("formulas"); expect(api.W.isFormulaBook(book)).toBe(true);
-        expect(book.getSheetByName("Analysis").getRange("B9").getFormula()).toBe("=Formulas!B23");
-        expect(book.getSheetByName("Formulas").getRange("B23").getFormula()).toContain("'Quote data'!$B$8:$B$65");
-        expect(book.getSheetByName("Quote data").getRange("A7").getFormula()).toBe('=CFQUOTE(Analysis!$B$4,"all",Analysis!$E$4)');
-        expect(book.getSheetByName("Quote data").getRange("O7").getFormula()).toBe('=CFEXPIRATIONS(Analysis!$B$4,Analysis!$E$4,TRUE)');
-        expect(book.getSheetByName("Price history").getRange("A7").getFormula()).toBe('=CFHISTORY(Analysis!$B$4,510,Analysis!$E$4)');
+        expect(book.getSheetByName("Analysis").getRange("B9").getFormula()).toBe('=CFQUOTE($B$4,"price")');
+        expect(book.getSheetByName("Analysis").getRange("E17").getFormula()).toBe('=CFFUNDAMENTALS($B$4,"trailing_pe")');
+        expect(book.getSheetByName("Analysis").getRange("E18").getFormula()).toBe('=CFFUNDAMENTALS($B$4,"eps_ttm")');
+        expect(book.getSheetByName("Formulas").getRange("B23").getFormula()).toBe('=CFQUOTE($B$4,"price")');
+        expect(book.getSheetByName("Quote data").getRange("A7").getValue()).toBe('Field');
+        expect(book.getSheetByName("Quote data").getRange("B8").getFormula()).toBe('=CFQUOTE($B$4,"price")');
+        expect(book.getSheetByName("Quote data").getRange("O7").getFormula()).toBe('=CFEXPIRATIONS(Analysis!$B$4,Analysis!$Z$4,TRUE)');
+        expect(book.getSheetByName("Price history").getRange("A7").getFormula()).toBe('=CFHISTORY(Analysis!$B$4,510,Analysis!$Z$4)');
         expect(book.getSheetByName("Price history").getRange("I57").getFormula()).toContain("AVERAGE($E8:$E57)");
-        expect(book.getSheetByName("Formulas").getRange("E4").getFormula()).toBe("=Analysis!E4");
-        expect(book.getSheetByName("Analysis").formatAt(4, 5)).toBe("0");
+        expect(book.getSheetByName("Formulas").getRange("E4").getFormula()).toBe("");
+        expect(book.getSheetByName("Analysis").formatAt(4, 26)).toBe("0");
         expect(book.getSheetByName("Analysis").getRange("K4").getValue()).toBe("2026-11-12");
         expect(book.getSheetByName("Analysis").getRange("K4").getFormula()).toBe("");
         expect(book.getSheetByName("Options").events.some(event => event.kind === "clearDataValidations")).toBe(true);
         expect(book.getSheetByName("Formulas").formatAt(4, 5)).toBe("General");
-        expect(book.getSheetByName("Start here").getRange("D14").getFormula()).toBe("=FORMULATEXT('Quote data'!A7)");
+        expect(book.getSheetByName("Start here").getRange("D14").getFormula()).toBe("=FORMULATEXT('Quote data'!B8)");
         expect(book.getSheetByName("Formulas").getRange("A45").getValue()).toBe("CFEARNINGS");
-        expect(book.getSheetByName("Formulas").getRange("B30").getFormula()).toContain('IF(ISNUMBER($R$35),$R$35,');
-        expect(book.getSheetByName("Formulas").getRange("H23").getFormula()).toContain("IF(ISNUMBER('Quote data'!A71)");
+        expect(book.getSheetByName("Formulas").getRange("B30").getFormula()).toContain('INDEX(CFFRED("DGS2",1),2,2)');
+        expect(book.getSheetByName("Formulas").getRange("H23").getFormula()).toBe('=CFRSITARGETS($B$4,20,80,"rsi2")');
         expect(book.getSheetByName("Quote data").getRange("AB36").getFormula()).toBe('=IF(ISNUMBER($L$71),$L$71,"N/A")');
-        expect(book.getSheetByName("Analysis").getRange("E23").getFormula()).toBe('=Formulas!B28');
+        expect(book.getSheetByName("Analysis").getRange("E23").getFormula()).toContain('INDEX(CFEXPIRATIONS($B$4),2,1)');
         expect(collect).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
 
@@ -91,14 +94,56 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         expect(watch.getRange("A8:A9").getValues()).toEqual([["CRCL"], ["AAPL"]]); expect(journal.getRange("A8:C8").getValues()).toEqual([["Saved observation", "NVDA", 123]]);
     });
 
-    it("routes all refresh menus to the same counter without overwriting result formulas", () => {
+    it("routes refresh menus through the hidden generation without overwriting result formulas", () => {
         api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), formulas = book.getSheetByName("Formulas"), priceFormula = main.getRange("B9").getFormula();
         for (const refresh of [api.CFRefreshAnalysis, api.CFRefreshWatchlist, api.CFRefreshFormulaExamples]) {
-            const previous = main.getRange("E4").getValue(); refresh(); expect(main.getRange("E4").getValue()).toBe(previous + 1);
-            expect(main.getRange("B9").getFormula()).toBe(priceFormula); expect(formulas.getRange("E4").getFormula()).toBe("=Analysis!E4");
+            const previous = main.getRange("Z4").getValue(); refresh(); expect(main.getRange("Z4").getValue()).toBe(previous + 1);
+            expect(main.getRange("B9").getFormula()).toBe(priceFormula); expect(formulas.getRange("E4").getFormula()).toBe("");
         }
         api.CFBuildFormulaExamples(); api.CFBuildWatchlist();
-        expect(formulas.getRange("B23").getFormula()).not.toContain("CFQUOTE("); expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
+        expect(formulas.getRange("B23").getFormula()).toBe('=CFQUOTE($B$4,"price")'); expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
+    });
+
+    it("puts a scalar custom formula in every quote and fundamental value cell with visible formula text", () => {
+        api.CFBuildAnalysis(); const quote = book.getSheetByName("Quote data"), fundamentals = book.getSheetByName("Fundamentals"), examples = book.getSheetByName("Formulas");
+        expect(api.V.quoteFields()).toHaveLength(29); expect(api.V.fundamentalFields()).toHaveLength(63);
+        expect(quote.getRange("A8:A36").getValues()).toEqual(api.V.quoteFields().map(field => [field]));
+        api.V.quoteFields().forEach((field, i) => {
+            expect(quote.getRange(i + 8, 2).getFormula()).toBe('=CFQUOTE($B$4,"' + field + '")');
+            expect(quote.getRange(i + 8, 3).getFormula()).toBe('=FORMULATEXT(B' + (i + 8) + ')');
+        });
+        expect(fundamentals.getRange("B4").getFormula()).toBe("=Analysis!B4"); expect(fundamentals.getRange("E4").getFormula()).toBe("");
+        expect(fundamentals.getRange("I7").getFormula()).toBe('=CFFUNDAMENTALS($B$4,"all")');
+        expect(fundamentals.getRange("G8").getFormula()).toContain('INDEX($L$8:$L$200,MATCH($A8,$I$8:$I$200,0))="","N/A"');
+        expect(fundamentals.getRange("E8").getFormula()).toContain('INDEX($M$8:$M$200,MATCH($A8,$I$8:$I$200,0))');
+        expect(fundamentals.getRange("A7:F7").getValues()[0]).toEqual(["Field", "Value", "Unit", "Availability", "Source", "Formula"]);
+        api.V.fundamentalFields().forEach(([field, unit], i) => {
+            expect(fundamentals.getRange(i + 8, 2).getFormula()).toBe('=CFFUNDAMENTALS($B$4,"' + field + '")');
+            expect(fundamentals.getRange(i + 8, 3).getValue()).toBe(unit);
+            expect(fundamentals.getRange(i + 8, 4).getFormula()).toContain('"Unavailable","Returned"');
+            expect(fundamentals.getRange(i + 8, 5).getFormula()).toContain('INDEX($M$8:$M$200,MATCH($A' + (i + 8) + ',$I$8:$I$200,0))');
+            expect(fundamentals.getRange(i + 8, 6).getFormula()).toBe('=FORMULATEXT(B' + (i + 8) + ')');
+        });
+        expect(examples.getRange("C23").getFormula()).toBe("=FORMULATEXT(B23)"); expect(examples.getRange("I23").getFormula()).toBe("=FORMULATEXT(H23)");
+        expect(examples.getRange("O34").getFormula()).toBe('=CFEXPIRATIONS($B$4)');
+        expect(book.getSheetByName("Analysis").getRange("B16").getFormula()).toBe("='Price history'!$BL$10");
+        expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
+    });
+
+    it("keeps refresh controls out of the beginner views and uses two-argument scalar calls", () => {
+        api.CFBuildAnalysis();
+        for (const name of ["Analysis", "Quote data", "Fundamentals", "Formulas"]) {
+            const sheet = book.getSheetByName(name);
+            expect(sheet.getRange("D4:E4").getValues()).toEqual([["", ""]]);
+            for (const value of sheet.getRange("A1:L6").getValues().flat()) expect(String(value)).not.toMatch(/refresh\s+(?:number|counter)|refresh-cell/i);
+        }
+        const main = book.getSheetByName("Analysis"), quote = book.getSheetByName("Quote data"), guide = book.getSheetByName("Start here");
+        expect(main.getRange("Z4").getValue()).toBe(1); expect(main.hiddenColumn).toBe(26); expect(quote.hiddenColumn).toBe(16);
+        for (const value of guide.cells.values()) expect(String(value)).not.toMatch(/refresh\s+(?:number|counter)|refresh arguments|refresh control|Analysis!E4/i);
+        expect(book.getSheetByName("Formulas").getRange("H26").getFormula()).toBe('=CFFREDVALUE($K$24,$K$25)');
+        expect(book.getSheetByName("Formulas").getRange("B26").getFormula()).toBe('=CFFIELD("FINVIZ",$B$4,"price")');
+        expect(book.getSheetByName("Formulas").getRange("Q34").getFormula()).toBe('=CFFRED("DGS2",12)');
+        expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
 
     it("uses blank-aware lookups and preserves source errors instead of hiding them", () => {
@@ -124,7 +169,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         expect(journal.getRange("N17").getFormula()).toContain("ISNUMBER(G12)"); expect(journal.getRange("N17").getFormula()).toContain("G17-G12");
         expect(journal.getRange("O17").getFormula()).toContain("I17-I12"); expect(journal.getRange("P17").getFormula()).toContain("J17-J12");
         expect(journal.getRange("R17").getFormula()).toContain("(L17-L12)*100"); expect(journal.getRange("G17").getValue()).toBe(0);
-        expect(journal.getRange("I17").getValue()).toBe(0); expect(journal.getRange("S17").getValue()).toBe(book.getSheetByName("Analysis").getRange("E4").getValue());
+        expect(journal.getRange("I17").getValue()).toBe(0); expect(journal.getRange("S17").getValue()).toBe(book.getSheetByName("Analysis").getRange("Z4").getValue());
         expect(journal.getRange(8, 1, records.length, 18).getValues()).toEqual(before);
         expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });
@@ -156,11 +201,11 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis");
         const reads = ["Analysis", "Research", "Options", "Strategies"].map(name => vi.spyOn(book.getSheetByName(name), "getCharts"));
         const writes = ["Analysis", "Research", "Options", "Strategies"].map(name => vi.spyOn(book.getSheetByName(name), "updateChart"));
-        const previous = main.getRange("E4").getValue();
+        const previous = main.getRange("Z4").getValue();
         main.getRange("B4").setValue("AAPL"); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
-        expect(main.getRange("E4").getValue()).toBe(previous + 1);
+        expect(main.getRange("Z4").getValue()).toBe(previous + 1);
         main.getRange("B4").setValue(" aapl "); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "AAPL", value: " aapl " });
-        expect(main.getRange("E4").getValue()).toBe(previous + 1);
+        expect(main.getRange("Z4").getValue()).toBe(previous + 1);
         expect(main.getRange("Z3").getValue()).toContain("Chart titles pending");
         expect(main.getRange("G5").getFormula()).toBe('=IF($Z$3="","",$Z$3)');
         reads.forEach(read => expect(read).not.toHaveBeenCalled()); writes.forEach(write => expect(write).not.toHaveBeenCalled());
@@ -170,9 +215,9 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     it("updates titles before calculator inputs and source refresh, and exposes transient title failures", () => {
         api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), research = book.getSheetByName("Research"), options = book.getSheetByName("Options");
         main.getRange("B4").setValue("AAPL"); options.getRange("P9").setValue(0.08);
-        const previous = main.getRange("E4").getValue(), update = api.W.updateChartTitles;
+        const previous = main.getRange("Z4").getValue(), update = api.W.updateChartTitles;
         const beforeSourceRefresh = vi.spyOn(api.W, "updateChartTitles").mockImplementation(target => {
-            expect(main.getRange("E4").getValue()).toBe(previous); expect(options.getRange("P9").getValue()).toBe(0.08);
+            expect(main.getRange("Z4").getValue()).toBe(previous); expect(options.getRange("P9").getValue()).toBe(0.08);
             return update(target);
         });
         const failedRead = vi.spyOn(research, "getCharts").mockImplementationOnce(() => { throw new Error("Spreadsheet busy"); });
@@ -180,7 +225,7 @@ describe("formula workbook, compiled Apps Script bundle", () => {
         const unchanged = vi.spyOn(options, "updateChart");
         const result = api.CFRefreshAnalysis();
         expect(result.ok).toBe(true); expect(result.chartTitles.pending).toBe(2); expect(result.chartTitles.updated).toBeGreaterThan(0);
-        expect(main.getRange("E4").getValue()).toBe(previous + 1); expect(options.getRange("P9").getValue()).toBe(0.04);
+        expect(main.getRange("Z4").getValue()).toBe(previous + 1); expect(options.getRange("P9").getValue()).toBe(0.04);
         expect(main.getRange("Z3").getValue()).toContain("Chart titles pending"); expect(book.toasts.at(-1)[0]).toContain("chart titles are pending");
         expect(unchanged).not.toHaveBeenCalled(); beforeSourceRefresh.mockRestore(); failedRead.mockRestore(); failedWrite.mockRestore();
         expect(api.CFRefreshAnalysis().chartTitles.pending).toBe(0); expect(main.getRange("Z3").getValue()).toBe("");
@@ -217,13 +262,13 @@ describe("formula workbook, compiled Apps Script bundle", () => {
     it("gates all five option sources on the returned expiration generation and advances it before resetting dates", () => {
         api.CFBuildAnalysis(); const main = book.getSheetByName("Analysis"), options = book.getSheetByName("Options"), research = book.getSheetByName("Research");
         const selected = options.getRange("A7").getFormula();
-        expect(selected).toBe('=IF(IFERROR(AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$E$4),FALSE),CFOPTIONS(Analysis!$B$4,$B$4,\'Quote data\'!$P$8),"N/A: Expiration dates loading or unavailable; see Quote data!O7")');
+        expect(selected).toBe('=IF(IFERROR(AND(ISNUMBER(\'Quote data\'!$P$8),\'Quote data\'!$P$8=Analysis!$Z$4),FALSE),CFOPTIONS(Analysis!$B$4,$B$4,\'Quote data\'!$P$8),"N/A: Expiration dates loading or unavailable; see Quote data!O7")');
         for (const [index, address] of ["AA600", "AQ600", "BG600", "BW600"].entries()) {
             expect(research.getRange(address).getFormula()).toBe(api.W.optionSource('$A' + (26 + index), true));
             expect(research.getRange(address).getFormula()).toContain('ISNUMBER(IFERROR(DATEVALUE($A' + (26 + index) + '),""))');
         }
-        const previous = main.getRange("E4").getValue(), original = options.getRange.bind(options); let counterWhenDateReset;
-        options.getRange = (...args) => { const range = original(...args); if (args[0] === "B4") { const setFormula = range.setFormula.bind(range); range.setFormula = formula => { counterWhenDateReset = main.getRange("E4").getValue(); return setFormula(formula); }; } return range; };
+        const previous = main.getRange("Z4").getValue(), original = options.getRange.bind(options); let counterWhenDateReset;
+        options.getRange = (...args) => { const range = original(...args); if (args[0] === "B4") { const setFormula = range.setFormula.bind(range); range.setFormula = formula => { counterWhenDateReset = main.getRange("Z4").getValue(); return setFormula(formula); }; } return range; };
         main.getRange("B4").setValue("AAPL"); api.CFAnalysisHandleEdit_({ source: book, range: main.getRange("B4"), oldValue: "NVDA", value: "AAPL" });
         expect(counterWhenDateReset).toBe(previous + 1); expect(fetch).not.toHaveBeenCalled(); expect(keyRead).not.toHaveBeenCalled();
     });

@@ -78,6 +78,140 @@ describe("public cache lifetime and chunk handling", () => {
     });
 });
 
+describe("automatic refresh cache numbers", () => {
+    it("shares default calls with an advanced call using the saved refresh number", () => {
+        expect(P.setAutomaticRefresh(7)).toBe(true);
+        expect(stored.put).toHaveBeenCalledWith("CFPUBLIC:auto-refresh:v1", "7", 21600);
+        const load = vi.fn(() => ({ ok: true, value: 10 }));
+        expect(P.cached("test", "NVDA", 60, load)).toMatchObject({ value: 10, cacheHit: false });
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:7")).toBe(true);
+        expect(P.cached("test", "NVDA", 60, load, {}, 7)).toMatchObject({ value: 10, cacheHit: true });
+        expect(load).toHaveBeenCalledOnce();
+    });
+    it("uses a new payload after the menu advances the automatic number", () => {
+        const load = vi.fn(() => ({ ok: true, value: 10 }));
+        P.setAutomaticRefresh(1); P.cached("test", "NVDA", 60, load); P.cached("test", "NVDA", 60, load);
+        P.setAutomaticRefresh(2); P.cached("test", "NVDA", 60, load);
+        expect(load).toHaveBeenCalledTimes(2);
+    });
+    it("lets an explicit refresh number override the automatic number, including zero", () => {
+        P.setAutomaticRefresh(7); const load = vi.fn(() => ({ ok: true, value: 10 }));
+        P.cached("test", "NVDA", 60, load, {}, 0); P.cached("test", "NVDA", 60, load, {}, 3);
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:0")).toBe(true); expect(stored.values.has("CFPUBLIC:v1:test:NVDA:3")).toBe(true);
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:7")).toBe(false); expect(load).toHaveBeenCalledTimes(2);
+    });
+    it("accepts a saved automatic zero without treating it as absent", () => {
+        expect(P.setAutomaticRefresh(0)).toBe(true);
+        P.cached("test", "NVDA", 60, () => ({ ok: true, value: 10 }));
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:0")).toBe(true);
+    });
+    it.each([null, undefined, "", "-1", "1.5", "1e2", "2147483648", "12345678901", "private api_key=value", 3, {}])
+    ("ignores an absent or malformed automatic cache number (%#)", value => {
+        stored.values.set("CFPUBLIC:auto-refresh:v1", value);
+        expect(P.cached("test", "NVDA", 60, () => ({ ok: true, value: 10 }))).toMatchObject({ value: 10, cacheHit: false });
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:")).toBe(true);
+    });
+    it("can run default formulas when the automatic-number cache cannot be read", () => {
+        const read = stored.get.getMockImplementation();
+        stored.get.mockImplementation(key => { if (key === "CFPUBLIC:auto-refresh:v1") throw new Error("Cache unavailable"); return read(key); });
+        expect(P.cached("test", "NVDA", 60, () => ({ ok: true, value: 10 }))).toMatchObject({ value: 10, cacheHit: false });
+        expect(stored.values.has("CFPUBLIC:v1:test:NVDA:")).toBe(true);
+    });
+    it.each([-1, 1.5, 2147483648, NaN, Infinity, "1", null, true, {}])("does not save an invalid automatic number (%#)", value => {
+        expect(P.setAutomaticRefresh(value)).toBe(false); expect(stored.put).not.toHaveBeenCalled();
+    });
+    it("stores only the public number and never accesses API keys", () => {
+        const properties = vi.fn(() => { throw new Error("Private keys must not be read"); });
+        vi.stubGlobal("PropertiesService", { getScriptProperties: properties });
+        expect(P.setAutomaticRefresh(2147483647)).toBe(true);
+        expect([...stored.values]).toEqual([["CFPUBLIC:auto-refresh:v1", "2147483647"]]); expect(properties).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+    });
+    it("returns false when the automatic-number cache cannot be written", () => {
+        stored.put.mockImplementation(() => { throw new Error("Cache unavailable"); });
+        expect(P.setAutomaticRefresh(1)).toBe(false);
+    });
+});
+
+describe("shared Yahoo request locks", () => {
+    function useLock(acquired = true) {
+        const lock = { tryLock: vi.fn(() => acquired), releaseLock: vi.fn() };
+        const getScriptLock = vi.fn(() => lock);
+        vi.stubGlobal("LockService", { getScriptLock });
+        return { lock, getScriptLock };
+    }
+    it.each(["chart:v2", "quote-page:v1"])("rechecks %s after another formula fills the cache while it waits", kind => {
+        const { lock } = useLock(), load = vi.fn(() => ({ ok: true, value: 99 }));
+        const now = Date.UTC(2026, 10, 12), key = "CFPUBLIC:v1:" + kind + ":NVDA:4";
+        lock.tryLock.mockImplementation(() => {
+            stored.values.set(key, JSON.stringify({ ok: true, value: 0, retrievedAt: new Date(now).toISOString() }));
+            return true;
+        });
+        expect(P.cached(kind, "NVDA", 60, load, { clock: () => now }, 4)).toMatchObject({ value: 0, cacheHit: true });
+        expect(load).not.toHaveBeenCalled(); expect(lock.tryLock).toHaveBeenCalledWith(10000); expect(lock.releaseLock).toHaveBeenCalledOnce();
+    });
+    it("returns a warm payload before asking for a lock", () => {
+        const load = vi.fn(() => ({ ok: true, value: 10 }));
+        P.cached("chart:v2", "NVDA", 60, load);
+        const { getScriptLock } = useLock();
+        expect(P.cached("chart:v2", "NVDA", 60, load)).toMatchObject({ value: 10, cacheHit: true });
+        expect(getScriptLock).not.toHaveBeenCalled(); expect(load).toHaveBeenCalledOnce();
+    });
+    it("releases the leaf lock after a successful request even when the cache write fails", () => {
+        const { lock } = useLock(); stored.put.mockImplementation(() => { throw new Error("Cache unavailable"); });
+        expect(P.cached("chart:v2", "NVDA", 60, () => ({ ok: true, value: 10 }))).toMatchObject({ value: 10, cacheHit: false });
+        expect(lock.releaseLock).toHaveBeenCalledOnce();
+    });
+    it("releases the leaf lock after a thrown request without exposing its exception", () => {
+        const { lock } = useLock();
+        const result = P.cached("quote-page:v1", "NVDA", 60, () => { throw new Error("secret request URL"); });
+        expect(result).toMatchObject({ ok: false, status: "Request or response unavailable." });
+        expect(JSON.stringify(result)).not.toContain("secret"); expect(lock.releaseLock).toHaveBeenCalledOnce(); expect(stored.put).not.toHaveBeenCalled();
+    });
+    it("preserves provider failures and releases the lock", () => {
+        const { lock } = useLock();
+        expect(P.cached("quote-page:v1", "NVDA", 60, () => ({ ok: false, status: "HTTP 403", http: 403 }))).toMatchObject({ ok: false, status: "HTTP 403", http: 403 });
+        expect(lock.releaseLock).toHaveBeenCalledOnce(); expect(stored.put).not.toHaveBeenCalled();
+    });
+    it("bounds a cold lock wait without launching a duplicate request", () => {
+        const { lock } = useLock(false), load = vi.fn();
+        expect(P.cached("chart:v2", "NVDA", 60, load).status).toBe("Another request is still loading public data. Refresh again when it finishes.");
+        expect(lock.tryLock).toHaveBeenCalledWith(10000); expect(load).not.toHaveBeenCalled(); expect(lock.releaseLock).not.toHaveBeenCalled();
+    });
+    it("can use a completed payload when the bounded lock attempt returns false", () => {
+        const { lock } = useLock(false), load = vi.fn();
+        lock.tryLock.mockImplementation(() => {
+            stored.values.set("CFPUBLIC:v1:chart:v2:NVDA:", JSON.stringify({ ok: true, value: 10, retrievedAt: new Date().toISOString() }));
+            return false;
+        });
+        expect(P.cached("chart:v2", "NVDA", 60, load)).toMatchObject({ value: 10, cacheHit: true });
+        expect(load).not.toHaveBeenCalled(); expect(lock.releaseLock).not.toHaveBeenCalled();
+    });
+    it("returns a fixed coordination error when lock acquisition throws", () => {
+        const { lock } = useLock(), load = vi.fn(); lock.tryLock.mockImplementation(() => { throw new Error("private service error"); });
+        const result = P.cached("chart:v2", "NVDA", 60, load);
+        expect(result.status).toBe("Request coordination unavailable. Try refreshing again.");
+        expect(JSON.stringify(result)).not.toContain("private"); expect(load).not.toHaveBeenCalled(); expect(lock.releaseLock).not.toHaveBeenCalled();
+    });
+    it("locks only the quote-page leaf when the fundamentals loader calls it", () => {
+        let held = false;
+        const { lock } = useLock();
+        lock.tryLock.mockImplementation(() => { expect(held).toBe(false); held = true; return true; });
+        lock.releaseLock.mockImplementation(() => { held = false; }); fetch.mockReturnValue(response(detailsBody));
+        expect(CFFUNDAMENTALS("NVDA", "trailing_pe", 7)).toBeGreaterThan(0);
+        expect(lock.tryLock).toHaveBeenCalledOnce(); expect(lock.releaseLock).toHaveBeenCalledOnce(); expect(fetch).toHaveBeenCalledOnce(); expect(held).toBe(false);
+    });
+    it("does not lock unrelated loaders or requests without a cache", () => {
+        const { getScriptLock } = useLock();
+        expect(P.cached("options", "NVDA", 60, () => ({ ok: true, value: 1 })).value).toBe(1);
+        expect(P.cached("chart:v2", "NVDA", 60, () => ({ ok: true, value: 2 }), { cache: null }).value).toBe(2);
+        expect(getScriptLock).not.toHaveBeenCalled();
+    });
+    it("can fetch when the lock service is unavailable", () => {
+        vi.stubGlobal("LockService", { getScriptLock: () => { throw new Error("Unavailable"); } });
+        expect(P.cached("chart:v2", "NVDA", 60, () => ({ ok: true, value: 10 }))).toMatchObject({ value: 10, cacheHit: false });
+    });
+});
+
 describe("quote, history and fundamental worksheet functions", () => {
     it("shares quote/history requests and returns the requested last sessions in date order", () => {
         fetch.mockImplementation(url => response(url.startsWith("https://finance.yahoo.com/quote/") ? quotePage({ marketState: "REGULAR", postMarketPrice: {}, postMarketTime: null }) : chartBody));

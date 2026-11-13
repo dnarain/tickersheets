@@ -7,21 +7,41 @@ The [provider guide](PROVIDERS.md#providers) lists data sources, API key require
 See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the analysis tabs and charts.
 The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
 
-## Start with the menu
+## Start with one cell formula
 
-**Stock analysis → Refresh selected ticker** increments the shared refresh number in **Analysis!E4**.
-Google Sheets recalculates the source functions and the formulas that read their tables.
+After installation, enter `NVDA` in `A1` on your own tab.
+Enter this formula in another cell:
+
+```excel
+=CFQUOTE(A1,"price")
+```
+
+That cell contains the formula and shows the returned price.
+The function works without the generated analysis tabs.
+Other individual fields use the same pattern:
+
+```excel
+=CFQUOTE(A1,"post_market_price")
+=CFFUNDAMENTALS(A1,"trailing_pe")
+=CFFUNDAMENTALS(A1,"eps_ttm")
+```
+
+## Use the sample's refresh menu
+
+Choose **Stock analysis → Refresh selected ticker** to request new results for the generated sample tabs.
+Google Sheets recalculates the field functions, table functions and formulas that read their results.
 The menu also resets option-model and strategy assumptions from their source cells.
 
-The sample uses these cell functions for its source tables.
-For example, **Analysis!B9** references **Formulas!B23**, which looks up the price from **Quote data!A7**.
-**Formulas!E4** and **Watchlist!E4** reference **Analysis!E4**.
-The examples and dashboard share their source tables.
+The sample uses direct functions for individual quote and fundamental values.
+For example, **Analysis!B9** contains `=CFQUOTE($B$4,"price")`.
+**Quote data!B8** and **Formulas!B23** contain their own direct price examples.
+**Quote data** and **Fundamentals** show formula text beside their value cells.
+The functions can reuse parsed provider data from their cache.
 Google requires each custom function to return within **30 seconds**.
 Google also rejects volatile arguments such as `NOW()` and `RAND()`.
 These limits come from [Google's custom function guide](https://developers.google.com/apps-script/guides/sheets/functions#guidelines_for_custom_functions).
 
-## Tickers, refresh numbers and missing values
+## Tickers and missing values
 
 The research functions accept Yahoo symbols and supported exchange prefixes:
 
@@ -37,22 +57,14 @@ The research functions accept Yahoo symbols and supported exchange prefixes:
 Bare US tickers do not imply a particular exchange. The quote response identifies the exchange.
 The selected Finviz, Zacks and GuruFocus routes support US symbols only.
 
-Most request functions have an optional `refresh` argument.
-This argument accepts a whole number from `0` through `2147483647`, or an empty value.
-A changed number requests a different cache entry.
-The provider can still return an older quote.
-
-For the examples in this file:
+For the detailed function examples that follow:
 
 1. Enter `NVDA` in cell `B1` on an empty worksheet.
-2. Enter `1` in cell `B2`.
-3. Put each example in a separate empty area.
-4. To request new results, increase the number in `B2`.
+2. Put each example in a separate empty area.
+3. To request another result, re-enter its formula or change its ticker input.
 
-Do not use `NOW()`, `RAND()` or `RANDBETWEEN()` as the refresh argument.
-Do not put an API key in a formula, ticker cell or refresh cell.
-Google Sheets recalculates a formula when its refresh-number dependency changes.
-The refresh number does not schedule repeated requests.
+Do not put an API key in a formula or ticker cell.
+The functions can reuse recent cached results and do not stream continuously.
 The original `CACHEFINANCE` and `CACHEFINANCES` signatures use different arguments, described in their section.
 
 Research functions return these values for unavailable data:
@@ -67,6 +79,8 @@ These results are text. They are different from the native spreadsheet error `#N
 `IFNA()` does not replace these text values.
 Published numeric zeros remain zero.
 
+An individual field selector returns one value in the cell that contains the formula.
+For example, `CFQUOTE(...,"price")` returns one price and `CFQUOTE(...,"all")` returns a whole quote table.
 The `CF...` functions that return tables include a header row. Google Sheets expands each table into adjacent empty cells.
 An occupied output cell causes a spreadsheet error.
 Only the top-left cell contains the data function. Neighboring cells contain its expanded results.
@@ -131,11 +145,14 @@ CFQUOTE(ticker, field="price", refresh="")
 Examples:
 
 ```excel
-=CFQUOTE($B$1,"price",$B$2)
-=CFQUOTE("TSE:RY","currency",$B$2)
-=CFQUOTE($B$1,"quote_time",$B$2)
-=CFQUOTE($B$1,"all",$B$2)
+=CFQUOTE($B$1,"price")
+=CFQUOTE("TSE:RY","currency")
+=CFQUOTE($B$1,"quote_time")
+=CFQUOTE($B$1,"all")
 ```
+
+Use a named field such as `"price"` for one value in one cell.
+Use `"all"` when you want a two-column table and have room for its expanded result.
 
 Supported fields:
 
@@ -177,10 +194,10 @@ An explicit pre-market or after-hours field can describe an earlier session. Alw
 The displayed quote does not change daily history, RSI inputs or closed option-market quotes.
 
 ```excel
-=CFQUOTE($B$1,"price_session",$B$2)
-=CFQUOTE($B$1,"regular_price",$B$2)
-=CFQUOTE($B$1,"post_market_price",$B$2)
-=CFQUOTE($B$1,"post_market_time",$B$2)
+=CFQUOTE($B$1,"price_session")
+=CFQUOTE($B$1,"regular_price")
+=CFQUOTE($B$1,"post_market_price")
+=CFQUOTE($B$1,"post_market_time")
 ```
 
 The current-session lookup can request both Yahoo Chart and the matching Yahoo quote page.
@@ -192,7 +209,8 @@ The explicit `regular_...` fields use Chart metadata. The `all` table can merge 
 
 The quote cache lasts up to 60 seconds.
 Google Sheets does not automatically recalculate a formula when its cache entry expires.
-Change the refresh number or use the refresh menu to request new results.
+In the sample, choose **Stock analysis → Refresh selected ticker** to request new results.
+On your own tab, change the ticker or re-enter the formula.
 
 ## CFHISTORY
 
@@ -203,8 +221,8 @@ CFHISTORY(ticker, sessions=252, refresh="")
 Examples:
 
 ```excel
-=CFHISTORY($B$1,252,$B$2)
-=CFHISTORY("TSE:RY",510,$B$2)
+=CFHISTORY($B$1,252)
+=CFHISTORY("TSE:RY",510)
 ```
 
 `sessions` accepts an integer from `1` through `510`.
@@ -239,10 +257,10 @@ CFFUNDAMENTALS(ticker, field="all", refresh="")
 Examples:
 
 ```excel
-=CFFUNDAMENTALS($B$1,"market_cap",$B$2)
-=CFFUNDAMENTALS($B$1,"trailing_pe",$B$2)
-=CFFUNDAMENTALS($B$1,"dividend_yield",$B$2)
-=CFFUNDAMENTALS($B$1,"all",$B$2)
+=CFFUNDAMENTALS($B$1,"market_cap")
+=CFFUNDAMENTALS($B$1,"trailing_pe")
+=CFFUNDAMENTALS($B$1,"dividend_yield")
+=CFFUNDAMENTALS($B$1,"all")
 ```
 
 `all` returns `Field`, `Value`, `Unit`, `Currency` and `Source`.
@@ -274,6 +292,11 @@ Ratios such as P/E and beta are plain numbers.
 Currency values identify their currency when the source supplies it.
 Financial reporting currency can differ from quote currency.
 
+The sample's **Fundamentals!B8:B70** cells contain individual field formulas.
+Column F shows their formula text, and column G shows each field's provider currency code when available.
+The separate table at **Fundamentals!I7** supplies metadata for the unit and currency labels.
+That table uses `CFFUNDAMENTALS(...,"all",...)` because an individual field call returns only its value.
+
 `CFEARNINGS` supplies the separate earnings, financial statement, estimate and event tables.
 `CFFUNDAMENTALS` returns the scalar fields listed here.
 
@@ -286,10 +309,10 @@ CFEARNINGS(ticker, section="earnings", refresh="")
 Examples:
 
 ```excel
-=CFEARNINGS($B$1,"earnings",$B$2)
-=CFEARNINGS($B$1,"financials",$B$2)
-=CFEARNINGS($B$1,"estimates",$B$2)
-=CFEARNINGS($B$1,"calendar",$B$2)
+=CFEARNINGS($B$1,"earnings")
+=CFEARNINGS($B$1,"financials")
+=CFEARNINGS($B$1,"estimates")
+=CFEARNINGS($B$1,"calendar")
 ```
 
 The function returns one table for the selected section:
@@ -325,7 +348,7 @@ CFQUOTECOMPARE(ticker, refresh="")
 ```
 
 ```excel
-=CFQUOTECOMPARE($B$1,$B$2)
+=CFQUOTECOMPARE($B$1)
 ```
 
 The table contains these ten columns:
@@ -350,7 +373,7 @@ CFOPTIONS(ticker, expiration="", refresh="")
 
 `CFEXPIRATIONS` returns one column with the header `Expiration`.
 With `includeRefresh=TRUE`, it adds a `Refresh number` column. Existing two-argument calls keep their one-column output.
-The sample uses that returned number in **Quote data!P8** to wait for the current expiration-date response before requesting option chains.
+This optional column supports existing formulas that track an explicit refresh argument.
 Each date uses `YYYY-MM-DD` text.
 `CFOPTIONS` returns the chain for one published expiration.
 If `expiration` is empty, the function requests the provider's default expiration.
@@ -360,13 +383,13 @@ For a formula that uses an available date:
 1. Enter this formula in cell `D1`:
 
    ```excel
-   =CFEXPIRATIONS($B$1,$B$2)
+   =CFEXPIRATIONS($B$1)
    ```
 
 2. Enter this formula in cell `F1`:
 
    ```excel
-   =CFOPTIONS($B$1,D2,$B$2)
+   =CFOPTIONS($B$1,D2)
    ```
 
 Cell `D2` contains the first published expiration when the request succeeds.
@@ -410,9 +433,9 @@ CFFRED(seriesId, observations=60, refresh="")
 Examples:
 
 ```excel
-=CFFRED("DGS10",252,$B$2)
-=CFFRED("UNRATE",120,$B$2)
-=CFFRED("CPIAUCSL",60,$B$2)
+=CFFRED("DGS10",252)
+=CFFRED("UNRATE",120)
+=CFFRED("CPIAUCSL",60)
 ```
 
 `observations` accepts an integer from `1` through `1000`.
@@ -425,6 +448,10 @@ Output columns are `Date`, `Value`, `Unit`, `Series` and `Source`.
 A missing observation, including FRED's `.` marker, returns `N/A`.
 Observation dates describe economic periods or sessions.
 They do not necessarily identify publication dates.
+
+The sample's **Formulas!B27** and **B30** show the most recent returned observation for DGS10 and DGS2.
+That observation can remain `N/A`.
+The Macro summary uses the latest numeric observation, which can have an earlier date.
 
 The function reads your `FRED_API_KEY` from Script Properties.
 Use **Data settings → API keys…** or **Data settings → Enter FRED key…** to save it.
@@ -451,9 +478,9 @@ CFFREDVALUE(seriesId, date, refresh="")
 Examples:
 
 ```excel
-=CFFREDVALUE("DGS10","2026-11-05",$B$2)
-=CFFREDVALUE("DGS10",DATE(2026,11,5),$B$2)
-=CFFREDVALUE($E$1,$E$2,$B$2)
+=CFFREDVALUE("DGS10","2026-11-05")
+=CFFREDVALUE("DGS10",DATE(2026,11,5))
+=CFFREDVALUE($E$1,$E$2)
 ```
 
 `date` accepts strict `YYYY-MM-DD` text or a date-valued cell.
@@ -471,7 +498,7 @@ Valid zero and negative values remain numeric.
 An invalid calendar date, such as `2026-02-30`, returns an input error before a provider request.
 
 The function uses the same private `FRED_API_KEY` setting as `CFFRED`.
-It caches accepted public values for up to one hour. The refresh number can request a new result.
+It caches accepted public values for up to one hour.
 Missing keys, provider failures and absent observations remain explanatory text results.
 This function returns one observation value. It does not return series titles, releases or other metadata selectors.
 
@@ -484,12 +511,12 @@ CFRSITARGETS(ticker, lowTrigger=20, highTrigger=80, field="all", refresh="")
 Examples:
 
 ```excel
-=CFRSITARGETS($B$1,20,80,"rsi2",$B$2)
-=CFRSITARGETS($B$1,20,80,"buy_target",$B$2)
-=CFRSITARGETS($B$1,20,80,"sell_target",$B$2)
-=CFRSITARGETS($B$1,20,80,"all",$B$2)
-=CFRSITARGETS($B$1,20,80,"previous_rsi2",$B$2)
-=CFRSITARGETS($B$1,20,80,"headers",$B$2)
+=CFRSITARGETS($B$1,20,80,"rsi2")
+=CFRSITARGETS($B$1,20,80,"buy_target")
+=CFRSITARGETS($B$1,20,80,"sell_target")
+=CFRSITARGETS($B$1,20,80,"all")
+=CFRSITARGETS($B$1,20,80,"previous_rsi2")
+=CFRSITARGETS($B$1,20,80,"headers")
 ```
 
 The function seeds Wilder's two-period averages from 21 completed sessions before the quoted regular session.
@@ -538,7 +565,8 @@ The function uses three months of daily Chart data to select the required prior 
 It caches parsed chart facts for up to 60 seconds and shares them across fields and trigger values.
 Optional bid/ask results use a separate cache of up to 60 seconds.
 The function recalculates the target from the accepted snapshot after a trigger change.
-Increase the refresh number to request another snapshot.
+In the sample, choose **Stock analysis → Refresh selected ticker** to request another snapshot.
+On your own tab, re-enter the formula to recalculate it.
 
 ## CFFIELD
 
@@ -549,10 +577,10 @@ CFFIELD(provider, ticker, field="all", refresh="")
 Examples:
 
 ```excel
-=CFFIELD("FINVIZ",$B$1,"rsi14",$B$2)
-=CFFIELD("ZACKS",$B$1,"target_price",$B$2)
-=CFFIELD("GURUFOCUS",$B$1,"forward_dividend_yield",$B$2)
-=CFFIELD("FINVIZ",$B$1,"all",$B$2)
+=CFFIELD("FINVIZ",$B$1,"rsi14")
+=CFFIELD("ZACKS",$B$1,"target_price")
+=CFFIELD("GURUFOCUS",$B$1,"forward_dividend_yield")
+=CFFIELD("FINVIZ",$B$1,"all")
 ```
 
 Provider names are `FINVIZ`, `ZACKS` and `GURUFOCUS`.
@@ -563,7 +591,7 @@ Provider and field names are case-insensitive.
 
 The three providers expose 35 selected fields. Thirty-four fields also accept a numeric ID.
 GuruFocus trailing yield accepts its field name only.
-For example, `=CFFIELD("FINVIZ",$B$1,4054,$B$2)` is an optional shortcut for the `rsi14` example above.
+For example, `=CFFIELD("FINVIZ",$B$1,4054)` is an optional shortcut for the `rsi14` example above.
 These public routes do not use saved website credentials.
 A blocked page, changed page or unavailable field remains unavailable.
 
@@ -626,11 +654,11 @@ CFDATASTATUS(ticker, dataset="quote", argument="", refresh="")
 Examples:
 
 ```excel
-=CFDATASTATUS($B$1,"quote","",$B$2)
-=CFDATASTATUS($B$1,"fundamentals","",$B$2)
-=CFDATASTATUS($B$1,"options",D2,$B$2)
-=CFDATASTATUS("DGS10","fred",252,$B$2)
-=CFDATASTATUS($B$1,"provider","FINVIZ",$B$2)
+=CFDATASTATUS($B$1,"quote","")
+=CFDATASTATUS($B$1,"fundamentals","")
+=CFDATASTATUS($B$1,"options",D2)
+=CFDATASTATUS("DGS10","fred",252)
+=CFDATASTATUS($B$1,"provider","FINVIZ")
 ```
 
 | Dataset | Meaning of `ticker` | Meaning of `argument` |
@@ -648,7 +676,7 @@ The result has a header and one status row:
 Status, Retrieved at, Quote time, Cached, Source
 ```
 
-Use the same arguments and refresh number as the data formula.
+Use the same ticker, dataset and request arguments as the data formula.
 Different expiration dates or FRED observation counts identify different requests.
 `Cached=TRUE` means Apps Script reused a public response.
 It does not establish that the source quote is current.
@@ -675,6 +703,13 @@ Successful public responses use these cache periods:
 | FRED recent observations and exact-date values | 1 hour |
 | Finviz, Zacks and GuruFocus fields | 5 minutes |
 
+Each field formula runs in a separate Apps Script execution.
+Quote and fundamental calls share cached Chart and quote-page responses.
+For an uncached response, a call can wait up to 10 seconds while another call requests public data.
+If that wait ends without a result, the cell reports that another request is still loading public data.
+Wait for the other formulas to finish, then request another refresh.
+Google can remove cache entries, so this reuse does not guarantee exactly one provider request.
+
 Failed requests do not enter this cache.
 Google can remove a cache entry before its expiry.
 The cache contains public results, without API keys or anonymous session credentials.
@@ -687,7 +722,7 @@ CFWATCHROW(ticker, refresh="")
 ```
 
 ```excel
-=CFWATCHROW($B$1,$B$2)
+=CFWATCHROW($B$1)
 ```
 
 The function returns a two-column `Field`, `Value` table for one watchlist stock.
@@ -839,6 +874,16 @@ The calculations exclude fees, taxes, dividends, financing, early exercise and a
 The **Strategies** tab shows editable assumptions, source bid/ask values and a payoff chart.
 A refresh resets those assumptions from the selected ticker and expiration.
 
+## Advanced: explicit refresh argument
+
+The request-function signatures retain an optional `refresh` argument for existing formulas and custom integrations.
+Normal sample formulas omit this argument.
+An explicit value accepts a whole number from `0` through `2147483647`, or an empty value.
+A changed explicit value selects a different cache entry.
+The provider can still return an older quote.
+This argument does not schedule repeated requests.
+Volatile functions such as `NOW()`, `RAND()` and `RANDBETWEEN()` are not supported refresh arguments.
+
 ## Original CACHEFINANCE and CACHEFINANCES
 
 ```text
@@ -860,7 +905,7 @@ These original functions support `price`, `name` and `yieldpct`.
 It reads the first column and returns a vertical result without a header.
 The functions use supplied Google results, stored values and configured provider lookups.
 They can return an old stored value after a source stops working.
-Their default-value arguments contain source values, not the refresh number used by the research functions.
+Their default-value arguments contain source values.
 
 The original missing-value behavior differs from the new research functions.
 Original lookups can return zero or an empty value when no usable result exists.
