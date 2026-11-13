@@ -8,7 +8,6 @@ Example:
 =TICKERSHEETS_QUOTE("AAPL","price")
 ```
 
-That cell contains the formula and shows the returned price.
 Other functions return fundamentals, earnings, daily history, option chains, RSI2 targets and FRED observations.
 Everything runs in the spreadsheet's attached Apps Script. There is no hosted server.
 TickerSheets is an independently maintained project with its own function API and provider requests.
