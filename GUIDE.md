@@ -22,20 +22,26 @@ All three tabs use the ticker in **Start here!B4**:
 |---|---|
 | **Start here** | Change the ticker and inspect simple formulas beside their results |
 | **Stock analysis** | Review quotes, company financials, earnings, price history and technical indicators |
-| **Options analysis** | Review expiration dates and option quotes, then change the model and strategy assumptions |
+| **Options analysis** | Change strategy inputs and inspect the results and payoff chart, then review the option model and quotes |
 
 Click a result to read its formula in the formula bar.
 **Start here!C7:C15** also shows the formulas as text.
 
-On **Options analysis**, leave **B8** blank for the nearest available expiration or select a published date.
-**B10** shows the expiration returned by the provider.
-The displayed chain contains up to 40 calls and 40 puts, with strikes within 20% of regular-session price.
+**Options analysis** starts with the strategy calculator and payoff chart.
+The option model follows, with the option chain below it.
+Yellow cells contain editable assumptions.
 
-Yellow cells contain editable assumptions for the option model and strategy calculator.
+The starting premiums, volatility and days to expiry are **example assumptions**.
+Selecting an expiration does not fill these inputs from a quoted contract.
+Model Greeks and strategy results use these assumptions.
 These assumptions remain when you change the ticker.
 Review the expiration, strikes, premiums, volatility and days-to-expiry inputs for the new stock.
+
+Leave **B8** blank for the nearest available expiration or select a published date.
+**B10** shows the expiration returned by the provider.
 The model's days-to-expiry input is separate from **B8**.
-Model Greeks and strategy results come from these assumptions. Bid, ask and last prices come from the provider.
+The displayed chain contains up to 40 calls and 40 puts, with strikes within 20% of regular-session price.
+Bid, ask and last prices come from the provider.
 
 ## Add TickerSheets to an existing spreadsheet
 

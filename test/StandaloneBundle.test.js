@@ -129,23 +129,23 @@ describe("optional demo generator with the core installation", () => {
     it("keeps user inputs when optional generation is followed by the core refresh command", () => {
         const run = runtime({ includeDemo: true }); run.bindings.demoBuild();
         const options = run.book.getSheetByName("Options analysis");
-        options.getRange("B8").setValue("2027-01-15"); options.getRange("B101").setValue(.52);
+        options.getRange("B8").setValue("2027-01-15"); options.getRange("B71").setValue(.52);
         run.bindings.demoBuild();
         expect(run.bindings.TickerSheetsRefreshData().recalculated).toBeGreaterThan(30);
-        expect(options.getRange("B8").getValue()).toBe("2027-01-15"); expect(options.getRange("B101").getValue()).toBe(.52);
+        expect(options.getRange("B8").getValue()).toBe("2027-01-15"); expect(options.getRange("B71").getValue()).toBe(.52);
         expect(run.book.getSheetByName("Stock analysis").getCharts()).toHaveLength(1);
         expect(options.getCharts()).toHaveLength(1); expect(run.fetch).not.toHaveBeenCalled();
     });
 
     it("refreshes an existing example after the optional generator is removed", () => {
         const generated = runtime({ includeDemo: true }); generated.bindings.demoBuild();
-        const options = generated.book.getSheetByName("Options analysis"); options.getRange("B101").setValue(.52);
+        const options = generated.book.getSheetByName("Options analysis"); options.getRange("B71").setValue(.52);
         const before = generated.book.getSheets().map(sheet => [sheet.getName(), [...sheet.formulas]]);
         const coreOnly = runtime({ existingBook: generated.book });
         expect(coreOnly.bindings.demoBuild).toBeUndefined(); expect(coreOnly.bindings.demoInspect).toBeUndefined();
         expect(coreOnly.bindings.TickerSheetsRefreshData().recalculated).toBeGreaterThan(30);
         expect(coreOnly.book.getSheets().map(sheet => [sheet.getName(), [...sheet.formulas]])).toEqual(before);
-        expect(options.getRange("B101").getValue()).toBe(.52);
+        expect(options.getRange("B71").getValue()).toBe(.52);
         expect(coreOnly.book.getSheetByName("Stock analysis").getCharts()).toHaveLength(1); expect(options.getCharts()).toHaveLength(1);
         expect(coreOnly.fetch).not.toHaveBeenCalled(); expect(generated.fetch).not.toHaveBeenCalled();
     });
