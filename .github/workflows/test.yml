@@ -21,8 +21,6 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Verify bundle is up to date
         run: npm run build:check
-      - name: Verify provider test bundle is up to date
-        run: npm run build:provider-tests:check
       - name: Run unit tests with coverage
         run: npm run test:coverage
       - uses: actions/upload-artifact@v4

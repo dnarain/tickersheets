@@ -11,12 +11,12 @@ The examples use English function names and comma separators.
 2. Enter this formula in `B1`:
 
 ```excel
-=CFQUOTE(A1,"price")
+=TICKERSHEETS_QUOTE(A1,"price")
 ```
 
 Cell `B1` contains the formula and shows the price.
 Changing `A1` recalculates formulas that use that ticker.
-Choose **Data settings → Refresh formulas** when you want to request new results.
+Choose **TickerSheets → Refresh data** when you want to request new results.
 The functions can reuse cached data and do not stream continuously.
 
 ## Add individual fields
@@ -26,16 +26,16 @@ Enter the labels in column A and formulas in column B at the listed rows:
 
 | Cell | Label | Formula |
 |---|---|---|
-| B3 | Regular-session price | `=CFQUOTE($A$1,"regular_price")` |
-| B4 | After-hours price | `=CFQUOTE($A$1,"post_market_price")` |
-| B5 | Selected session | `=CFQUOTE($A$1,"price_session")` |
-| B6 | Quote time | `=CFQUOTE($A$1,"quote_time")` |
-| B7 | Currency | `=CFQUOTE($A$1,"currency")` |
-| B8 | Trailing P/E | `=CFFUNDAMENTALS($A$1,"trailing_pe")` |
-| B9 | Trailing EPS | `=CFFUNDAMENTALS($A$1,"eps_ttm")` |
-| B10 | Dividend yield | `=CFFUNDAMENTALS($A$1,"dividend_yield")` |
-| B11 | Market cap | `=CFFUNDAMENTALS($A$1,"market_cap")` |
-| B12 | Earnings date | `=CFFUNDAMENTALS($A$1,"earnings_date")` |
+| B3 | Regular-session price | `=TICKERSHEETS_QUOTE($A$1,"regular_price")` |
+| B4 | After-hours price | `=TICKERSHEETS_QUOTE($A$1,"post_market_price")` |
+| B5 | Selected session | `=TICKERSHEETS_QUOTE($A$1,"price_session")` |
+| B6 | Quote time | `=TICKERSHEETS_QUOTE($A$1,"quote_time")` |
+| B7 | Currency | `=TICKERSHEETS_QUOTE($A$1,"currency")` |
+| B8 | Trailing P/E | `=TICKERSHEETS_FUNDAMENTALS($A$1,"trailing_pe")` |
+| B9 | Trailing EPS | `=TICKERSHEETS_FUNDAMENTALS($A$1,"eps_ttm")` |
+| B10 | Dividend yield | `=TICKERSHEETS_FUNDAMENTALS($A$1,"dividend_yield")` |
+| B11 | Market cap | `=TICKERSHEETS_FUNDAMENTALS($A$1,"market_cap")` |
+| B12 | Earnings date | `=TICKERSHEETS_FUNDAMENTALS($A$1,"earnings_date")` |
 
 Format **B10** as a percentage.
 P/E is a ratio. EPS uses currency per share.
@@ -53,11 +53,11 @@ Only the first cell contains the formula.
 
 | Data | Formula | Output width |
 |---|---|---|
-| Daily history | `=CFHISTORY($A$1,252)` | 7 columns |
-| Published option dates | `=CFEXPIRATIONS($A$1)` | 1 column |
-| Nearest-expiration option chain | `=CFOPTIONS($A$1)` | 12 columns |
-| Reported EPS | `=CFEARNINGS($A$1,"earnings")` | 10 columns |
-| Provider/session comparison | `=CFQUOTECOMPARE($A$1)` | 10 columns |
+| Daily history | `=TICKERSHEETS_HISTORY($A$1,252)` | 7 columns |
+| Published option dates | `=TICKERSHEETS_EXPIRATIONS($A$1)` | 1 column |
+| Nearest-expiration option chain | `=TICKERSHEETS_OPTIONS($A$1)` | 12 columns |
+| Reported EPS | `=TICKERSHEETS_EARNINGS($A$1,"earnings")` | 10 columns |
+| Provider/session comparison | `=TICKERSHEETS_QUOTE_COMPARE($A$1)` | 10 columns |
 
 Keep the full output area empty to prevent overlap errors.
 History includes a header and runs from oldest to newest.
@@ -65,7 +65,7 @@ The history fields are Date, Open, High, Low, Close, Adjusted close and Volume.
 An unfinished daily bar can lack a closing price.
 
 For another option expiration, put a published date in a separate input cell, such as `E1`.
-Use `=CFOPTIONS($A$1,$E$1)` for that date.
+Use `=TICKERSHEETS_OPTIONS($A$1,$E$1)` for that date.
 Choose an expiration published for the current ticker.
 Some stocks and funds have no supported chain.
 The IV column uses fractions: `0.50` means `50%`.
@@ -78,12 +78,12 @@ Financial comparisons also require the same accounting basis, frequency and curr
 These examples return individual values:
 
 ```excel
-=CFRSITARGETS($A$1,20,80,"rsi2")
-=CFRSITARGETS($A$1,20,80,"buy_target")
-=CFRSITARGETS($A$1,20,80,"sell_target")
-=CFFIELD("FINVIZ",$A$1,"rsi14")
-=CFFIELD("ZACKS",$A$1,"target_price")
-=CFFIELD("GURUFOCUS",$A$1,"forward_dividend_yield")
+=TICKERSHEETS_RSI_TARGETS($A$1,20,80,"rsi2")
+=TICKERSHEETS_RSI_TARGETS($A$1,20,80,"buy_target")
+=TICKERSHEETS_RSI_TARGETS($A$1,20,80,"sell_target")
+=TICKERSHEETS_FIELD("FINVIZ",$A$1,"rsi14")
+=TICKERSHEETS_FIELD("ZACKS",$A$1,"target_price")
+=TICKERSHEETS_FIELD("GURUFOCUS",$A$1,"forward_dividend_yield")
 ```
 
 The RSI2 triggers are the low and high levels, here `20` and `80`.
@@ -94,7 +94,7 @@ The [function reference](FUNCTIONS.md) explains each field and its limits.
 
 ## Add FRED data
 
-1. Choose **Data settings → API keys…**.
+1. Choose **TickerSheets → API keys…**.
 2. Enter your own FRED key in **FRED**.
 3. Click **Save keys**.
 
@@ -104,13 +104,13 @@ Spreadsheet editors can access its attached script and keys, so keep this copy p
 Enter this formula in an empty five-column area for recent observations:
 
 ```excel
-=CFFRED("DGS10",60)
+=TICKERSHEETS_FRED("DGS10",60)
 ```
 
 For one observation on an exact date:
 
 ```excel
-=CFFREDVALUE("DGS10","2026-11-05")
+=TICKERSHEETS_FRED_VALUE("DGS10","2026-11-05")
 ```
 
 A missing date returns `N/A`; the function does not substitute an earlier business day.
@@ -125,8 +125,8 @@ Use a typed date or `DATE(...)` instead.
 These examples use fixed assumptions and do not request provider data:
 
 ```excel
-=CFOPTIONMODEL(100,100,30,0.25,0.04,0,"Call","price")
-=CFSTRATEGY("Covered call",100,0,0,110,3,1,100,"2027-01-15","maxProfit")
+=TICKERSHEETS_OPTION_MODEL(100,100,30,0.25,0.04,0,"Call","price")
+=TICKERSHEETS_STRATEGY("Covered call",100,0,0,110,3,1,100,"2027-01-15","maxProfit")
 ```
 
 The first calculates a theoretical European call premium per share.
@@ -135,15 +135,15 @@ The second calculates maximum covered-call profit for a whole position.
 It assumes a `100` stock cost, `110` strike, `3` premium and one contract of 100 shares.
 
 Replace those entered assumptions with references to your own input cells.
-See [option model arguments](FUNCTIONS.md#cfoptionmodel) and [strategy arguments](FUNCTIONS.md#cfstrategy) for units and limits.
+See [option model arguments](FUNCTIONS.md#tickersheets_option_model) and [strategy arguments](FUNCTIONS.md#tickersheets_strategy) for units and limits.
 
 ## Read the result before using it
 
 Check the session and timestamp before comparing prices.
 Check the published units before formatting a number.
 Keep unavailable values visible instead of converting them to zero.
-The optional `CFDATASTATUS` function returns status and source times for its requested dataset.
+The optional `TICKERSHEETS_DATA_STATUS` function returns status and source times for its requested dataset.
 A recent retrieval does not prove that the underlying quote is recent.
 
-The full [function reference](FUNCTIONS.md) includes watchlist summaries and the original `CACHEFINANCE` functions.
-Those functions remain available without extra demo tabs.
+The full [function reference](FUNCTIONS.md) includes all fifteen TickerSheets functions, including watchlist summaries and strategy calculations.
+You can use them in cells with your own layout.

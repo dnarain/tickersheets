@@ -1,5 +1,5 @@
 import { beforeEach } from "vitest";
-import { CacheService, PropertiesService, SpreadsheetApp, UrlFetchApp } from "../src/GasMocks.js";
+import { CacheService, PropertiesService, SpreadsheetApp, UrlFetchApp } from "./helpers/AppsScriptServices.js";
 
 globalThis.CacheService = CacheService;
 globalThis.PropertiesService = PropertiesService;
@@ -7,11 +7,6 @@ globalThis.UrlFetchApp = UrlFetchApp;
 globalThis.SpreadsheetApp = SpreadsheetApp;
 globalThis.Logger = {
     log(_message) {
-        return;
-    }
-};
-globalThis.CacheFinance = {
-    deleteFromShortCache(_key) {
         return;
     }
 };

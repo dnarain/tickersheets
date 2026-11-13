@@ -11,10 +11,6 @@ export default defineConfig({
             reporter: ["text", "text-summary", "html", "lcov"],
             reportsDirectory: "./coverage",
             include: ["src/**/*.js"],
-            exclude: [
-                "src/GasMocks.js",
-                "src/CacheFinanceTest.js"
-            ],
             thresholds: {
                 lines: 85,
                 functions: 85,
@@ -25,7 +21,7 @@ export default defineConfig({
     },
     plugins: [
         {
-            name: "cachefinance-gas-debug",
+            name: "tickersheets-gas-debug",
             transform(code, id) {
                 if (id.includes("/src/") && id.endsWith(".js")) {
                     return enableDebugExports(code);

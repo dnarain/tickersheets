@@ -1,10 +1,10 @@
 # TickerSheets functions
 
-This reference covers 17 worksheet functions: fifteen `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
+This reference covers fifteen `TICKERSHEETS_...` worksheet functions.
 All requests run in Google Apps Script. No hosted server is required.
 The [provider guide](PROVIDERS.md#providers) lists data sources, API key requirements and dated test results.
 
-See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the single-tab tutorial.
+See [INSTALL.md](INSTALL.md) for installation and API key settings. See [SAMPLE.md](SAMPLE.md) for the tutorial and stock-analysis showcase.
 The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
 
 ## Start with one cell formula
@@ -13,7 +13,7 @@ After installation, enter `NVDA` in `A1` on your own tab.
 Enter this formula in another cell:
 
 ```excel
-=CFQUOTE(A1,"price")
+=TICKERSHEETS_QUOTE(A1,"price")
 ```
 
 That cell contains the formula and shows the returned price.
@@ -21,18 +21,18 @@ You can use the function in ordinary worksheet cells.
 Other individual fields use the same pattern:
 
 ```excel
-=CFQUOTE(A1,"post_market_price")
-=CFFUNDAMENTALS(A1,"trailing_pe")
-=CFFUNDAMENTALS(A1,"eps_ttm")
+=TICKERSHEETS_QUOTE(A1,"post_market_price")
+=TICKERSHEETS_FUNDAMENTALS(A1,"trailing_pe")
+=TICKERSHEETS_FUNDAMENTALS(A1,"eps_ttm")
 ```
 
-## Refresh formulas
+## Refresh data
 
-Choose **Data settings → Refresh formulas** to request new results from the installed functions.
+Choose **TickerSheets → Refresh data** to request new results from the installed functions.
 Google Sheets recalculates the field functions, table functions and formulas that read their results.
 
-The tutorial has one **Start here** tab.
-**Start here!B4** contains its ticker, and **B7** contains `=CFQUOTE($B$4,"price")`.
+The demo has a simple **Start here** tutorial and a **Stock analysis** showcase.
+**Start here!B4** contains its ticker, and **B7** contains `=TICKERSHEETS_QUOTE($B$4,"price")`.
 **C7:C15** shows the formulas beside their results.
 The functions can reuse parsed provider data from their cache.
 Google requires each custom function to return within **30 seconds**.
@@ -63,7 +63,6 @@ For the detailed function examples that follow:
 
 Do not put an API key in a formula or ticker cell.
 The functions can reuse recent cached results and do not stream continuously.
-The original `CACHEFINANCE` and `CACHEFINANCES` signatures use different arguments, described in their section.
 
 Research functions return these values for unavailable data:
 
@@ -71,15 +70,15 @@ Research functions return these values for unavailable data:
 | --- | --- |
 | `N/A` | The response lacks this value |
 | `N/A: ...` | The request, input or dataset is unavailable |
-| `n.a.` from `CFOPTIONMODEL` | The requested model result is unavailable |
+| `n.a.` from `TICKERSHEETS_OPTION_MODEL` | The requested model result is unavailable |
 
 These results are text. They are different from the native spreadsheet error `#N/A`.
 `IFNA()` does not replace these text values.
 Published numeric zeros remain zero.
 
 An individual field selector returns one value in the cell that contains the formula.
-For example, `CFQUOTE(...,"price")` returns one price and `CFQUOTE(...,"all")` returns a whole quote table.
-The `CF...` functions that return tables include a header row. Google Sheets expands each table into adjacent empty cells.
+For example, `TICKERSHEETS_QUOTE(...,"price")` returns one price and `TICKERSHEETS_QUOTE(...,"all")` returns a whole quote table.
+The TickerSheets functions that return tables include a header row. Google Sheets expands each table into adjacent empty cells.
 An occupied output cell causes a spreadsheet error.
 Only the top-left cell contains the data function. Neighboring cells contain its expanded results.
 Your own spreadsheet formulas can calculate from the returned tables.
@@ -88,23 +87,21 @@ Your own spreadsheet formulas can calculate from the returned tables.
 
 | Function | Result | Source |
 | --- | --- | --- |
-| `CFQUOTE` | Quote value or quote table | Yahoo Chart and quote page |
-| `CFQUOTECOMPARE` | Separate provider/session comparison rows | Yahoo, Google Finance website and Globe & Mail |
-| `CFHISTORY` | Daily OHLCV table | Yahoo Chart |
-| `CFFUNDAMENTALS` | Fundamental value or field table | Yahoo quote page |
-| `CFEARNINGS` | Reported EPS, financials, estimates, events or earnings calendar | Yahoo quote-page details and Chart events |
-| `CFOPTIONS` | One expiration's option chain | Yahoo options |
-| `CFEXPIRATIONS` | Published option expiration dates | Yahoo options |
-| `CFFRED` | Economic series observations | FRED API, with your key |
-| `CFFREDVALUE` | One exact-date economic observation | FRED API, with your key |
-| `CFRSITARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask |
-| `CFFIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus |
-| `CFDATASTATUS` | Request status and timestamps | The selected request |
-| `CFWATCHROW` | Compact labeled fields for one watchlist ticker | Yahoo quote, history and fundamentals |
-| `CFOPTIONMODEL` | Theoretical option price or Greek | European Black–Scholes calculation |
-| `CFSTRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions |
-| `CACHEFINANCE` | Original single-symbol lookup | Existing CacheFinance providers and cache |
-| `CACHEFINANCES` | Original range lookup | Existing CacheFinance providers and cache |
+| `TICKERSHEETS_QUOTE` | Quote value or quote table | Yahoo Chart and quote page |
+| `TICKERSHEETS_QUOTE_COMPARE` | Separate provider/session comparison rows | Yahoo, Finviz and GuruFocus |
+| `TICKERSHEETS_HISTORY` | Daily OHLCV table | Yahoo Chart |
+| `TICKERSHEETS_FUNDAMENTALS` | Fundamental value or field table | Yahoo quote page |
+| `TICKERSHEETS_EARNINGS` | Reported EPS, financials, estimates, events or earnings calendar | Yahoo quote-page details and Chart events |
+| `TICKERSHEETS_OPTIONS` | One expiration's option chain | Yahoo options |
+| `TICKERSHEETS_EXPIRATIONS` | Published option expiration dates | Yahoo options |
+| `TICKERSHEETS_FRED` | Economic series observations | FRED API, with your key |
+| `TICKERSHEETS_FRED_VALUE` | One exact-date economic observation | FRED API, with your key |
+| `TICKERSHEETS_RSI_TARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask |
+| `TICKERSHEETS_FIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus |
+| `TICKERSHEETS_DATA_STATUS` | Request status and timestamps | The selected request |
+| `TICKERSHEETS_WATCH_ROW` | Compact labeled fields for one watchlist ticker | Yahoo quote, history and fundamentals |
+| `TICKERSHEETS_OPTION_MODEL` | Theoretical option price or Greek | European Black–Scholes calculation |
+| `TICKERSHEETS_STRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions |
 
 ### Output size
 
@@ -112,41 +109,39 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 
 | Function or output | Rows × columns |
 |---|---|
-| Scalar field from `CFQUOTE`, `CFFUNDAMENTALS`, `CFFIELD` or `CFRSITARGETS` | `1 × 1` |
-| `CFQUOTE(...,"all",...)` | `30 × 2`, including the header |
-| `CFQUOTECOMPARE` | `7 × 10`: header and six comparison rows |
-| `CFHISTORY` | At most `(sessions + 1) × 7`, including the header |
-| `CFFUNDAMENTALS(...,"all",...)` | `(returned fields + 1) × 5` |
-| `CFEARNINGS` | Header and data rows; 10, 8, 10, 4, 4 or 4 columns, depending on section |
-| `CFEXPIRATIONS` | `(expiration count + 1) × 1`; two columns with `includeRefresh=TRUE` |
-| `CFOPTIONS` | `(contract count + 1) × 12` |
-| `CFFRED` | At most `(observations + 1) × 5`, including the header |
-| `CFFREDVALUE`, `CFOPTIONMODEL`, `CFSTRATEGY` | `1 × 1` |
-| `CFRSITARGETS(...,"all",...)` | `2 × 12`: headers, then values |
-| `CFRSITARGETS(...,"headers",...)` | `1 × 12`, without a provider request |
-| `CFFIELD("FINVIZ",...,"all",...)` | `33 × 5` |
-| `CFFIELD("ZACKS",...,"all",...)` | `2 × 5` |
-| `CFFIELD("GURUFOCUS",...,"all",...)` | `3 × 5` |
-| `CFDATASTATUS` | `2 × 5`: headers, then status |
-| `CFWATCHROW` | `31 × 2`: header and 30 labeled values |
-| `CACHEFINANCE` quote mode | `1 × 1` |
-| `CACHEFINANCES` with a ticker column | One output column, with no header |
+| Scalar field from `TICKERSHEETS_QUOTE`, `TICKERSHEETS_FUNDAMENTALS`, `TICKERSHEETS_FIELD` or `TICKERSHEETS_RSI_TARGETS` | `1 × 1` |
+| `TICKERSHEETS_QUOTE(...,"all",...)` | `30 × 2`, including the header |
+| `TICKERSHEETS_QUOTE_COMPARE` | `7 × 10`: header and six comparison rows |
+| `TICKERSHEETS_HISTORY` | At most `(sessions + 1) × 7`, including the header |
+| `TICKERSHEETS_FUNDAMENTALS(...,"all",...)` | `(returned fields + 1) × 5` |
+| `TICKERSHEETS_EARNINGS` | Header and data rows; 10, 8, 10, 4, 4 or 4 columns, depending on section |
+| `TICKERSHEETS_EXPIRATIONS` | `(expiration count + 1) × 1`; two columns with `includeRefresh=TRUE` |
+| `TICKERSHEETS_OPTIONS` | `(contract count + 1) × 12` |
+| `TICKERSHEETS_FRED` | At most `(observations + 1) × 5`, including the header |
+| `TICKERSHEETS_FRED_VALUE`, `TICKERSHEETS_OPTION_MODEL`, `TICKERSHEETS_STRATEGY` | `1 × 1` |
+| `TICKERSHEETS_RSI_TARGETS(...,"all",...)` | `2 × 12`: headers, then values |
+| `TICKERSHEETS_RSI_TARGETS(...,"headers",...)` | `1 × 12`, without a provider request |
+| `TICKERSHEETS_FIELD("FINVIZ",...,"all",...)` | `33 × 5` |
+| `TICKERSHEETS_FIELD("ZACKS",...,"all",...)` | `2 × 5` |
+| `TICKERSHEETS_FIELD("GURUFOCUS",...,"all",...)` | `3 × 5` |
+| `TICKERSHEETS_DATA_STATUS` | `2 × 5`: headers, then status |
+| `TICKERSHEETS_WATCH_ROW` | `31 × 2`: header and 30 labeled values |
 
 Leave the entire output area empty before entering a table formula.
 
-## CFQUOTE
+## TICKERSHEETS_QUOTE
 
 ```text
-CFQUOTE(ticker, field="price", refresh="")
+TICKERSHEETS_QUOTE(ticker, field="price", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFQUOTE($B$1,"price")
-=CFQUOTE("TSE:RY","currency")
-=CFQUOTE($B$1,"quote_time")
-=CFQUOTE($B$1,"all")
+=TICKERSHEETS_QUOTE($B$1,"price")
+=TICKERSHEETS_QUOTE("TSE:RY","currency")
+=TICKERSHEETS_QUOTE($B$1,"quote_time")
+=TICKERSHEETS_QUOTE($B$1,"all")
 ```
 
 Use a named field such as `"price"` for one value in one cell.
@@ -181,7 +176,7 @@ Supported fields:
 
 An absent `previous_close` remains `N/A`.
 The function does not substitute the opening price of the two-year history range.
-`CFFUNDAMENTALS` can supply market capitalization when quote metadata lacks it.
+`TICKERSHEETS_FUNDAMENTALS` can supply market capitalization when quote metadata lacks it.
 Change values use currency per share. Fields ending in `_change_fraction` use fractions, such as `0.025` for `2.5%`.
 Quote timestamps use ISO text in UTC when the source supplies a valid time.
 
@@ -192,10 +187,10 @@ An explicit pre-market or after-hours field can describe an earlier session. Alw
 The displayed quote does not change daily history, RSI inputs or closed option-market quotes.
 
 ```excel
-=CFQUOTE($B$1,"price_session")
-=CFQUOTE($B$1,"regular_price")
-=CFQUOTE($B$1,"post_market_price")
-=CFQUOTE($B$1,"post_market_time")
+=TICKERSHEETS_QUOTE($B$1,"price_session")
+=TICKERSHEETS_QUOTE($B$1,"regular_price")
+=TICKERSHEETS_QUOTE($B$1,"post_market_price")
+=TICKERSHEETS_QUOTE($B$1,"post_market_time")
 ```
 
 The current-session lookup can request both Yahoo Chart and the matching Yahoo quote page.
@@ -207,20 +202,20 @@ The explicit `regular_...` fields use Chart metadata. The `all` table can merge 
 
 The quote cache lasts up to 60 seconds.
 Google Sheets does not automatically recalculate a formula when its cache entry expires.
-Choose **Data settings → Refresh formulas** to request new results.
+Choose **TickerSheets → Refresh data** to request new results.
 On your own tab, change the ticker or re-enter the formula.
 
-## CFHISTORY
+## TICKERSHEETS_HISTORY
 
 ```text
-CFHISTORY(ticker, sessions=252, refresh="")
+TICKERSHEETS_HISTORY(ticker, sessions=252, refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFHISTORY($B$1,252)
-=CFHISTORY("TSE:RY",510)
+=TICKERSHEETS_HISTORY($B$1,252)
+=TICKERSHEETS_HISTORY("TSE:RY",510)
 ```
 
 `sessions` accepts an integer from `1` through `510`.
@@ -245,19 +240,19 @@ Use the Close column for your own closing-price calculations and indicators.
 Use Adjusted close for returns that follow Yahoo's adjustments.
 Keep the calculation date separate from a newer current quote.
 
-## CFFUNDAMENTALS
+## TICKERSHEETS_FUNDAMENTALS
 
 ```text
-CFFUNDAMENTALS(ticker, field="all", refresh="")
+TICKERSHEETS_FUNDAMENTALS(ticker, field="all", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFFUNDAMENTALS($B$1,"market_cap")
-=CFFUNDAMENTALS($B$1,"trailing_pe")
-=CFFUNDAMENTALS($B$1,"dividend_yield")
-=CFFUNDAMENTALS($B$1,"all")
+=TICKERSHEETS_FUNDAMENTALS($B$1,"market_cap")
+=TICKERSHEETS_FUNDAMENTALS($B$1,"trailing_pe")
+=TICKERSHEETS_FUNDAMENTALS($B$1,"dividend_yield")
+=TICKERSHEETS_FUNDAMENTALS($B$1,"all")
 ```
 
 `all` returns `Field`, `Value`, `Unit`, `Currency` and `Source`.
@@ -290,25 +285,25 @@ Currency values identify their currency when the source supplies it.
 Financial reporting currency can differ from quote currency.
 
 The tutorial's **Start here!B12** and **B13** use individual P/E and EPS formulas.
-For field units and currencies in your own spreadsheet, use `CFFUNDAMENTALS(...,"all",...)`.
+For field units and currencies in your own spreadsheet, use `TICKERSHEETS_FUNDAMENTALS(...,"all",...)`.
 An individual field call returns only its value.
 
-`CFEARNINGS` supplies the separate earnings, financial statement, estimate and event tables.
-`CFFUNDAMENTALS` returns the scalar fields listed here.
+`TICKERSHEETS_EARNINGS` supplies the separate earnings, financial statement, estimate and event tables.
+`TICKERSHEETS_FUNDAMENTALS` returns the scalar fields listed here.
 
-## CFEARNINGS
+## TICKERSHEETS_EARNINGS
 
 ```text
-CFEARNINGS(ticker, section="earnings", refresh="")
+TICKERSHEETS_EARNINGS(ticker, section="earnings", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFEARNINGS($B$1,"earnings")
-=CFEARNINGS($B$1,"financials")
-=CFEARNINGS($B$1,"estimates")
-=CFEARNINGS($B$1,"calendar")
+=TICKERSHEETS_EARNINGS($B$1,"earnings")
+=TICKERSHEETS_EARNINGS($B$1,"financials")
+=TICKERSHEETS_EARNINGS($B$1,"estimates")
+=TICKERSHEETS_EARNINGS($B$1,"calendar")
 ```
 
 The function returns one table for the selected section:
@@ -336,14 +331,14 @@ Dividends and splits share the Chart event request.
 In your own comparisons, keep GAAP and adjusted results separate.
 Match the financial period, frequency and currency before calculating growth.
 
-## CFQUOTECOMPARE
+## TICKERSHEETS_QUOTE_COMPARE
 
 ```text
-CFQUOTECOMPARE(ticker, refresh="")
+TICKERSHEETS_QUOTE_COMPARE(ticker, refresh="")
 ```
 
 ```excel
-=CFQUOTECOMPARE($B$1)
+=TICKERSHEETS_QUOTE_COMPARE($B$1)
 ```
 
 The table contains these ten columns:
@@ -353,23 +348,27 @@ Provider, Price, Yield, Currency, Identity, Quote time,
 Retrieved at, Status, Source, Note
 ```
 
-The six rows cover Yahoo regular, Yahoo Finance, Yahoo pre-market, Yahoo after-hours, Google Finance website and Globe & Mail.
+The six rows cover Yahoo regular, Yahoo website regular, Yahoo pre-market, Yahoo after-hours, Finviz and GuruFocus.
+Finviz supplies a spot price and forward yield when available.
+GuruFocus supplies forward yield only. Its Price cell remains `N/A` and its note identifies the yield-only result.
+Missing forward yields remain unavailable. The function does not substitute a trailing yield.
+The Zacks analyst target is excluded because it is a target price.
 Each row retains its source, currency, quote time, retrieval time and status.
 The note identifies a yield basis or another provider limit when available.
 The table does not rank the providers or replace a missing provider value with another row's price.
 
-## CFEXPIRATIONS and CFOPTIONS
+## TICKERSHEETS_EXPIRATIONS and TICKERSHEETS_OPTIONS
 
 ```text
-CFEXPIRATIONS(ticker, refresh="", includeRefresh=FALSE)
-CFOPTIONS(ticker, expiration="", refresh="")
+TICKERSHEETS_EXPIRATIONS(ticker, refresh="", includeRefresh=FALSE)
+TICKERSHEETS_OPTIONS(ticker, expiration="", refresh="")
 ```
 
-`CFEXPIRATIONS` returns one column with the header `Expiration`.
+`TICKERSHEETS_EXPIRATIONS` returns one column with the header `Expiration`.
 With `includeRefresh=TRUE`, it adds a `Refresh number` column. Existing two-argument calls keep their one-column output.
 This optional column supports existing formulas that track an explicit refresh argument.
 Each date uses `YYYY-MM-DD` text.
-`CFOPTIONS` returns the chain for one published expiration.
+`TICKERSHEETS_OPTIONS` returns the chain for one published expiration.
 If `expiration` is empty, the function requests the provider's default expiration.
 
 For a formula that uses an available date:
@@ -377,13 +376,13 @@ For a formula that uses an available date:
 1. Enter this formula in cell `D1`:
 
    ```excel
-   =CFEXPIRATIONS($B$1)
+   =TICKERSHEETS_EXPIRATIONS($B$1)
    ```
 
 2. Enter this formula in cell `F1`:
 
    ```excel
-   =CFOPTIONS($B$1,D2)
+   =TICKERSHEETS_OPTIONS($B$1,D2)
    ```
 
 Cell `D2` contains the first published expiration when the request succeeds.
@@ -415,24 +414,24 @@ Provider restrictions can still prevent a request.
 The function returns the accepted contracts for the requested expiration.
 Provide enough empty rows and twelve empty columns for its returned table.
 
-## CFFRED
+## TICKERSHEETS_FRED
 
 ```text
-CFFRED(seriesId, observations=60, refresh="")
+TICKERSHEETS_FRED(seriesId, observations=60, refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFFRED("DGS10",252)
-=CFFRED("UNRATE",120)
-=CFFRED("CPIAUCSL",60)
+=TICKERSHEETS_FRED("DGS10",252)
+=TICKERSHEETS_FRED("UNRATE",120)
+=TICKERSHEETS_FRED("CPIAUCSL",60)
 ```
 
 `observations` accepts an integer from `1` through `1000`.
-The function supports FRED series IDs beyond the four default macro charts.
+The function accepts FRED series IDs such as Treasury yields, unemployment and consumer prices.
 It returns observations from oldest to newest.
-`CFFRED` and `CFFREDVALUE` accept series IDs with 1–50 letters, digits or underscores.
+`TICKERSHEETS_FRED` and `TICKERSHEETS_FRED_VALUE` accept series IDs with 1–50 letters, digits or underscores.
 The functions trim spaces and convert the ID to uppercase.
 
 Output columns are `Date`, `Value`, `Unit`, `Series` and `Source`.
@@ -441,7 +440,7 @@ Observation dates describe economic periods or sessions.
 They do not necessarily identify publication dates.
 
 The function reads your `FRED_API_KEY` from Script Properties.
-Choose **Data settings → API keys…**, enter the key in **FRED**, then click **Save keys**.
+Choose **TickerSheets → API keys…**, enter the key in **FRED**, then click **Save keys**.
 FRED requires each user to [request their own API key](https://fred.stlouisfed.org/docs/api/api_key.html).
 The key is never a formula argument.
 
@@ -456,18 +455,18 @@ The returned unit controls interpretation:
 Do not apply ordinary percentage formatting to a FRED percent level such as `4.25`.
 Google Sheets shows `425%` with that formatting.
 
-## CFFREDVALUE
+## TICKERSHEETS_FRED_VALUE
 
 ```text
-CFFREDVALUE(seriesId, date, refresh="")
+TICKERSHEETS_FRED_VALUE(seriesId, date, refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFFREDVALUE("DGS10","2026-11-05")
-=CFFREDVALUE("DGS10",DATE(2026,11,5))
-=CFFREDVALUE($E$1,$E$2)
+=TICKERSHEETS_FRED_VALUE("DGS10","2026-11-05")
+=TICKERSHEETS_FRED_VALUE("DGS10",DATE(2026,11,5))
+=TICKERSHEETS_FRED_VALUE($E$1,$E$2)
 ```
 
 `date` accepts strict `YYYY-MM-DD` text or a date-valued cell.
@@ -484,26 +483,26 @@ A missing `.` observation and an absent date produce distinct explanatory `N/A` 
 Valid zero and negative values remain numeric.
 An invalid calendar date, such as `2026-02-30`, returns an input error before a provider request.
 
-The function uses the same private `FRED_API_KEY` setting as `CFFRED`.
+The function uses the same private `FRED_API_KEY` setting as `TICKERSHEETS_FRED`.
 It caches accepted public values for up to one hour.
 Missing keys, provider failures and absent observations remain explanatory text results.
 This function returns one observation value. It does not return series titles, releases or other metadata selectors.
 
-## CFRSITARGETS
+## TICKERSHEETS_RSI_TARGETS
 
 ```text
-CFRSITARGETS(ticker, lowTrigger=20, highTrigger=80, field="all", refresh="")
+TICKERSHEETS_RSI_TARGETS(ticker, lowTrigger=20, highTrigger=80, field="all", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFRSITARGETS($B$1,20,80,"rsi2")
-=CFRSITARGETS($B$1,20,80,"buy_target")
-=CFRSITARGETS($B$1,20,80,"sell_target")
-=CFRSITARGETS($B$1,20,80,"all")
-=CFRSITARGETS($B$1,20,80,"previous_rsi2")
-=CFRSITARGETS($B$1,20,80,"headers")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"rsi2")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"buy_target")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"sell_target")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"all")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"previous_rsi2")
+=TICKERSHEETS_RSI_TARGETS($B$1,20,80,"headers")
 ```
 
 The function seeds Wilder's two-period averages from 21 completed sessions before the quoted regular session.
@@ -552,22 +551,22 @@ The function uses three months of daily Chart data to select the required prior 
 It caches parsed chart facts for up to 60 seconds and shares them across fields and trigger values.
 Optional bid/ask results use a separate cache of up to 60 seconds.
 The function recalculates the target from the accepted snapshot after a trigger change.
-Choose **Data settings → Refresh formulas** to request another snapshot.
+Choose **TickerSheets → Refresh data** to request another snapshot.
 On your own tab, re-enter the formula to recalculate it.
 
-## CFFIELD
+## TICKERSHEETS_FIELD
 
 ```text
-CFFIELD(provider, ticker, field="all", refresh="")
+TICKERSHEETS_FIELD(provider, ticker, field="all", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFFIELD("FINVIZ",$B$1,"rsi14")
-=CFFIELD("ZACKS",$B$1,"target_price")
-=CFFIELD("GURUFOCUS",$B$1,"forward_dividend_yield")
-=CFFIELD("FINVIZ",$B$1,"all")
+=TICKERSHEETS_FIELD("FINVIZ",$B$1,"rsi14")
+=TICKERSHEETS_FIELD("ZACKS",$B$1,"target_price")
+=TICKERSHEETS_FIELD("GURUFOCUS",$B$1,"forward_dividend_yield")
+=TICKERSHEETS_FIELD("FINVIZ",$B$1,"all")
 ```
 
 Provider names are `FINVIZ`, `ZACKS` and `GURUFOCUS`.
@@ -578,7 +577,7 @@ Provider and field names are case-insensitive.
 
 The three providers expose 35 selected fields. Thirty-four fields also accept a numeric ID.
 GuruFocus trailing yield accepts its field name only.
-For example, `=CFFIELD("FINVIZ",$B$1,4054)` is an optional shortcut for the `rsi14` example above.
+For example, `=TICKERSHEETS_FIELD("FINVIZ",$B$1,4054)` is an optional shortcut for the `rsi14` example above.
 These public routes do not use saved website credentials.
 A blocked page, changed page or unavailable field remains unavailable.
 
@@ -632,20 +631,20 @@ A blocked page, changed page or unavailable field remains unavailable.
 | `forward_dividend_yield` | 2727 | Fraction |
 | `trailing_dividend_yield` | Name only | Fraction |
 
-## CFDATASTATUS
+## TICKERSHEETS_DATA_STATUS
 
 ```text
-CFDATASTATUS(ticker, dataset="quote", argument="", refresh="")
+TICKERSHEETS_DATA_STATUS(ticker, dataset="quote", argument="", refresh="")
 ```
 
 Examples:
 
 ```excel
-=CFDATASTATUS($B$1,"quote","")
-=CFDATASTATUS($B$1,"fundamentals","")
-=CFDATASTATUS($B$1,"options",D2)
-=CFDATASTATUS("DGS10","fred",252)
-=CFDATASTATUS($B$1,"provider","FINVIZ")
+=TICKERSHEETS_DATA_STATUS($B$1,"quote","")
+=TICKERSHEETS_DATA_STATUS($B$1,"fundamentals","")
+=TICKERSHEETS_DATA_STATUS($B$1,"options",D2)
+=TICKERSHEETS_DATA_STATUS("DGS10","fred",252)
+=TICKERSHEETS_DATA_STATUS($B$1,"provider","FINVIZ")
 ```
 
 | Dataset | Meaning of `ticker` | Meaning of `argument` |
@@ -674,7 +673,7 @@ Cached results retain their original retrieval time.
 The source can publish delayed or unchanged data.
 A provider can return some fields and leave others unavailable.
 This function has no exact-date FRED or RSI2 dataset selector.
-Its `fred` selector reports the recent-observation table from `CFFRED`, not a `CFFREDVALUE` request.
+Its `fred` selector reports the recent-observation table from `TICKERSHEETS_FRED`, not a `TICKERSHEETS_FRED_VALUE` request.
 This function can request data when its cache is empty.
 
 Successful public responses use these cache periods:
@@ -699,16 +698,16 @@ Google can remove cache entries, so this reuse does not guarantee exactly one pr
 Failed requests do not enter this cache.
 Google can remove a cache entry before its expiry.
 The cache contains public results, without API keys or anonymous session credentials.
-These periods apply to the research functions. The original CacheFinance functions use their older cache behavior.
+These periods apply to the TickerSheets functions.
 
-## CFWATCHROW
+## TICKERSHEETS_WATCH_ROW
 
 ```text
-CFWATCHROW(ticker, refresh="")
+TICKERSHEETS_WATCH_ROW(ticker, refresh="")
 ```
 
 ```excel
-=CFWATCHROW($B$1)
+=TICKERSHEETS_WATCH_ROW($B$1)
 ```
 
 The function returns a two-column `Field`, `Value` table for one watchlist stock.
@@ -729,21 +728,21 @@ Returns, volatility and drawdown use fractions. RSI14 uses an index from 0 throu
 SMA and MACD use the stock's quote currency per share.
 `indicator_as_of` identifies the latest accepted daily close, which can precede the current quote.
 
-You can use one `CFWATCHROW` call per ticker to build your own watchlist.
+You can use one `TICKERSHEETS_WATCH_ROW` call per ticker to build your own watchlist.
 Leave two columns and enough rows empty for each returned summary.
 
-## CFOPTIONMODEL
+## TICKERSHEETS_OPTION_MODEL
 
 ```text
-CFOPTIONMODEL(spot, strike, days, iv, rate, dividendYield, type, metric="price")
+TICKERSHEETS_OPTION_MODEL(spot, strike, days, iv, rate, dividendYield, type, metric="price")
 ```
 
 Examples:
 
 ```excel
-=CFOPTIONMODEL(100,100,30,0.25,0.04,0,"Call","price")
-=CFOPTIONMODEL(100,100,30,0.25,0.04,0,"Put","delta")
-=CFOPTIONMODEL(100,100,30,0.25,0.04,0,"Call","vega")
+=TICKERSHEETS_OPTION_MODEL(100,100,30,0.25,0.04,0,"Call","price")
+=TICKERSHEETS_OPTION_MODEL(100,100,30,0.25,0.04,0,"Put","delta")
+=TICKERSHEETS_OPTION_MODEL(100,100,30,0.25,0.04,0,"Call","vega")
 ```
 
 This function calculates a European Black–Scholes result from your assumptions.
@@ -776,10 +775,10 @@ The numeric arguments require numeric cells or numeric literals.
 The function returns `n.a.` for an invalid input or unavailable metric.
 At expiration, price equals intrinsic value and several Greeks are unavailable.
 
-## CFSTRATEGY
+## TICKERSHEETS_STRATEGY
 
 ```text
-CFSTRATEGY(strategy, spot, longStrike, longPremium, shortStrike, shortPremium,
+TICKERSHEETS_STRATEGY(strategy, spot, longStrike, longPremium, shortStrike, shortPremium,
            contracts=1, multiplier=100, expiration="", metric="maxProfit", stockAtExpiry)
 ```
 
@@ -817,10 +816,10 @@ Only a covered call requires `spot` as a cost basis.
 Examples use explicit assumptions and one contract of 100 shares:
 
 ```excel
-=CFSTRATEGY("Covered call",100,0,0,110,3,1,100,"2027-01-15","maxProfit")
-=CFSTRATEGY("Cash-secured put",100,0,0,100,3,1,100,"2027-01-15","collateral")
-=CFSTRATEGY("Call vertical",100,100,8,110,3,1,100,"2027-01-15","maxLoss")
-=CFSTRATEGY("Call vertical",100,100,8,110,3,1,100,"2027-01-15","payoff",107)
+=TICKERSHEETS_STRATEGY("Covered call",100,0,0,110,3,1,100,"2027-01-15","maxProfit")
+=TICKERSHEETS_STRATEGY("Cash-secured put",100,0,0,100,3,1,100,"2027-01-15","collateral")
+=TICKERSHEETS_STRATEGY("Call vertical",100,100,8,110,3,1,100,"2027-01-15","maxLoss")
+=TICKERSHEETS_STRATEGY("Call vertical",100,100,8,110,3,1,100,"2027-01-15","payoff",107)
 ```
 
 These results are `1300`, `10000`, `500` and `200`, respectively.
@@ -867,45 +866,11 @@ The provider can still return an older quote.
 This argument does not schedule repeated requests.
 Volatile functions such as `NOW()`, `RAND()` and `RANDBETWEEN()` are not supported refresh arguments.
 
-## Original CACHEFINANCE and CACHEFINANCES
-
-```text
-CACHEFINANCE(symbol, attribute="price", googleFinanceValue="", cmdOption="",
-             interval="", googleHistoryValues=[])
-CACHEFINANCES(symbols, attribute="price", defaultValues=[], webSiteLookupCacheSeconds=-1)
-```
-
-Examples:
-
-```excel
-=CACHEFINANCE("NASDAQ:NVDA","price",IFERROR(GOOGLEFINANCE("NASDAQ:NVDA","price"),""))
-=CACHEFINANCES(A2:A5,"price",B2:B5)
-```
-
-These original functions support `price`, `name` and `yieldpct`.
-`CACHEFINANCE` handles one symbol.
-`CACHEFINANCES` handles a vertical ticker range and matching default values.
-It reads the first column and returns a vertical result without a header.
-The functions use supplied Google results, stored values and configured provider lookups.
-They can return an old stored value after a source stops working.
-Their default-value arguments contain source values.
-
-The original missing-value behavior differs from the new research functions.
-Original lookups can return zero or an empty value when no usable result exists.
-A cached price can remain unchanged for a long time.
-An exchange change can leave the stored quote stale.
-
-`yieldpct` uses a fraction, such as `0.025` for `2.5%`.
-The historical `CACHEFINANCE` overload stores supplied `GOOGLEFINANCE` history.
-`CFHISTORY` retrieves Yahoo history directly.
-The historical overload can return the supplied history table with its header.
-
-The [upstream reference](UPSTREAM.md) explains the existing cache commands and historical overload.
-
 ## Keys and sharing
 
-The settings menu stores API keys in Script Properties, outside worksheet cells.
-Blank sidebar fields preserve saved keys.
+The **TickerSheets → API keys…** form contains only FRED.
+The form stores the key as `FRED_API_KEY` in Script Properties, outside worksheet cells.
+Leaving the field blank preserves the saved key.
 The sidebar deletes a key after you select **Remove saved key** and click **Save keys**.
 The sidebar shows saved-status flags without returning saved key values.
 

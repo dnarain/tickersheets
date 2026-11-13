@@ -2,10 +2,10 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-    isCacheFinanceBundleCurrent,
+    isTickerSheetsBundleCurrent,
     paths,
     SOURCE_FILES,
-    writeCacheFinanceBundle
+    writeTickerSheetsBundle
 } from "./gas-source.mjs";
 
 const args = new Set(process.argv.slice(2));
@@ -25,7 +25,7 @@ function formatBytes(bytes) {
  */
 function main() {
     if (checkOnly) {
-        if (isCacheFinanceBundleCurrent()) {
+        if (isTickerSheetsBundleCurrent()) {
             // skipcq: JS-0002
             console.log(`dist/TickerSheets.js is up to date (${SOURCE_FILES.length} source files)`);
             return;
@@ -35,7 +35,7 @@ function main() {
         process.exit(1);
     }
 
-    const result = writeCacheFinanceBundle();
+    const result = writeTickerSheetsBundle();
 
     if (result.written) {
         // skipcq: JS-0002

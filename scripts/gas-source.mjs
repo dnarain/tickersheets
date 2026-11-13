@@ -8,44 +8,26 @@ export const DEBUG_BLOCK_END = "//  *** DEBUG END ***/";
 const DEBUG_BLOCK_PATTERN = /\/\*\s+\*\*\* DEBUG START \*\*\*[\s\S]*?\/\/\s+\*\*\* DEBUG END \*\*\*\//g;
 const NODE_TEST_BANNER = "Remove comments for testing in NODE";
 
+export const PUBLIC_FUNCTIONS = Object.freeze(["QUOTE", "HISTORY", "FUNDAMENTALS", "OPTIONS", "EXPIRATIONS", "FRED", "FIELD", "DATA_STATUS", "STRATEGY", "EARNINGS", "QUOTE_COMPARE", "RSI_TARGETS", "FRED_VALUE", "OPTION_MODEL", "WATCH_ROW"].map(name => "TICKERSHEETS_" + name));
+
 /** @type {readonly string[]} */
 export const SOURCE_FILES = Object.freeze([
-    "CacheFinance.js",
-    "ScriptSettings.js",
-    "CacheFinance3rdParty.js",
-    "CacheFinanceTest.js",
-    "CacheFinanceWebSites.js",
-    "CacheFinanceUtils.js",
-    "CacheFinanceSettings.js",
-    "CacheFinanceAnalysisData.js",
-    "CacheFinanceAnalysisDetails.js",
-    "CacheFinanceAnalysisFred.js",
-    "CacheFinanceAnalysisOptions.js",
-    "CacheFinanceAnalysisOptionModel.js",
-    "CacheFinanceSmfProviders.js",
-    "CacheFinanceResearchFunctions.js",
-    "CacheFinanceFormulaData.js",
-    "CacheFinanceRsiTargets.js",
-    "CacheFinanceFredValue.js",
-    "CacheFinanceSheetNames.js",
-    "CacheFinanceAnalysisSheets.js",
-    "CacheFinanceAnalysisCalculatorSheets.js",
-    "CacheFinanceAnalysisVisuals.js",
-    "CacheFinanceAnalysisStrategies.js",
-    "CacheFinanceAnalysisWatchlist.js",
-    "CacheFinanceFunctionExamples.js",
-    "CacheFinanceLookupChecks.js",
-    "CacheFinanceProviderImages.js",
-    "CacheFinanceFormulaWorkbook.js",
-    "CacheFinanceFormulaHistory.js",
-    "CacheFinanceFormulaResearch.js",
-    "CacheFinanceFormulaOptions.js",
-    "CacheFinanceFormulaWatchlist.js",
-    "CacheFinanceFormulaViews.js",
-    "CacheFinanceFormulaChecks.js",
-    "CacheFinanceTutorial.js",
-    "CacheFinanceAnalysis.js",
-    "CacheFinanceMenu.js"
+    "TickerSheetsSettings.js",
+    "TickerSheetsData.js",
+    "TickerSheetsDetails.js",
+    "TickerSheetsFred.js",
+    "TickerSheetsOptions.js",
+    "TickerSheetsOptionModel.js",
+    "TickerSheetsProviderFields.js",
+    "TickerSheetsFunctions.js",
+    "TickerSheetsTables.js",
+    "TickerSheetsRsiTargets.js",
+    "TickerSheetsExactFred.js",
+    "TickerSheetsStrategies.js",
+    "TickerSheetsWatchRow.js",
+    "TickerSheetsShowcase.js",
+    "TickerSheetsTutorial.js",
+    "TickerSheetsMenu.js"
 ]);
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -127,12 +109,10 @@ export function createBundleBanner(sourceHash) {
 export function validateBundleContent(content) {
     const errors = [];
 
-    if (!content.includes("function CACHEFINANCE")) {
-        errors.push("missing CACHEFINANCE custom function");
+    for (const name of PUBLIC_FUNCTIONS) {
+        if (!content.includes("function " + name + "(")) errors.push("missing " + name + " custom function");
     }
-    if (!content.includes("function CACHEFINANCES")) {
-        errors.push("missing CACHEFINANCES custom function");
-    }
+    if (/\b(?:CACHEFINANCES?|CFQUOTE|CFFUNDAMENTALS|CFHISTORY|CFOPTIONS|CFEXPIRATIONS|CFFRED|CFFIELD|CFDATASTATUS|CFSTRATEGY|CFEARNINGS|CFQUOTECOMPARE|CFRSITARGETS|CFFREDVALUE|CFOPTIONMODEL|CFWATCHROW)\s*\(/.test(content)) errors.push("contains a removed legacy function");
     if (content.includes("DEBUG START")) {
         errors.push("contains DEBUG block markers");
     }
@@ -174,7 +154,7 @@ export function readSourceSections() {
 /**
  * @returns {{ bundle: string, sourceHash: string, sectionCount: number }}
  */
-export function buildCacheFinanceBundle() {
+export function buildTickerSheetsBundle() {
     const sections = readSourceSections();
     const sourceHash = hashSections(sections);
     const bundle = `${createBundleBanner(sourceHash)}${sections.join("\n\n")}\n`;
@@ -191,8 +171,8 @@ export function buildCacheFinanceBundle() {
 /**
  * @returns {{ written: boolean, bundle: string, sourceHash: string, bytes: number }}
  */
-export function writeCacheFinanceBundle() {
-    const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
+export function writeTickerSheetsBundle() {
+    const { bundle, sourceHash, sectionCount } = buildTickerSheetsBundle();
     const bytes = Buffer.byteLength(bundle, "utf8");
     const previous = fs.existsSync(paths.dist) ? fs.readFileSync(paths.dist, "utf8") : null;
 
@@ -209,11 +189,11 @@ export function writeCacheFinanceBundle() {
 /**
  * @returns {boolean}
  */
-export function isCacheFinanceBundleCurrent() {
+export function isTickerSheetsBundleCurrent() {
     if (!fs.existsSync(paths.dist)) {
         return false;
     }
 
-    const { bundle } = buildCacheFinanceBundle();
+    const { bundle } = buildTickerSheetsBundle();
     return fs.readFileSync(paths.dist, "utf8") === bundle;
 }

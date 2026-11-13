@@ -1,0 +1,229 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import vm from "node:vm";
+import { TickerSheetsMenu, TickerSheetsShowApiKeys, TickerSheetsGetApiKeyStatus, TickerSheetsSaveApiKeys } from "../src/TickerSheetsSettings.js";
+
+const ids = ["FRED"], propertyNames = ["FRED_API_KEY"];
+const expectedStatus = (configured = false) => ({ ok: true, providers: [{ id: "FRED", label: "FRED", configured }] });
+let values, properties, lock, menu, ui, output, html;
+beforeEach(() => {
+    values = new Map();
+    properties = { getProperty: vi.fn(key => values.get(key) ?? null),
+        setProperties: vi.fn(data => Object.entries(data).forEach(([key, value]) => values.set(key, value))),
+        deleteProperty: vi.fn(key => values.delete(key)) };
+    lock = { tryLock: vi.fn(() => true), releaseLock: vi.fn() };
+    menu = { addItem: vi.fn(() => menu), addToUi: vi.fn() };
+    ui = { createMenu: vi.fn(() => menu), showSidebar: vi.fn(), alert: vi.fn(), prompt: vi.fn() };
+    output = { setTitle: vi.fn(() => output) };
+    vi.stubGlobal("PropertiesService", { getScriptProperties: vi.fn(() => properties) });
+    vi.stubGlobal("LockService", { getScriptLock: vi.fn(() => lock) });
+    vi.stubGlobal("SpreadsheetApp", { getUi: vi.fn(() => ui) });
+    vi.stubGlobal("HtmlService", { createHtmlOutput: vi.fn(value => { html = value; return output; }) });
+});
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+
+describe("FRED-only private settings", () => {
+    it("returns only a FRED presence flag and never reads other saved properties", () => {
+        values.set("FRED_API_KEY", "secret-fred-value"); values.set("FINNHUB_API_KEY", "unrelated-secret");
+        expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus(true));
+        expect(properties.getProperty.mock.calls).toEqual([["FRED_API_KEY"]]);
+        expect(JSON.stringify(TickerSheetsGetApiKeyStatus())).not.toContain("secret");
+    });
+    it("reports missing and empty FRED keys as not set", () => {
+        expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus());
+        values.set("FRED_API_KEY", ""); expect(TickerSheetsGetApiKeyStatus()).toEqual(expectedStatus());
+    });
+    it("returns a fixed status error", () => {
+        properties.getProperty.mockImplementation(() => { throw new Error("secret-exception"); });
+        expect(TickerSheetsGetApiKeyStatus()).toEqual({ ok: false, error: "Unable to load API key settings. Try again." });
+    });
+    it.each([{ updates: [] }, { updates: [{ provider: "FRED", action: "replace", value: "  " }] }])("preserves existing keys for blank updates (%#)", request => {
+        values.set("FRED_API_KEY", "saved"); values.set("UNRELATED", "keep");
+        expect(TickerSheetsSaveApiKeys(request)).toEqual(expectedStatus(true));
+        expect([...values]).toEqual([["FRED_API_KEY", "saved"], ["UNRELATED", "keep"]]);
+        expect(properties.setProperties).not.toHaveBeenCalled(); expect(properties.deleteProperty).not.toHaveBeenCalled();
+    });
+    it("trims a replacement and preserves unrelated properties", () => {
+        values.set("FINNHUB_API_KEY", "keep-finnhub"); values.set("UNRELATED", "keep");
+        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "replace", value: "  new-key  " }] })).toEqual(expectedStatus(true));
+        expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: "new-key" }, false);
+        expect(values.get("FINNHUB_API_KEY")).toBe("keep-finnhub"); expect(values.get("UNRELATED")).toBe("keep");
+        expect(lock.releaseLock).toHaveBeenCalledOnce();
+    });
+    it("removes only FRED after an explicit removal", () => {
+        values.set("FRED_API_KEY", "old"); values.set("FINNHUB_API_KEY", "keep");
+        expect(TickerSheetsSaveApiKeys({ updates: [{ provider: "FRED", action: "remove" }] })).toEqual(expectedStatus());
+        expect(values.has("FRED_API_KEY")).toBe(false); expect(values.get("FINNHUB_API_KEY")).toBe("keep");
+    });
+    it.each([
+        undefined, null, [], {}, { updates: null }, { updates: {} }, { updates: [], extra: true },
+        { updates: [null] }, { updates: [[]] }, { updates: ["secret"] },
+        { updates: [{ provider: "FINNHUB", action: "remove" }] },
+        { updates: [{ provider: "__proto__", action: "remove" }] },
+        { updates: [{ provider: "FRED", action: "unknown" }] },
+        { updates: [{ provider: "FRED", action: "remove", value: "ambiguous" }] },
+        { updates: [{ provider: "FRED", action: "replace" }] },
+        { updates: [{ provider: "FRED", action: "replace", value: null }] },
+        { updates: [{ provider: "FRED", action: "replace", value: 123 }] },
+        { updates: [{ provider: "FRED", action: "replace", value: "x", extra: true }] },
+        ...["x".repeat(2049), "secret\nvalue", "secret\u0000value", "secret\u007fvalue", "secret\u2028value", "secret value"].map(value => ({ updates: [{ provider: "FRED", action: "replace", value }] })),
+        { updates: [{ provider: "FRED", action: "remove" }, { provider: "FRED", action: "remove" }] }
+    ])("rejects malformed or unsupported updates before reading properties (%#)", request => {
+        expect(TickerSheetsSaveApiKeys(request)).toEqual({ ok: false, error: "Unable to save API keys. Check the entries and try again." });
+        expect(LockService.getScriptLock).not.toHaveBeenCalled(); expect(PropertiesService.getScriptProperties).not.toHaveBeenCalled();
+    });
+    it("does not release a lock it cannot acquire", () => {
+        lock.tryLock.mockReturnValue(false);
+        expect(TickerSheetsSaveApiKeys({ updates: [] }).ok).toBe(false);
+        expect(lock.releaseLock).not.toHaveBeenCalled(); expect(properties.setProperties).not.toHaveBeenCalled();
+    });
+    it.each(["getScriptLock", "tryLock", "setProperties", "deleteProperty", "getProperty"])("does not expose %s exceptions", method => {
+        const target = method === "getScriptLock" ? LockService : method === "tryLock" ? lock : properties;
+        target[method].mockImplementation(() => { throw new Error("secret-service-exception"); });
+        const updates = [{ provider: "FRED", action: method === "deleteProperty" ? "remove" : "replace", ...(method === "deleteProperty" ? {} : { value: "synthetic-key" }) }];
+        expect(TickerSheetsSaveApiKeys({ updates })).toEqual({ ok: false, error: "Unable to save API keys. Check the entries and try again." });
+        if (!["getScriptLock", "tryLock"].includes(method)) expect(lock.releaseLock).toHaveBeenCalledOnce();
+    });
+    it("does not disclose a lock release exception", () => {
+        lock.releaseLock.mockImplementation(() => { throw new Error("secret-release-exception"); });
+        expect(TickerSheetsSaveApiKeys({ updates: [] })).toEqual(expectedStatus());
+    });
+});
+
+function sidebar() {
+    TickerSheetsShowApiKeys();
+    const nodes = new Map();
+    class Node {
+        constructor(tag) { this.tagName = tag; this.children = []; this.listeners = {}; this.value = ""; this.checked = false; this.disabled = false; this.textContent = ""; }
+        set id(value) { this._id = value; nodes.set(value, this); }
+        get id() { return this._id; }
+        appendChild(node) { this.children.push(node); return node; }
+        addEventListener(event, handler) { this.listeners[event] = handler; }
+        trigger(event) { this.listeners[event]({ preventDefault() {} }); }
+    }
+    ["providers", "settings", "message", "save", "reload"].forEach(id => { const node = new Node("div"); node.id = id; });
+    const calls = [];
+    const runner = {
+        withSuccessHandler(callback) { this.success = callback; return this; },
+        withFailureHandler(callback) { this.failure = callback; return this; },
+        TickerSheetsGetApiKeyStatus() { calls.push({ type: "load", success: this.success, failure: this.failure }); },
+        TickerSheetsSaveApiKeys(request) { calls.push({ type: "save", request, success: this.success, failure: this.failure }); }
+    };
+    const document = {
+        getElementById: id => nodes.get(id),
+        createElement: tag => new Node(tag),
+        createTextNode: text => ({ textContent: text })
+    };
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+    vm.runInNewContext(script, { document, google: { script: { run: runner } } });
+    return { nodes, calls, get: id => nodes.get(id) };
+}
+
+describe("API key menu and sidebar", () => {
+    it("adds API keys and Refresh data to the TickerSheets menu", () => {
+        TickerSheetsMenu();
+        expect(ui.createMenu).toHaveBeenCalledWith("TickerSheets");
+        expect(menu.addItem.mock.calls).toEqual([["API keys…", "TickerSheetsShowApiKeys"], ["Refresh data", "TickerSheetsRefreshData"]]);
+        expect(menu.addToUi).toHaveBeenCalledOnce();
+    });
+
+    it("opens static HTML without reading saved properties", () => {
+        values.set("FRED_API_KEY", "never-in-html</script>");
+        TickerSheetsShowApiKeys();
+        expect(ui.showSidebar).toHaveBeenCalledWith(output);
+        expect(output.setTitle).toHaveBeenCalledWith("TickerSheets: API keys");
+        expect(properties.getProperty).not.toHaveBeenCalled();
+        expect(html).not.toContain("never-in-html");
+        expect(html).toContain("People who can edit this script can access its keys.");
+        expect(html).toContain("your private copy");
+    });
+
+    it("shows a fixed error if the sidebar cannot open", () => {
+        HtmlService.createHtmlOutput.mockImplementation(() => { throw new Error("private-error"); });
+        TickerSheetsShowApiKeys();
+        expect(ui.alert).toHaveBeenCalledWith("Unable to open API key settings. Reload the spreadsheet and try again.");
+    });
+
+    it("loads presence flags with empty password fields and disables controls while loading", () => {
+        const view = sidebar();
+        expect(view.calls.map(call => call.type)).toEqual(["load"]);
+        ids.forEach(id => {
+            expect(view.get(`key-${id}`).type).toBe("password");
+            expect(view.get(`key-${id}`).value).toBe("");
+            expect(view.get(`key-${id}`).disabled).toBe(true);
+        });
+        view.calls[0].success(expectedStatus(true));
+        ids.forEach(id => {
+            expect(view.get(`status-${id}`).textContent).toBe("Saved");
+            expect(view.get(`key-${id}`).value).toBe("");
+            expect(view.get(`key-${id}`).disabled).toBe(false);
+        });
+    });
+
+    it("saves FRED from its password field while preserving unrelated properties", () => {
+        propertyNames.forEach((key, index) => values.set(key, `saved-synthetic-${index}`));
+        values.set("FINNHUB_API_KEY", "unrelated-saved-key");
+        const view = sidebar(); view.calls[0].success(TickerSheetsGetApiKeyStatus());
+        expect(view.get("key-FRED").type).toBe("password"); expect(view.get("key-FRED").value).toBe("");
+        view.get("key-FRED").value = "synthetic-fred-replacement"; view.get("settings").trigger("submit");
+        const call = view.calls[1];
+        expect(JSON.parse(JSON.stringify(call.request))).toEqual({ updates: [{ provider: "FRED", action: "replace", value: "synthetic-fred-replacement" }] });
+        const result = TickerSheetsSaveApiKeys(call.request); call.success(result);
+        expect(result).toEqual(expectedStatus(true)); expect(values.get("FRED_API_KEY")).toBe("synthetic-fred-replacement");
+        expect(values.get("FINNHUB_API_KEY")).toBe("unrelated-saved-key");
+        expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: "synthetic-fred-replacement" }, false); expect(properties.deleteProperty).not.toHaveBeenCalled();
+        expect(view.get("key-FRED").value).toBe(""); expect(view.get("status-FRED").textContent).toBe("Saved");
+        expect(JSON.stringify(result)).not.toContain("synthetic-"); expect(ui.prompt).not.toHaveBeenCalled();
+    });
+
+    it("sends an empty update when fields are blank", () => {
+        const view = sidebar();
+        view.calls[0].success(expectedStatus(true));
+        view.get("settings").trigger("submit");
+        expect(JSON.parse(JSON.stringify(view.calls[1].request))).toEqual({ updates: [] });
+    });
+
+    it("rejects remove and replacement together without calling the server", () => {
+        const view = sidebar();
+        view.calls[0].success(expectedStatus(true));
+        view.get("key-FRED").value = "synthetic-key";
+        view.get("remove-FRED").checked = true;
+        view.get("settings").trigger("submit");
+        expect(view.calls).toHaveLength(1);
+        expect(view.get("message").textContent).toContain("Enter a new key or select Remove");
+    });
+
+    it.each(["failure", "result"])("keeps entries and displays a fixed message after a save %s", failureType => {
+        const view = sidebar();
+        view.calls[0].success(expectedStatus());
+        view.get("key-FRED").value = "synthetic-key";
+        view.get("settings").trigger("submit");
+        if (failureType === "failure") view.calls[1].failure(new Error("secret-server-message"));
+        else view.calls[1].success({ ok: false, error: "secret-server-message" });
+        expect(view.get("message").textContent).toContain("Unable to save keys.");
+        expect(view.get("message").textContent).not.toContain("secret-server-message");
+        expect(view.get("key-FRED").value).toBe("synthetic-key");
+        expect(view.get("save").disabled).toBe(false);
+    });
+
+    it.each([null, { ok: false, error: "secret-error" }, { ok: true, providers: [] }, { ok: true, providers: ids.map(id => ({ id, configured: "secret" })) }])("does not enable saving after a malformed load (%#)", response => {
+        const view = sidebar();
+        view.calls[0].success(response);
+        expect(view.get("save").disabled).toBe(true);
+        expect(view.get("reload").disabled).toBe(false);
+        expect(view.get("message").textContent).toBe("Unable to load settings. Try Reload status.");
+        view.get("settings").trigger("submit");
+        expect(view.calls).toHaveLength(1);
+    });
+
+    it("can reload after a load failure and never displays the server exception", () => {
+        const view = sidebar();
+        view.get("reload").trigger("click");
+        expect(view.calls).toHaveLength(1);
+        view.calls[0].failure(new Error("secret-error"));
+        expect(view.get("message").textContent).not.toContain("secret-error");
+        view.get("reload").trigger("click");
+        expect(view.calls).toHaveLength(2);
+        view.calls[1].success(expectedStatus());
+        expect(view.get("save").disabled).toBe(false);
+    });
+});

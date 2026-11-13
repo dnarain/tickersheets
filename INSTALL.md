@@ -14,15 +14,17 @@ You can copy the tutorial or install the functions in a spreadsheet that you alr
 2. Click **Make a copy**.
 3. Open your editable copy and reload it.
 4. Enter a ticker in **Start here!B4**.
-5. Choose **Data settings → Refresh formulas**.
+5. Choose **TickerSheets → Refresh data**.
 6. Complete Google's authorization steps if prompted.
 
 Google copies the attached Apps Script with the spreadsheet.
-The tutorial has one tab, **Start here**, with working formulas and formula text beside each result.
+**Start here** contains working formulas and formula text beside each result.
+**Stock analysis** shows charts and further examples built with the same functions.
+Both tabs use the ticker in **Start here!B4**.
 It contains saved example results and no saved API keys.
 Your private copy can request new results and use your own keys.
 
-The script's `onOpen` function adds the **Data settings** menu.
+The script's `onOpen` function adds the **TickerSheets** menu.
 If that menu is missing, reload your editable copy.
 The public tutorial remains read-only.
 
@@ -32,38 +34,56 @@ No command line, local build or developer account is required.
 
 1. Open your Google spreadsheet.
 2. Choose **Extensions → Apps Script**.
-3. Open the default `Code.gs` file.
+3. Click **+ → Script** and name the new file `TickerSheets`.
 4. Open [dist/TickerSheets.js on main](https://github.com/dnarain/tickersheets/blob/main/dist/TickerSheets.js).
 5. Click **Copy raw file** in GitHub.
-6. Replace the default contents of `Code.gs` with the copied file.
+6. Replace the default contents of the new `TickerSheets.gs` file with the copied code.
 7. Save the Apps Script project.
 8. Return to the spreadsheet and reload it.
 9. Enter a ticker in a cell, such as `NVDA` in `A1`.
-10. Enter `=CFQUOTE(A1,"price")` in another cell.
+10. Enter `=TICKERSHEETS_QUOTE(A1,"price")` in another cell.
 
 The result appears in the cell that contains the formula.
-The installation adds the function library and **Data settings** menu.
+The installation adds the function library and **TickerSheets** menu.
 You can use the functions in your existing cells without creating dashboard tabs.
 
 Copy the bundle once into the attached project.
-Do not add individual `src/` files or the provider-test bundle beside it.
-Those files contain duplicate function names.
+Do not add individual `src/` files beside it. The bundle already contains those functions.
 If the project already contains your own code, keep a backup before adding TickerSheets.
+Keep the existing files. If TickerSheets is already installed, update its existing file instead of adding a second copy.
 
 The [function reference](FUNCTIONS.md) lists every public function and supported field.
 The [build-your-own guide](BUILD-YOUR-OWN.md) gives simple recipes.
 
+## Optional: use CacheFinance alongside TickerSheets
+
+TickerSheets does not include CacheFinance. Get it separately from the [original CacheFinance project](https://github.com/demmings/cachefinance).
+
+1. Keep the TickerSheets bundle in its own `TickerSheets.gs` file.
+2. Follow CacheFinance's installation instructions and paste its bundle into a separate `CacheFinance.gs` file in the same spreadsheet's Apps Script project.
+3. Save the project and reload the spreadsheet.
+
+Use `TICKERSHEETS_…` for this library and `CACHEFINANCE` / `CACHEFINANCES` for the original library.
+TickerSheets' **Refresh data** command leaves CacheFinance formulas unchanged.
+Configure CacheFinance's provider keys through its own instructions. The TickerSheets key form manages FRED only.
+
+Both load orders were checked with a separately downloaded CacheFinance bundle.
+Contributors can repeat the check with `npm run check:coexistence -- /path/to/CacheFinance.js`.
+The check does not download or bundle CacheFinance with TickerSheets.
+
+If your project already has an `onOpen` function, add `TickerSheetsMenu();` to it and keep only one `onOpen` definition.
+
 ## Authorization and refresh
 
-Google can ask for authorization when you open **API keys…** or choose **Refresh formulas**.
+Google can ask for authorization when you open **API keys…** or choose **Refresh data**.
 Review the project name and requested permissions.
-If a formula reports a permission error, choose **Data settings → Refresh formulas** and complete authorization if prompted.
+If a formula reports a permission error, choose **TickerSheets → Refresh data** and complete authorization if prompted.
 
 Custom cell functions cannot open an authorization dialog themselves.
 Google describes their limits in its [custom function guide](https://developers.google.com/apps-script/guides/sheets/functions#guidelines_for_custom_functions).
 An account or administrator restriction can still block Apps Script or external requests.
 
-Choose **Data settings → Refresh formulas** when you want another result.
+Choose **TickerSheets → Refresh data** when you want another result.
 Changing a ticker also recalculates formulas that use that cell.
 The functions can reuse recent cached provider responses and do not stream continuously.
 
@@ -74,7 +94,7 @@ The installed script uses these permissions:
 | Permission | Purpose |
 |---|---|
 | `spreadsheets.currentonly` | Read and write the spreadsheet that contains the script |
-| `script.container.ui` | Show the Data settings menu and API key form |
+| `script.container.ui` | Show the TickerSheets menu and API key form |
 | `script.external_request` | Request data from the documented providers |
 
 The bundle contains `@OnlyCurrentDoc`.
@@ -85,7 +105,7 @@ For an explicit manifest:
 1. Open **Project Settings** in Apps Script.
 2. Enable **Show "appsscript.json" manifest file in editor**.
 3. Open `appsscript.json`.
-4. Replace its contents with [the supplied manifest](apps-script/provider-tests/appsscript.json).
+4. Replace its contents with [the supplied manifest](apps-script/appsscript.json).
 5. Save the project and reload the spreadsheet.
 
 The supplied manifest uses the `America/Los_Angeles` time zone.
@@ -97,17 +117,17 @@ Google Workspace administrators can also restrict scripts or external requests.
 
 Yahoo quotes, history, fundamentals, earnings and public options do not require a personal API key in this library.
 FRED requires your own key.
-The original `CACHEFINANCE` / `CACHEFINANCES` functions can use saved Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap keys.
-Those optional keys do not change `CFQUOTE`'s Yahoo source.
+The API key form contains only FRED.
+Finviz, Zacks and GuruFocus field lookups also use public pages without personal keys.
 
-1. Choose **Data settings → API keys…**.
-2. Enter your key in the matching provider field.
+1. Choose **TickerSheets → API keys…**.
+2. Enter your key in **FRED**.
 3. Click **Save keys**.
 4. Check that the provider shows **Saved**.
 
-Blank fields preserve saved keys.
-Selecting **Remove saved key** deletes that provider's key after you click **Save keys**.
-The form never puts saved keys back into its input fields.
+Leaving the field blank preserves the saved key.
+Selecting **Remove saved key** deletes it after you click **Save keys**.
+The form never puts the saved key back into its input field.
 **Saved** confirms storage. It does not test the key or provider connection.
 
 The script stores keys in [Script Properties](https://developers.google.com/apps-script/guides/properties), outside worksheet cells.
@@ -119,9 +139,9 @@ Do not put keys in formulas, worksheet cells, GitHub files or issue reports.
 ### FRED
 
 1. Request your own key from [FRED's API key page](https://fred.stlouisfed.org/docs/api/api_key.html).
-2. Choose **Data settings → API keys…**.
+2. Choose **TickerSheets → API keys…**.
 3. Enter the key in **FRED** and click **Save keys**.
-4. Enter a FRED formula, such as `=CFFRED("DGS10",60)`, in an empty area.
+4. Enter a FRED formula, such as `=TICKERSHEETS_FRED("DGS10",60)`, in an empty area.
 
 The script stores this key as `FRED_API_KEY`.
 A missing key leaves FRED values unavailable.
@@ -134,11 +154,11 @@ A browser profile signed in only to the spreadsheet's account can resolve this p
 
 1. Open a browser profile or private window signed in only to that Google account.
 2. Open your private spreadsheet copy there.
-3. Choose **Data settings → API keys…** again.
-4. Enter the key in its provider field.
+3. Choose **TickerSheets → API keys…** again.
+4. Enter the key in **FRED**.
 5. Click **Save keys**.
 
-All five keyed providers use this same form.
+FRED uses this same form.
 
 ## Updates
 
@@ -149,15 +169,14 @@ The installed code does not update automatically from GitHub.
 3. Replace its contents with the current `dist/TickerSheets.js` contents.
 4. Save the project.
 5. Reload the spreadsheet.
-6. Choose **Data settings → Refresh formulas**.
+6. Choose **TickerSheets → Refresh data**.
 
 Do not paste a second bundle beside the old one.
 Replacing the code in the same project preserves its saved keys.
 Your worksheet formulas remain in their cells.
 You can also copy the current public tutorial to get its latest examples.
 
-For contributors, `CFBuildTutorial` in `src/CacheFinanceTutorial.js` creates the single-tab tutorial.
-Users install `dist/TickerSheets.js` and type their own cell formulas.
+See [MIGRATION.md](MIGRATION.md) for earlier TickerSheets function names.
 
 ## Report a problem
 

@@ -1,15 +1,16 @@
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-    buildCacheFinanceBundle,
+    buildTickerSheetsBundle,
     enableDebugExports,
     hashSections,
-    isCacheFinanceBundleCurrent,
+    isTickerSheetsBundleCurrent,
     paths,
+    PUBLIC_FUNCTIONS,
     SOURCE_FILES,
     stripDebugBlocks,
     validateBundleContent,
-    writeCacheFinanceBundle
+    writeTickerSheetsBundle
 } from "../scripts/gas-source.mjs";
 
 describe("gas-source transforms", () => {
@@ -44,38 +45,38 @@ class Widget {}`;
 });
 
 describe("TickerSheets bundle", () => {
+    const valid = PUBLIC_FUNCTIONS.map(name => "function " + name + "() {}").join("\n");
     it.each(["||=", "&&=", "??="])("rejects %s before upload because Apps Script rejects logical assignment", operator => {
-        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nlet value; value " + operator + " 1;")).toThrow(/logical assignment/);
+        expect(() => validateBundleContent(valid + "\nlet value; value " + operator + " 1;")).toThrow(/logical assignment/);
     });
     it.each(["static firstRow = 8;", "static lastRow\n = 1007;"])("rejects class fields before upload: %s", field => {
-        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nclass Example { " + field + " }")).toThrow(/static class fields/);
+        expect(() => validateBundleContent(valid + "\nclass Example { " + field + " }")).toThrow(/static class fields/);
     });
     it("accepts static getters supported by the Apps Script editor", () => {
-        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nclass Example { static get firstRow() { return 8; } }")).not.toThrow();
+        expect(() => validateBundleContent(valid + "\nclass Example { static get firstRow() { return 8; } }")).not.toThrow();
     });
     it("builds a valid Apps Script bundle", () => {
-        const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
+        const { bundle, sourceHash, sectionCount } = buildTickerSheetsBundle();
 
         expect(sectionCount).toBe(SOURCE_FILES.length);
         expect(paths.dist).toMatch(/\/dist\/TickerSheets\.js$/);
         expect(bundle).toContain("TickerSheets Apps Script bundle.");
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);
         expect(bundle).toContain(`Source hash: ${sourceHash}`);
-        expect(bundle).toContain("function CACHEFINANCE");
-        expect(bundle).toContain("class CacheFinanceUtils");
-        expect(bundle).toContain("function CFShowApiKeySettings");
-        expect(bundle).toContain("function CFOPTIONMODEL");
-        expect(bundle).toContain("function CFBuildAnalysis");
-        expect(bundle).toContain("function CFQUOTE");
-        expect(bundle).toContain("function CFSTRATEGY");
-        expect(bundle).toContain("function CFRefreshWatchlist");
-        expect(bundle).toContain("class CFAnalysisVisuals");
+        expect(bundle).not.toMatch(/\b(?:CacheFinance|CACHEFINANCES?|CFQUOTE|CFHISTORY|StockAttributes|ThirdPartyFinance|GoogleWebSiteFinance|GlobeAndMail)\b/);
+        expect(bundle).toContain("function TickerSheetsShowApiKeys");
+        expect(bundle).toContain("function TICKERSHEETS_OPTION_MODEL");
+        expect(bundle).toContain("function TickerSheetsBuildDemo");
+        expect(bundle).toContain("function TICKERSHEETS_QUOTE");
+        expect(bundle).toContain("function TICKERSHEETS_STRATEGY");
+        expect(bundle).toContain("function TickerSheetsRefreshData");
+        for (const name of PUBLIC_FUNCTIONS) expect(bundle).toContain("function " + name + "(");
         expect(bundle.match(/function onOpen\(/g)).toHaveLength(1);
         expect(() => validateBundleContent(bundle)).not.toThrow();
     });
 
     it("excludes optional Apps Script test helpers from the bundle", () => {
-        const { bundle } = buildCacheFinanceBundle();
+        const { bundle } = buildTickerSheetsBundle();
 
         expect(bundle).not.toContain("function testYieldPct");
         expect(bundle).not.toContain("function testCacheFinances");
@@ -83,11 +84,11 @@ describe("TickerSheets bundle", () => {
     });
 
     it("writes dist/TickerSheets.js only when content changes", () => {
-        const first = writeCacheFinanceBundle();
-        const second = writeCacheFinanceBundle();
+        const first = writeTickerSheetsBundle();
+        const second = writeTickerSheetsBundle();
 
         expect(fs.existsSync(paths.dist)).toBe(true);
         expect(first.bundle).toBe(second.bundle);
-        expect(isCacheFinanceBundleCurrent()).toBe(true);
+        expect(isTickerSheetsBundleCurrent()).toBe(true);
     });
 });
