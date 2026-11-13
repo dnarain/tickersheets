@@ -2,10 +2,10 @@
 
 Reusable stock and options functions for Google Sheets.
 
-Enter a ticker in `A1`, then put this formula in another cell:
+Example:
 
 ```excel
-=TICKERSHEETS_QUOTE(A1,"price")
+=TICKERSHEETS_QUOTE("AAPL","price")
 ```
 
 That cell contains the formula and shows the returned price.
