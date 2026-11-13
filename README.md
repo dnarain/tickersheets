@@ -123,6 +123,6 @@ The [installation guide](INSTALL.md#optional-use-cachefinance-alongside-tickersh
 
 We also drew ideas from [SMF](https://climbermel.github.io/SMF_Add-in/), an Excel add-in for financial data.
 We appreciate both projects and the work their contributors shared.
-See [CREDITS.md](CREDITS.md) for attribution and [MIGRATION.md](MIGRATION.md) for earlier TickerSheets formula names.
+See [CREDITS.md](CREDITS.md) for attribution.
 
 TickerSheets retains the [GNU GPL v3 license](LICENSE).

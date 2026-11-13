@@ -195,8 +195,6 @@ Replacing the code in the same project preserves its saved keys.
 Your worksheet formulas remain in their cells.
 You can also copy the current public tutorial to get its latest examples.
 
-See [MIGRATION.md](MIGRATION.md) for earlier TickerSheets function names.
-
 ## Report a problem
 
 Include the exact formula, ticker, expected result, actual result and provider timestamp when available.
