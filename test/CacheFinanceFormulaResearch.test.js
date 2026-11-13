@@ -39,10 +39,12 @@ function balanced(formula) {
 }
 
 function assertSpillClear(sheet, firstRow, lastRow, firstColumn, lastColumn) {
+    const blocked = [];
     for (const key of sheet.formulas.keys()) {
         const [row, col] = key.split(":").map(Number);
-        expect(row < firstRow || row > lastRow || col < firstColumn || col > lastColumn, "A formula blocks a source output at " + key).toBe(true);
+        if (row >= firstRow && row <= lastRow && col >= firstColumn && col <= lastColumn) blocked.push(key);
     }
+    expect(blocked, "Formulas block source output rows " + firstRow + ":" + lastRow + " and columns " + firstColumn + ":" + lastColumn).toEqual([]);
 }
 
 beforeEach(() => {
