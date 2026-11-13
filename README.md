@@ -69,8 +69,7 @@ See [FUNCTIONS.md](FUNCTIONS.md#tickersheets_expirations-and-tickersheets_option
 
 ## API keys
 
-**The public tutorial contains no saved API keys and does not use the author's private keys.**
-You can view its saved examples without adding keys.
+**The public tutorial does not contain any API keys.**
 Yahoo stock quotes, history, fundamentals, earnings and public option chains do not require a personal key.
 Selected Finviz, Zacks and GuruFocus fields also use public pages.
 
