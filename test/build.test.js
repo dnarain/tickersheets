@@ -6,6 +6,7 @@ import {
     hashSections,
     isCacheFinanceBundleCurrent,
     paths,
+    SOURCE_FILES,
     stripDebugBlocks,
     validateBundleContent,
     writeCacheFinanceBundle
@@ -46,10 +47,16 @@ describe("TickerSheets bundle", () => {
     it.each(["||=", "&&=", "??="])("rejects %s before upload because Apps Script rejects logical assignment", operator => {
         expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nlet value; value " + operator + " 1;")).toThrow(/logical assignment/);
     });
+    it.each(["static firstRow = 8;", "static lastRow\n = 1007;"])("rejects class fields before upload: %s", field => {
+        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nclass Example { " + field + " }")).toThrow(/static class fields/);
+    });
+    it("accepts static getters supported by the Apps Script editor", () => {
+        expect(() => validateBundleContent("function CACHEFINANCE() {}\nfunction CACHEFINANCES() {}\nclass Example { static get firstRow() { return 8; } }")).not.toThrow();
+    });
     it("builds a valid Apps Script bundle", () => {
         const { bundle, sourceHash, sectionCount } = buildCacheFinanceBundle();
 
-        expect(sectionCount).toBe(27);
+        expect(sectionCount).toBe(SOURCE_FILES.length);
         expect(paths.dist).toMatch(/\/dist\/TickerSheets\.js$/);
         expect(bundle).toContain("TickerSheets Apps Script bundle.");
         expect(sourceHash).toMatch(/^[a-f0-9]{12}$/);

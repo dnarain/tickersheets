@@ -3,6 +3,7 @@ import { CFAnalysisData } from "./CacheFinanceAnalysisData.js";
 import { CFAnalysisDetails } from "./CacheFinanceAnalysisDetails.js";
 import { CFAnalysisOptions } from "./CacheFinanceAnalysisOptions.js";
 import { CFAnalysisFred } from "./CacheFinanceAnalysisFred.js";
+import { YahooFinance } from "./CacheFinanceWebSites.js";
 export { CFPublicData, CFQUOTE, CFHISTORY, CFFUNDAMENTALS, CFOPTIONS, CFEXPIRATIONS, CFFRED, CFFIELD, CFDATASTATUS, CFSTRATEGY };
 //  *** DEBUG END ***/
 
@@ -43,7 +44,8 @@ class CFPublicData {
         } catch { /* A cache miss must not block a public request. */ }
         let data;
         try { data = load(deps); } catch { return CFPublicData.failure("Request or response unavailable."); }
-        data = { ...data, retrievedAt: new Date(deps.clock()).toISOString(), cacheHit: false };
+        const completedAt = deps.clock(), receivedAt = Date.parse(data?.retrievedAt);
+        data = { ...data, retrievedAt: Number.isFinite(receivedAt) && receivedAt <= completedAt ? data.retrievedAt : new Date(completedAt).toISOString(), cacheHit: false };
         if (data.ok) {
             try {
                 const json = JSON.stringify(data);
@@ -77,33 +79,46 @@ class CFPublicData {
         }, overrides, refresh);
     }
 
-    static details(input, overrides = {}, refresh = "") {
+    /** One parsed quote-page response serves quotes, fundamentals and earnings for one minute. */
+    static quotePage(input, overrides = {}, refresh = "") {
         const symbol = CFPublicData.ticker(input);
-        return CFPublicData.cached("details:v2", symbol, 900, deps => {
+        return CFPublicData.cached("quote-page:v1", symbol, 60, deps => {
             const source = "https://finance.yahoo.com/quote/" + encodeURIComponent(symbol) + "/";
             const response = CFPublicData.request(source, deps), statistics = CFAnalysisData.parseStatistics(response.body, symbol), details = CFAnalysisDetails.parsePage(response.body, symbol);
             const fields = { ...(statistics.fields || {}) };
             for (const [id, field] of Object.entries(details.fields || {})) if (field.value != null || !fields[id]) fields[id] = field;
-            const ok = details.ok || statistics.ok;
-            return { ok, symbol, source, http: response.http, details, fields, status: ok ? "Available" : response.http === 200 ? "Matching fundamentals unavailable" : "HTTP " + response.http };
+            let basic = { price: null, yieldFraction: null, name: "" };
+            try {
+                const parsed = YahooFinance.parseResponse(response.body, symbol);
+                basic = { price: typeof parsed.stockPrice === "number" && Number.isFinite(parsed.stockPrice) && parsed.stockPrice > 0 ? parsed.stockPrice : null,
+                    yieldFraction: typeof parsed.yieldPct === "number" && Number.isFinite(parsed.yieldPct) ? parsed.yieldPct : null, name: parsed.stockName || "" };
+            } catch { /* A visible-price parser failure does not discard accepted structured details. */ }
+            const ok = details.ok || statistics.ok || basic.price !== null;
+            return { ok, symbol, source, http: response.http, details, fields, statisticsOkay: statistics.ok === true, basic,
+                quoteSessions: details.ok ? details.quoteSessions || null : null,
+                status: ok ? "Available" : response.http === 200 ? "Matching quote details unavailable" : "HTTP " + response.http };
         }, overrides, refresh);
     }
 
-    /** Session quotes use a separate one-minute cache, never the fifteen-minute fundamentals cache. */
+    static details(input, overrides = {}, refresh = "") {
+        const symbol = CFPublicData.ticker(input);
+        return CFPublicData.cached("details:v2", symbol, 900, deps => {
+            const page = CFPublicData.quotePage(input, deps, refresh);
+            const ok = page.details?.ok === true || page.statisticsOkay === true;
+            return { ...page, ok, status: ok ? "Available" : page.http === 200 ? "Matching fundamentals unavailable" : page.status };
+        }, overrides, refresh);
+    }
+
+    /** Session quotes read the one-minute page cache, never the fifteen-minute fundamentals cache. */
     static quote(input, overrides = {}, refresh = "") {
         const chartData = CFPublicData.chart(input, overrides, refresh);
         if (!chartData.ok) return chartData;
         const symbol = chartData.symbol;
-        const detailData = CFPublicData.cached("quote-sessions:v1", symbol, 60, deps => {
-            const source = "https://finance.yahoo.com/quote/" + encodeURIComponent(symbol) + "/";
-            const response = CFPublicData.request(source, deps), details = CFAnalysisDetails.parsePage(response.body, symbol);
-            return { ok: details.ok, symbol, source, http: response.http, quoteSessions: details.quoteSessions || null,
-                status: details.ok ? "Available" : "Extended-session quote unavailable" };
-        }, overrides, refresh);
-        const quote = CFAnalysisData.selectQuote(chartData.chart, { ok: detailData.ok, symbol, quoteSessions: detailData.quoteSessions });
+        const detailData = CFPublicData.quotePage(input, overrides, refresh), sessionsOkay = detailData.details?.ok === true;
+        const quote = CFAnalysisData.selectQuote(chartData.chart, { ok: sessionsOkay, symbol, quoteSessions: detailData.quoteSessions });
         return { ...chartData, quote, quoteTime: quote.quoteTime, source: quote.source === "Yahoo Chart API" ? chartData.source : quote.source || chartData.source,
-            retrievedAt: detailData.ok && quote.source === detailData.source ? detailData.retrievedAt : chartData.retrievedAt,
-            cacheHit: chartData.cacheHit && detailData.cacheHit, extendedQuoteStatus: detailData.status };
+            retrievedAt: sessionsOkay && quote.source === detailData.source ? detailData.retrievedAt : chartData.retrievedAt,
+            cacheHit: chartData.cacheHit && detailData.cacheHit, extendedQuoteStatus: sessionsOkay ? "Available" : "Extended-session quote unavailable" };
     }
 
     static options(input, expiration = "", overrides = {}, refresh = "") {
@@ -220,9 +235,15 @@ function CFOPTIONS(ticker, expiration = "", refresh = "") {
     } catch { return "N/A: Enter a ticker and optional YYYY-MM-DD expiration"; }
 }
 
-/** Published option expiration dates. @customfunction */
-function CFEXPIRATIONS(ticker, refresh = "") {
-    try { const data = CFPublicData.options(ticker, "", {}, refresh); return data.ok ? [["Expiration"], ...data.options.expirations.map(value => [value])] : CFPublicData.error(data); }
+/** Published option expiration dates, optionally paired with the completed refresh number. @customfunction */
+function CFEXPIRATIONS(ticker, refresh = "", includeRefresh = false) {
+    try {
+        const data = CFPublicData.options(ticker, "", {}, refresh);
+        if (!data.ok) return CFPublicData.error(data);
+        if (includeRefresh !== true) return [["Expiration"], ...data.options.expirations.map(value => [value])];
+        const completedRefresh = refresh == null || refresh === "" ? "" : Number(refresh);
+        return [["Expiration", "Refresh number"], ...data.options.expirations.map(value => [value, completedRefresh])];
+    }
     catch { return "N/A: Enter a supported ticker"; }
 }
 

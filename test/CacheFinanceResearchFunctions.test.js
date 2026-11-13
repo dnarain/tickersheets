@@ -135,14 +135,14 @@ describe("session-aware quote worksheet functions", () => {
         expect(CFQUOTE("NVDA", "volume")).toBeGreaterThan(0); expect(fetch).toHaveBeenCalledOnce();
         expect(fetch.mock.calls[0][0]).toContain("/v8/finance/chart/NVDA");
     });
-    it("does not reuse a fifteen-minute fundamentals cache for after-hours prices", () => {
+    it("shares the one-minute parsed page without reusing fifteen-minute fundamentals for after-hours prices", () => {
         let now = Date.UTC(2026, 10, 12, 1), price = 159.5405; vi.spyOn(Date, "now").mockImplementation(() => now);
         fetch.mockImplementation(url => response(url.startsWith("https://finance.yahoo.com/quote/") ? quotePage({ postMarketPrice: { raw: price } }) : chartBody));
         expect(CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeGreaterThan(0); price = 158.78;
-        expect(CFQUOTE("NVDA")).toBe(158.78); expect(fetch).toHaveBeenCalledTimes(3);
-        price = 157; now += 59999; expect(CFQUOTE("NVDA")).toBe(158.78); expect(fetch).toHaveBeenCalledTimes(3);
-        now++; expect(CFQUOTE("NVDA")).toBe(157); expect(fetch).toHaveBeenCalledTimes(5);
-        expect(CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeGreaterThan(0); expect(fetch).toHaveBeenCalledTimes(5);
+        expect(CFQUOTE("NVDA")).toBe(159.5405); expect(fetch).toHaveBeenCalledTimes(2);
+        price = 157; now += 59999; expect(CFQUOTE("NVDA")).toBe(159.5405); expect(fetch).toHaveBeenCalledTimes(2);
+        now++; expect(CFQUOTE("NVDA")).toBe(157); expect(fetch).toHaveBeenCalledTimes(4);
+        expect(CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeGreaterThan(0); expect(fetch).toHaveBeenCalledTimes(4);
     });
     it("discards cache entries from the earlier regular-only parser", () => {
         stored.values.set("CFPUBLIC:v1:chart:NVDA:", JSON.stringify({ ok: true, retrievedAt: new Date().toISOString(), chart: { price: 999 } }));
@@ -158,9 +158,10 @@ describe("session-aware quote worksheet functions", () => {
         fetch.mockImplementation(url => response(url.startsWith("https://finance.yahoo.com/quote/") ? quotePage({ marketState: "OVERNIGHT", postMarketPrice: { raw: 158.78 }, postMarketTime: 1794445200 }) : chartBody));
         expect(CFQUOTE("NVDA", "price_session")).toBe("After-hours"); expect(CFQUOTE("NVDA", "market_state")).toBe("OVERNIGHT"); expect(CFQUOTE("NVDA")).toBe(158.78);
     });
-    it("stores only the typed public session fields, without page JSON or private URL parameters", () => {
-        CFQUOTE("NVDA"); const record = JSON.parse([...stored.values].find(([name]) => name.includes("quote-sessions:v1"))[1]);
-        expect(record.quoteSessions.post.price).toBe(159.5405); expect(JSON.stringify(record)).not.toMatch(/<script|quoteSummary|calendarEvents|api_key|crumb|cookie|headers/);
+    it("stores only parsed public page fields, without raw page JSON or private URL parameters", () => {
+        CFQUOTE("NVDA"); const record = JSON.parse([...stored.values].find(([name]) => name.includes("quote-page:v1"))[1]);
+        expect(record.quoteSessions.post.price).toBe(159.5405); expect(record.details.earnings).toHaveLength(8);
+        expect(JSON.stringify(record)).not.toMatch(/<script|quoteSummary|api_key|crumb|cookie|headers/);
     });
 });
 
@@ -171,6 +172,32 @@ describe("option worksheet functions and date inputs", () => {
         const chain = vi.spyOn(CFAnalysisOptions, "fetchChain").mockReturnValue(options());
         expect(CFEXPIRATIONS("NVDA")).toEqual([["Expiration"], ["2026-11-20"], ["2026-12-18"]]);
         const result = CFOPTIONS("NVDA"); expect(result[1].slice(3, 6)).toEqual([0, 1, "N/A"]); expect(result[1][7]).toBe(.4); expect(result[1][8]).toBe(0); expect(chain).toHaveBeenCalledOnce();
+    });
+    it("preserves one-column expiration output when a refresh number is supplied", () => {
+        const chain = vi.spyOn(CFAnalysisOptions, "fetchChain").mockReturnValue(options());
+        const dates = [["Expiration"], ["2026-11-20"], ["2026-12-18"]];
+        expect(CFEXPIRATIONS("NVDA", 7)).toEqual(dates);
+        expect(CFEXPIRATIONS("NVDA", 7, false)).toEqual(dates); expect(chain).toHaveBeenCalledOnce();
+    });
+    it.each([7, "7", 0, "0", 2147483647, "2147483647"])("pairs each published expiration with numeric refresh %s only when requested", refresh => {
+        const chain = vi.spyOn(CFAnalysisOptions, "fetchChain").mockReturnValue(options());
+        expect(CFEXPIRATIONS("NVDA", refresh, true)).toEqual([["Expiration", "Refresh number"], ["2026-11-20", Number(refresh)], ["2026-12-18", Number(refresh)]]);
+        expect(chain).toHaveBeenCalledOnce();
+    });
+    it.each(["", null, undefined])("leaves the optional refresh column blank when no refresh number was supplied (%#)", refresh => {
+        vi.spyOn(CFAnalysisOptions, "fetchChain").mockReturnValue(options());
+        expect(CFEXPIRATIONS("NVDA", refresh, true)).toEqual([["Expiration", "Refresh number"], ["2026-11-20", ""], ["2026-12-18", ""]]);
+    });
+    it.each([-1, 1.5, 2147483648, "1e2", true])("returns a scalar error without requesting or exposing an invalid refresh number (%#)", refresh => {
+        const chain = vi.spyOn(CFAnalysisOptions, "fetchChain");
+        expect(CFEXPIRATIONS("NVDA", refresh, true)).toBe("N/A: Use a whole refresh number from 0 to 2147483647.");
+        expect(chain).not.toHaveBeenCalled();
+    });
+    it("returns a scalar error without a completed refresh number when the expiration request fails", () => {
+        const chain = vi.spyOn(CFAnalysisOptions, "fetchChain").mockReturnValue({ ok: false, error: "HTTP 403" });
+        expect(CFEXPIRATIONS("NVDA", 7, true)).toBe("N/A: HTTP 403");
+        chain.mockImplementation(() => { throw new Error("private"); });
+        expect(CFEXPIRATIONS("NVDA", 8, true)).toBe("N/A: Request or response unavailable.");
     });
     it.each(["2026-02-30", "11/20/2026", "=1+1", new Date(NaN)])("rejects invalid expiration inputs without a request (%s)", expiry => {
         const chain = vi.spyOn(CFAnalysisOptions, "fetchChain"); expect(CFOPTIONS("NVDA", expiry)).toMatch(/^N\/A:/); expect(chain).not.toHaveBeenCalled();

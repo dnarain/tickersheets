@@ -20,6 +20,7 @@ export class ManagedRange {
     setFormulas(values) { values.forEach((line, r) => line.forEach((value, c) => this.sheet.formulas.set((this.row + r) + ":" + (this.col + c), value))); return this.setValues(values); }
     clearContent() { this.each((r, c) => { this.sheet.cells.delete(r + ":" + c); this.sheet.formulas.delete(r + ":" + c); }); return this.event("clearContent"); }
     clear() { this.clearContent(); return this.event("clear"); }
+    clearDataValidations() { return this.event("clearDataValidations"); }
     breakApart() { return this.event("breakApart"); }
     merge() {
         if (this.sheet.frozenColumns >= this.col && this.sheet.frozenColumns < this.col + this.width - 1

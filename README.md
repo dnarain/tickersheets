@@ -10,7 +10,14 @@ It requires no hosted server.
 The **Single Stock Analysis** sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
 You can also create your own spreadsheet with the same functions.
 
-[![NVDA sample showing quotes, fundamentals, options and a price trend chart](img/tickersheets-sample-analysis.jpg)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
+Open **Start here** in your copy to learn from the working formulas.
+The displayed price follows **Analysis!B9 → Formulas!B23 → Quote data!A7**.
+`CFQUOTE` supplies the source table. The other cells reference that table.
+**Price history** contains visible formulas for moving averages, RSI, MACD, returns and volatility.
+The **Refresh selected ticker** menu changes the shared refresh number in **Analysis!E4**.
+Google Sheets then recalculates the source tables and their dependent formulas.
+
+[![NVDA formula-driven sample showing quotes, fundamentals, options and a price trend chart](img/tickersheets-formula-analysis.png)](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit)
 
 *NVDA example with saved results from November 12, 2026. Refresh your own copy to request newer data.*
 
@@ -52,6 +59,7 @@ Provider access and returned fields can change. See [PROVIDERS.md](PROVIDERS.md)
 5. If the refresh does not run after authorization, choose **Refresh selected ticker** again.
 
 If the menus are missing, reload your copy once.
+Open **Start here** for a short walkthrough and examples you can trace with `FORMULATEXT`.
 To analyze another stock, change **Analysis!B4**, then refresh the selected ticker.
 The public sample stays read-only. You edit and refresh your own copy.
 

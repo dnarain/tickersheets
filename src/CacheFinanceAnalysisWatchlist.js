@@ -135,8 +135,13 @@ class CFWatchlist {
     }
 }
 
-function CFBuildWatchlist() { return CFWatchlist.build(SpreadsheetApp.getActiveSpreadsheet()); }
+function CFBuildWatchlist() {
+    const book = SpreadsheetApp.getActiveSpreadsheet();
+    if (typeof CFFormulaWorkbook !== "undefined" && CFFormulaWorkbook.isFormulaBook(book) && typeof CFFormulaWatchlist !== "undefined") return CFFormulaWatchlist.build(book);
+    return CFWatchlist.build(book);
+}
 function CFRefreshWatchlist() {
+    if (typeof CFFormulaWorkbook !== "undefined" && CFFormulaWorkbook.isFormulaBook(SpreadsheetApp.getActiveSpreadsheet()) && typeof CFRefreshAnalysis === "function") return CFRefreshAnalysis();
     const book = SpreadsheetApp.getActiveSpreadsheet(), lock = LockService.getDocumentLock();
     if (!lock?.tryLock(1000)) { book.toast("Another refresh is running.", "Watchlist", 8); return { ok: false, error: "Another refresh is running" }; }
     try { const result = CFWatchlist.refresh(book); SpreadsheetApp.flush(); console.log("CF_WATCHLIST_CHECK " + JSON.stringify(result)); book.toast("Watchlist updated. See Journal for changes.", "Watchlist", 8); return result; }

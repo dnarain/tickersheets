@@ -1,6 +1,6 @@
 # TickerSheets functions
 
-This reference covers 14 worksheet functions: twelve `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
+This reference covers 17 worksheet functions: fifteen `CF...` functions, `CACHEFINANCE` and `CACHEFINANCES`.
 All requests run in Google Apps Script. No hosted server is required.
 The [provider guide](PROVIDERS.md#providers) lists data sources, API key requirements and dated test results.
 
@@ -9,10 +9,14 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a sp
 
 ## Start with the menu
 
-**Stock analysis → Refresh selected ticker** fetches the selected stock and updates the analysis tabs together.
-The menu also supports the watchlist, financial charts and several option expirations.
+**Stock analysis → Refresh selected ticker** increments the shared refresh number in **Analysis!E4**.
+Google Sheets recalculates the source functions and the formulas that read their tables.
+The menu also resets option-model and strategy assumptions from their source cells.
 
-Cell functions are useful for smaller tables and individual values.
+The sample uses these cell functions for its source tables.
+For example, **Analysis!B9** references **Formulas!B23**, which looks up the price from **Quote data!A7**.
+**Formulas!E4** and **Watchlist!E4** reference **Analysis!E4**.
+The examples and dashboard share their source tables.
 Google requires each custom function to return within **30 seconds**.
 Google also rejects volatile arguments such as `NOW()` and `RAND()`.
 These limits come from [Google's custom function guide](https://developers.google.com/apps-script/guides/sheets/functions#guidelines_for_custom_functions).
@@ -65,14 +69,18 @@ Published numeric zeros remain zero.
 
 The `CF...` functions that return tables include a header row. Google Sheets expands each table into adjacent empty cells.
 An occupied output cell causes a spreadsheet error.
+Only the top-left cell contains the data function. Neighboring cells contain its expanded results.
+The sample's **Price history** indicator columns contain ordinary spreadsheet formulas.
 
 ## Function list
 
 | Function | Result | Source |
 | --- | --- | --- |
 | `CFQUOTE` | Quote value or quote table | Yahoo Chart and quote page |
+| `CFQUOTECOMPARE` | Separate provider/session comparison rows | Yahoo, Google Finance website and Globe & Mail |
 | `CFHISTORY` | Daily OHLCV table | Yahoo Chart |
 | `CFFUNDAMENTALS` | Fundamental value or field table | Yahoo quote page |
+| `CFEARNINGS` | Reported EPS, financials, estimates, events or earnings calendar | Yahoo quote-page details and Chart events |
 | `CFOPTIONS` | One expiration's option chain | Yahoo options |
 | `CFEXPIRATIONS` | Published option expiration dates | Yahoo options |
 | `CFFRED` | Economic series observations | FRED API, with your key |
@@ -80,6 +88,7 @@ An occupied output cell causes a spreadsheet error.
 | `CFRSITARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask |
 | `CFFIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus |
 | `CFDATASTATUS` | Request status and timestamps | The selected request |
+| `CFWATCHROW` | Compact labeled fields for one watchlist ticker | Yahoo quote, history and fundamentals |
 | `CFOPTIONMODEL` | Theoretical option price or Greek | European Black–Scholes calculation |
 | `CFSTRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions |
 | `CACHEFINANCE` | Original single-symbol lookup | Existing CacheFinance providers and cache |
@@ -93,9 +102,11 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 |---|---|
 | Scalar field from `CFQUOTE`, `CFFUNDAMENTALS`, `CFFIELD` or `CFRSITARGETS` | `1 × 1` |
 | `CFQUOTE(...,"all",...)` | `30 × 2`, including the header |
+| `CFQUOTECOMPARE` | `7 × 10`: header and six comparison rows |
 | `CFHISTORY` | At most `(sessions + 1) × 7`, including the header |
 | `CFFUNDAMENTALS(...,"all",...)` | `(returned fields + 1) × 5` |
-| `CFEXPIRATIONS` | `(expiration count + 1) × 1` |
+| `CFEARNINGS` | Header and data rows; 10, 8, 10, 4, 4 or 4 columns, depending on section |
+| `CFEXPIRATIONS` | `(expiration count + 1) × 1`; two columns with `includeRefresh=TRUE` |
 | `CFOPTIONS` | `(contract count + 1) × 12` |
 | `CFFRED` | At most `(observations + 1) × 5`, including the header |
 | `CFFREDVALUE`, `CFOPTIONMODEL`, `CFSTRATEGY` | `1 × 1` |
@@ -105,6 +116,7 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 | `CFFIELD("ZACKS",...,"all",...)` | `2 × 5` |
 | `CFFIELD("GURUFOCUS",...,"all",...)` | `3 × 5` |
 | `CFDATASTATUS` | `2 × 5`: headers, then status |
+| `CFWATCHROW` | `31 × 2`: header and 30 labeled values |
 | `CACHEFINANCE` quote mode | `1 × 1` |
 | `CACHEFINANCES` with a ticker column | One output column, with no header |
 
@@ -172,7 +184,8 @@ The displayed quote does not change daily history, RSI inputs or closed option-m
 ```
 
 The current-session lookup can request both Yahoo Chart and the matching Yahoo quote page.
-It uses separate 60-second caches for chart data and session quotes.
+Chart data and session quotes use 60-second caches.
+The quote, fundamentals and earnings functions also share a 60-second cache of parsed quote-page data.
 An unavailable quote page leaves accepted Chart data available.
 The function does not take session quotes from the fifteen-minute fundamentals cache.
 The explicit `regular_...` fields use Chart metadata. The `all` table can merge a newer matching regular quote from the quote page.
@@ -212,8 +225,9 @@ Rows run from oldest to newest.
 A current session can lack its closing price.
 The missing close remains `N/A`, even when a newer live quote exists.
 
-The analysis menu calculates returns from adjusted close.
-It calculates SMA, EMA, MACD and RSI from Yahoo close.
+Visible **Price history** formulas calculate returns from adjusted close.
+Other columns calculate SMA, EMA, MACD and RSI from Yahoo close.
+Labeled helper columns expose the intermediate averages, observation counts and summary values.
 The overview labels the last published session as **Indicators through**.
 
 ## CFFUNDAMENTALS
@@ -260,17 +274,83 @@ Ratios such as P/E and beta are plain numbers.
 Currency values identify their currency when the source supplies it.
 Financial reporting currency can differ from quote currency.
 
-The analysis tabs also show published earnings, financial statements and estimates.
+`CFEARNINGS` supplies the separate earnings, financial statement, estimate and event tables.
 `CFFUNDAMENTALS` returns the scalar fields listed here.
+
+## CFEARNINGS
+
+```text
+CFEARNINGS(ticker, section="earnings", refresh="")
+```
+
+Examples:
+
+```excel
+=CFEARNINGS($B$1,"earnings",$B$2)
+=CFEARNINGS($B$1,"financials",$B$2)
+=CFEARNINGS($B$1,"estimates",$B$2)
+=CFEARNINGS($B$1,"calendar",$B$2)
+```
+
+The function returns one table for the selected section:
+
+| Section | Columns, in order |
+|---|---|
+| `earnings` | Period, Basis, EPS actual, EPS estimate, Difference, Surprise % points, Reported, Period end, Currency, Source |
+| `financials` | Financial period, Frequency, Basis, Revenue, Net income, Profit margin, Currency, Source |
+| `estimates` | Estimate period, Basis, EPS low, EPS average, EPS high, Revenue low, Revenue average, Revenue high, Currency, Source |
+| `dividends` | Dividend date, Amount / share, Currency, Source |
+| `splits` | Split date, New shares, Old shares, Source |
+| `calendar` | Field, Value, Status, Source |
+
+The calendar fields are `next_earnings_date`, `next_earnings_dates` and `date_status`.
+The first field contains the first reported date. The second retains all reported dates, separated by ` / `.
+`date_status` returns `Estimated`, `Provider marks confirmed` or `Not specified`.
+Dates use ISO text. Provider period labels, accounting bases and currencies remain separate.
+EPS uses currency per share. Revenue and net income use currency amounts.
+Profit margin is a fraction. `Surprise % points` retains the provider's percentage-point value.
+Missing values remain `N/A`, and reported numeric zeros remain zero.
+An unavailable section returns its header and an explanatory, same-width row.
+
+Earnings, financials, estimates and calendar sections share the quote-page details cache.
+Dividends and splits share the Chart event request.
+The generated workbook places these six formulas in **Earnings!A7**, **L7**, **U7**, **AF7**, **AK7** and **AP7**.
+Research formulas read those tables and keep GAAP/adjusted results, annual/quarterly periods and currencies separate.
+The growth formulas require consecutive periods and positive prior values.
+
+## CFQUOTECOMPARE
+
+```text
+CFQUOTECOMPARE(ticker, refresh="")
+```
+
+```excel
+=CFQUOTECOMPARE($B$1,$B$2)
+```
+
+The table contains these ten columns:
+
+```text
+Provider, Price, Yield, Currency, Identity, Quote time,
+Retrieved at, Status, Source, Note
+```
+
+The six rows cover Yahoo regular, Yahoo Finance, Yahoo pre-market, Yahoo after-hours, Google Finance website and Globe & Mail.
+Each row retains its source, currency, quote time, retrieval time and status.
+The note identifies a yield basis or another provider limit when available.
+The table does not rank the providers or replace a missing provider value with another row's price.
+The sample's shared source is **Quote data!D7**.
 
 ## CFEXPIRATIONS and CFOPTIONS
 
 ```text
-CFEXPIRATIONS(ticker, refresh="")
+CFEXPIRATIONS(ticker, refresh="", includeRefresh=FALSE)
 CFOPTIONS(ticker, expiration="", refresh="")
 ```
 
 `CFEXPIRATIONS` returns one column with the header `Expiration`.
+With `includeRefresh=TRUE`, it adds a `Refresh number` column. Existing two-argument calls keep their one-column output.
+The sample uses that returned number in **Quote data!P8** to wait for the current expiration-date response before requesting option chains.
 Each date uses `YYYY-MM-DD` text.
 `CFOPTIONS` returns the chain for one published expiration.
 If `expiration` is empty, the function requests the provider's default expiration.
@@ -315,7 +395,11 @@ The standard-contract filter excludes adjusted option contracts.
 The options request uses an anonymous Yahoo session.
 No personal Yahoo username, password or subscription key is required by this code.
 Provider restrictions can still prevent a request.
-The menu workflow handles several expiration requests without separate cell functions for every chain.
+The generated workbook uses one `CFOPTIONS` source for the selected expiration and one per additional maturity.
+Research formulas select the comparison strikes and calculate midpoint spreads and mean ATM IV from those tables.
+The generated calculations cover up to 1,000 contracts per chain and warn when a larger chain exceeds that range.
+Each source area reserves room for 10,000 raw contracts. A larger returned array requires additional worksheet rows.
+`CFOPTIONS` itself returns the accepted source rows without that calculation limit.
 
 ## CFFRED
 
@@ -576,6 +660,8 @@ The source can publish delayed or unchanged data.
 A provider can return some fields and leave others unavailable.
 This function has no exact-date FRED or RSI2 dataset selector.
 Its `fred` selector reports the recent-observation table from `CFFRED`, not a `CFFREDVALUE` request.
+This function can request data when its cache is empty.
+The sample's **Sources** tab reads existing source cells and does not call `CFDATASTATUS`.
 
 Successful public responses use these cache periods:
 
@@ -583,7 +669,8 @@ Successful public responses use these cache periods:
 | --- | --- |
 | Chart data and separate session quotes | 60 seconds each |
 | RSI2 chart facts and optional bid/ask | 60 seconds each |
-| Fundamentals | 15 minutes |
+| Fundamentals and earnings details | 15 minutes, with a shared 60-second parsed quote-page cache |
+| Watchlist summary for one other ticker | 60 seconds |
 | Option chain | 60 seconds |
 | FRED recent observations and exact-date values | 1 hour |
 | Finviz, Zacks and GuruFocus fields | 5 minutes |
@@ -592,6 +679,39 @@ Failed requests do not enter this cache.
 Google can remove a cache entry before its expiry.
 The cache contains public results, without API keys or anonymous session credentials.
 These periods apply to the research functions. The original CacheFinance functions use their older cache behavior.
+
+## CFWATCHROW
+
+```text
+CFWATCHROW(ticker, refresh="")
+```
+
+```excel
+=CFWATCHROW($B$1,$B$2)
+```
+
+The function returns a two-column `Field`, `Value` table for one watchlist stock.
+The 30 fields appear in this order:
+
+```text
+status, price, currency, quote_time, retrieved_at, indicator_as_of,
+return1d, return1m, return1y, rsi14, sma50, sma200, volatility20d,
+trailing_pe, eps_ttm, market_cap, target_price, next_earnings, source,
+price_session, atm_iv, return3m, return_ytd, max_drawdown, macd,
+macd_signal, average_volume20, bar_count, previous_rsi2, previous_close
+```
+
+The function shares cached quote and fundamental requests with the other research functions.
+It requests history and calculates the compact indicator summary inside Apps Script.
+It does not request option chains or RSI2 targets. Its `atm_iv` and `previous_rsi2` fields remain `N/A`.
+Returns, volatility and drawdown use fractions. RSI14 uses an index from 0 through 100.
+SMA and MACD use the stock's quote currency per share.
+`indicator_as_of` identifies the latest accepted daily close, which can precede the current quote.
+
+The sample uses one `CFWATCHROW` table per other watchlist ticker in **Watchlist data**.
+For the selected stock, **Watchlist data** references **Quote data!AA7:AB37**.
+Those selected-stock fields read the workbook's existing quote, history, earnings and option tables.
+The selected stock's indicator formulas remain visible in **Price history**.
 
 ## CFOPTIONMODEL
 

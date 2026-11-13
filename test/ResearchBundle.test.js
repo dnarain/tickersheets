@@ -46,11 +46,12 @@ describe("research features in the generated Apps Script bundle", () => {
         expect(run.fetch).not.toHaveBeenCalled();
     });
     it("uses global quote, history, fundamentals and provider bindings with a shared public cache", () => {
-        const { bindings: b, fetch } = runtime();
+        const { bindings: b, fetch, requests } = runtime();
         expect(b.CFQUOTE("NVDA")).toBe(159.5405); expect(b.CFQUOTE("NVDA", "price_session")).toBe("After-hours"); expect(b.CFQUOTE("NVDA", "regular_price")).toBe(173.73);
         expect(b.CFHISTORY("NVDA", 1)[1][0]).toBe("2026-11-11"); expect(fetch).toHaveBeenCalledTimes(2);
         expect(b.CFFUNDAMENTALS("NVDA", "trailing_pe")).toBeCloseTo(21.96, 1); expect(b.CFFIELD("FINVIZ", "NVDA", 4074)).toBe(173.73);
-        expect(b.CFDATASTATUS("NVDA", "provider", "FINVIZ")[1][0]).toBe("Available"); expect(fetch).toHaveBeenCalledTimes(4);
+        expect(b.CFDATASTATUS("NVDA", "provider", "FINVIZ")[1][0]).toBe("Available"); expect(fetch).toHaveBeenCalledTimes(3);
+        expect(requests.filter(request => request.url.startsWith("https://finance.yahoo.com/quote/"))).toHaveLength(1);
     });
     it("creates named example, watchlist and lookup tabs with the current Analysis input", () => {
         const { bindings: b, fetch } = runtime(), book = new ManagedBook(), main = book.insertSheet("Analysis");

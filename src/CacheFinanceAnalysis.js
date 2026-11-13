@@ -180,18 +180,28 @@ function CFAnalysisMenu_() {
     SpreadsheetApp.getUi().createMenu("Stock analysis")
         .addItem("Build analysis sheets", "CFBuildAnalysis")
         .addItem("Refresh selected ticker", "CFRefreshAnalysis")
+        .addItem("Record journal snapshot", "CFRecordJournalSnapshot")
         .addSeparator().addItem("Build watchlist", "CFBuildWatchlist").addItem("Refresh watchlist", "CFRefreshWatchlist")
         .addItem("Build formula examples", "CFBuildFormulaExamples").addItem("Refresh formula examples", "CFRefreshFormulaExamples")
         .addItem("Provider chart links", "CFLoadProviderImages")
         .addSeparator().addItem("Check provider data", "CFCheckAnalysisSources")
         .addItem("Check additional providers", "CFCheckExpandedSources")
         .addItem("Build lookup checks", "CFBuildLookupChecks").addItem("Inspect lookup checks", "CFInspectLookupChecks")
-        .addItem("Check analysis sheets", "CFInspectAnalysis").addItem("Check all research sheets", "CFInspectWorkspace").addToUi();
+        .addItem("Check analysis sheets", "CFInspectAnalysis").addItem("Check all research sheets", "CFInspectWorkspace")
+        .addItem("Check formula workbook", "CFValidateFormulaWorkbook").addToUi();
+}
+
+function CFFormulaModules_() {
+    if (typeof CFFormulaWorkbook === "undefined" || typeof CFFormulaViews === "undefined" || typeof CFFormulaHistory === "undefined" || typeof CFFormulaResearch === "undefined" || typeof CFFormulaOptions === "undefined") return null;
+    return { views: CFFormulaViews, history: CFFormulaHistory, research: CFFormulaResearch, options: CFFormulaOptions,
+        images: typeof CFProviderImages === "undefined" ? null : CFProviderImages };
 }
 
 function CFBuildAnalysis() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the spreadsheet before building the analysis.");
+    const formulaModules = CFFormulaModules_();
+    if (formulaModules) return CFFormulaWorkbook.build(book, formulaModules);
     if (typeof CFAnalysisSheets.check_ === "function") CFAnalysisSheets.check_(book);
     if (typeof CFAnalysisVisuals !== "undefined") CFAnalysisVisuals.check(book, false);
     if (typeof CFAnalysisStrategies !== "undefined") CFAnalysisStrategies.check(book);
@@ -208,6 +218,8 @@ function CFBuildAnalysis() {
 function CFRefreshAnalysis() {
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (!book) throw new Error("Open the analysis spreadsheet first.");
+    const formulaModules = CFFormulaModules_();
+    if (formulaModules) return CFFormulaWorkbook.refresh(book, formulaModules);
     const lock = LockService.getDocumentLock();
     if (!lock || !lock.tryLock(1000)) { book.toast("Another refresh is running. Wait for it to finish.", "Stock analysis", 8); return { ok: false, error: "Another refresh is running." }; }
     let phase = "read inputs";
@@ -263,6 +275,7 @@ function CFCheckAnalysisSources() {
 }
 
 function CFInspectAnalysis() {
+    if (CFFormulaModules_() && CFFormulaWorkbook.isFormulaBook(SpreadsheetApp.getActiveSpreadsheet())) return CFInspectFormulaWorkbook();
     const report = CFAnalysisSheets.inspect(SpreadsheetApp.getActiveSpreadsheet());
     const book = SpreadsheetApp.getActiveSpreadsheet();
     if (typeof CFAnalysisVisuals !== "undefined") report.research = CFAnalysisVisuals.inspect(book);
@@ -287,6 +300,7 @@ function CFCheckExpandedSources() {
 
 /** Read actual worksheet results after custom functions finish. This method sends no requests. */
 function CFInspectWorkspace() {
+    if (CFFormulaModules_() && CFFormulaWorkbook.isFormulaBook(SpreadsheetApp.getActiveSpreadsheet())) return typeof CFValidateFormulaWorkbook === "function" ? CFValidateFormulaWorkbook() : CFInspectFormulaWorkbook();
     const book = SpreadsheetApp.getActiveSpreadsheet(), analysis = CFAnalysisSheets.inspect(book);
     const report = { analysis, functions: null, watchlist: [], journalRows: 0, images: 0, formulaErrors: [] };
     if (typeof CFAnalysisVisuals !== "undefined") report.research = CFAnalysisVisuals.inspect(book);
@@ -322,6 +336,8 @@ function CFCheckTemplateKeys() {
 /** Simple onEdit only clears stale data; menu refresh performs authorized requests. */
 function CFAnalysisHandleEdit_(event) {
     if (!event?.range) return;
+    const formulaModules = CFFormulaModules_();
+    if (formulaModules && CFFormulaWorkbook.isFormulaBook(event.source)) { CFFormulaWorkbook.handleEdit(event, formulaModules); return; }
     if (typeof CFWatchlist !== "undefined") CFWatchlist.edit(event);
     const range = event.range;
     const sheet = range.getSheet();

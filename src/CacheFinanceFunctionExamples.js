@@ -28,6 +28,7 @@ class CFFunctionExamples {
         if (sheet && sheet.getRange("Z1").getValue() !== "CACHEFINANCE_FUNCTIONS_V1") throw new Error("Rename the existing Formulas tab before building the examples.");
     }
     static build(book) {
+        if (typeof CFFormulaWorkbook !== "undefined" && CFFormulaWorkbook.isFormulaBook(book) && typeof CFFormulaViews !== "undefined") return CFFormulaViews.buildFormulas(book);
         CFFunctionExamples.check(book);
         const existing = book.getSheetByName("Formulas"), counter = existing?.getRange("E4").getValue();
         const sheet = existing || book.insertSheet("Formulas");
@@ -75,6 +76,7 @@ class CFFunctionExamples {
         return { ok: true, functions: catalog.length, sheet: "Formulas" };
     }
     static refresh(book) {
+        if (typeof CFFormulaWorkbook !== "undefined" && CFFormulaWorkbook.isFormulaBook(book) && typeof CFRefreshAnalysis === "function") return CFRefreshAnalysis();
         CFFunctionExamples.check(book);
         const sheet = book.getSheetByName("Formulas");
         if (!sheet) return CFFunctionExamples.build(book);

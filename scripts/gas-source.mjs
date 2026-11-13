@@ -24,6 +24,7 @@ export const SOURCE_FILES = Object.freeze([
     "CacheFinanceAnalysisOptionModel.js",
     "CacheFinanceSmfProviders.js",
     "CacheFinanceResearchFunctions.js",
+    "CacheFinanceFormulaData.js",
     "CacheFinanceRsiTargets.js",
     "CacheFinanceFredValue.js",
     "CacheFinanceSheetNames.js",
@@ -35,6 +36,13 @@ export const SOURCE_FILES = Object.freeze([
     "CacheFinanceFunctionExamples.js",
     "CacheFinanceLookupChecks.js",
     "CacheFinanceProviderImages.js",
+    "CacheFinanceFormulaWorkbook.js",
+    "CacheFinanceFormulaHistory.js",
+    "CacheFinanceFormulaResearch.js",
+    "CacheFinanceFormulaOptions.js",
+    "CacheFinanceFormulaWatchlist.js",
+    "CacheFinanceFormulaViews.js",
+    "CacheFinanceFormulaChecks.js",
     "CacheFinanceAnalysis.js",
     "CacheFinanceMenu.js"
 ]);
@@ -138,6 +146,9 @@ export function validateBundleContent(content) {
     }
     if (/(?:\|\||&&|\?\?)=/.test(content)) {
         errors.push("contains logical assignment rejected by the Apps Script editor");
+    }
+    if (/\bstatic\s+[A-Za-z_$][\w$]*\s*=/.test(content)) {
+        errors.push("contains initialized static class fields rejected by the Apps Script editor; use static getters");
     }
 
     if (errors.length > 0) {

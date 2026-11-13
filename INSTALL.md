@@ -18,6 +18,8 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and formulas 
 4. Choose **Stock analysis → Refresh selected ticker**.
 5. Complete Google's authorization steps for your copy.
 6. If the refresh does not run after authorization, choose **Refresh selected ticker** again.
+7. Wait for the source formulas to finish.
+8. Open **Start here** for the formula walkthrough.
 
 The public template is read-only.
 Google copies its attached Apps Script into your spreadsheet.
@@ -50,7 +52,8 @@ No command line, local build or developer account is required.
 11. Complete Google's authorization steps for your copy.
 12. If the build does not run after authorization, choose **Build analysis sheets** again.
 
-The menu creates the analysis tabs and requests the initial ticker's data.
+The menu creates the analysis tabs, source formulas and charts.
+Google Sheets calculates the source formulas and their dependent cells.
 The default ticker is `NVDA`.
 The first refresh can take longer than later refreshes.
 
@@ -115,13 +118,14 @@ Those account restrictions can prevent authorization.
 1. Open **Analysis**.
 2. Enter a ticker in the yellow cell `B4`.
 3. Choose **Stock analysis → Refresh selected ticker**.
-4. Open **Sources** to inspect provider statuses and timestamps.
+4. Wait for the source formulas to finish.
+5. Open **Sources** to inspect provider results and timestamps.
 
 Supported examples include `NVDA`, `NASDAQ:AAPL`, `NYSE:IBM`, `TSE:RY` and `RY.TO`.
 The script updates the titles and charts for the selected ticker.
-A ticker edit clears the previous ticker's outputs before a new refresh.
+A ticker edit updates the source formulas that depend on **Analysis!B4**.
 
-The builder places the managed analysis tabs first and opens **Analysis!B4**.
+The builder places the managed analysis tabs first and opens **Start here**.
 It preserves other tabs and their contents.
 
 **Stock analysis → Provider chart links** creates an optional **Chart links** tab.
@@ -138,6 +142,7 @@ For a different option expiration:
 The dropdown contains published expiration dates.
 The options table covers the selected expiration.
 The research charts also sample several available maturities.
+The generated option calculations cover up to 1,000 contracts and warn when the source returns more rows.
 Some tickers have no supported options.
 A returned chain can also lack usable ATM quotes, implied volatility or premiums.
 Without valid calculator inputs, the model shows `n.a.` and the payoff table uses intentional `#N/A` gaps.
@@ -200,17 +205,20 @@ The builder creates these tabs:
 
 | Tab | Contents |
 | --- | --- |
+| **Start here** | Formula walkthrough, source-cell trace and workbook controls |
 | **Analysis** | Ticker input, quote, indicators and company summary |
-| **Price history** | Daily prices, adjusted returns and benchmark columns |
+| **Quote data** | Shared quote, comparison, expiration and RSI2 source formulas |
+| **Price history** | Daily-price source table, visible indicator formulas, helpers and benchmark tables |
 | **Fundamentals** | Published fields, units and sources |
 | **Earnings** | Separate earnings results, financial statements, estimates and events |
 | **Options** | Selected-expiration chain and option model |
 | **Macro** | Four FRED series, with your key |
-| **Sources** | Provider statuses, timestamps and usage notes |
+| **Sources** | Links to source formula cells, returned-data statuses and timestamps |
 | **Research** | Additional charts, earnings summary and selected Finviz, Zacks and GuruFocus fields |
 | **Watchlist** | Up to 20 ticker inputs and summary values |
-| **Journal** | Public snapshots and changes between refreshes |
-| **Formulas** | Function reference and live formula examples |
+| **Watchlist data** | One source table per other ticker; the selected ticker reuses its existing sources |
+| **Journal** | Explicitly recorded observations and formulas for changes between entries |
+| **Formulas** | Function reference, linked examples and formula-text examples |
 | **Strategies** | Editable covered call, cash-secured put and vertical payoff models |
 
 The strategy worksheet uses the selected expiration.
@@ -223,30 +231,39 @@ It refuses to overwrite a same-named tab without the matching marker.
 Other tabs remain available for your own work.
 Rebuilding managed tabs can replace their generated contents and formatting.
 The journal keeps prior public snapshots for comparisons.
+An upgrade from an older workbook can rebuild the managed tabs to install this formula layout.
+Other tabs, saved keys, watchlist ticker inputs and prior journal rows remain available.
 
 For the watchlist:
 
 1. Enter up to 20 tickers in **Watchlist!A8:A27**.
 2. Choose **Stock analysis → Refresh watchlist**.
 
-Watchlist refreshes request quote, history and fundamental data.
-They do not run the full options and macro workflow for each row.
+Watchlist formulas request quote, history and fundamental data for the other tickers.
+The selected stock's row references its existing source tables.
+`CFWATCHROW` calculates compact indicators for the other tickers inside Apps Script.
 The journal compares earlier rows for the same symbol and currency.
 The first snapshot has no prior change value.
+After the source formulas finish, choose **Stock analysis → Record journal snapshot** to save the displayed observations.
+Refreshes do not append journal rows automatically.
 
 For cell formulas:
 
 1. Open **Formulas**.
 2. Review the example formulas and their units.
-3. To request new formula results, choose **Stock analysis → Refresh formula examples**.
+3. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!A7** to follow the displayed price.
+4. To request new results, choose **Stock analysis → Refresh formula examples**.
 
 The [function reference](FUNCTIONS.md) gives every public signature and its supported arguments.
 The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and copyable formulas for custom tabs.
 Google limits each custom function to [30 seconds](https://developers.google.com/apps-script/guides/sheets/functions#return_values).
-The menu workflow handles larger requests and several maturities.
+Each source function returns its own table. Ordinary spreadsheet formulas read those tables.
 
 The functions cache results. They do not stream prices continuously or refresh your custom tabs on a schedule.
-A manual refresh number can request new results for your own formulas.
+All generated source formulas share **Analysis!E4** as their refresh number.
+The refresh menus increment that number and reset the generated calculator assumptions.
+**Formulas!E4** and **Watchlist!E4** reference **Analysis!E4**.
+A custom tab can reference that cell or use its own manual refresh number.
 The [build-your-own guide](BUILD-YOUR-OWN.md#1-create-the-controls) explains this input.
 
 ## Check the added lookups
@@ -308,7 +325,8 @@ An unrelated tab with one of these names also blocks the upgrade.
 Resolve the name conflict, then run the refresh again. Do not delete your older tabs to upgrade their names.
 
 Replacing the code file keeps the saved keys in the same project's Script Properties.
-The refresh replaces managed analysis contents and charts.
+The first refresh of an older layout rebuilds the managed tabs with source formulas and formula-driven views.
+Later refreshes preserve that layout and increment **Analysis!E4**.
 Custom tabs remain separate, and the journal keeps its prior snapshots.
 Keep custom notes and formulas on your own tabs.
 

@@ -10,7 +10,8 @@ Your copy requests new data when you run a refresh.
 FRED requires your own key in your copy.
 
 The analysis runs in the spreadsheet owner's Apps Script project.
-The script creates the tabs and charts and downloads provider data when you refresh.
+The script creates the tabs, source formulas and charts.
+Data-returning cell functions request provider data. Other cells calculate from those source tables.
 The [installation guide](INSTALL.md) includes the template workflow.
 The [function reference](FUNCTIONS.md) lists reusable formulas and supported provider fields.
 The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs from those formulas.
@@ -21,6 +22,33 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) explains how to create custom tabs
 - Price history and numeric charts show trends, returns and indicators.
 - Earnings, fundamentals and published option chains provide more detail when their providers supply it.
 - A watchlist, option calculators and economic series show other ways to use the functions.
+
+## Follow a result through its formulas
+
+Open **Start here** for the walkthrough inside the workbook.
+Click each of these cells and inspect the formula bar:
+
+| Cell | What it contains |
+|---|---|
+| Analysis!B9 | `=Formulas!B23`, the dashboard price reference |
+| Formulas!B23 | An `INDEX` / `MATCH` lookup of the price in Quote data |
+| Quote data!A7 | `=CFQUOTE(Analysis!$B$4,"all",Analysis!$E$4)`, the quote source table |
+| Price history!A7 | `CFHISTORY`, the source for daily prices and volume |
+| Price history!I57 | A visible SMA50 formula |
+| Price history!P22 | A visible Wilder RSI14 formula |
+
+Only the top-left cell of a returned table contains its data function.
+The neighboring cells contain that function's expanded results.
+The indicator columns contain ordinary spreadsheet formulas, with labeled helpers to the right.
+Options and strategy results use cell formulas that call `CFOPTIONMODEL` and `CFSTRATEGY`.
+
+All generated source formulas use one refresh number: **Analysis!E4**.
+**Formulas!E4** and **Watchlist!E4** reference that same cell.
+The refresh menu changes the number and resets calculator assumptions.
+Google Sheets then recalculates the dependent formulas.
+The dashboard and examples read those same source tables.
+**Analysis!K4** holds the calculation date for option days and maturity selection.
+The refresh menu resets this date. If you increase the refresh number manually on a later day, update K4 too.
 
 ## Try the sample
 
@@ -39,35 +67,39 @@ Enter the ticker in **Analysis!B4**, then choose **Stock analysis → Refresh se
 Examples include `NVDA`, `AAPL`, `NYSE:IBM`, `TSE:RY` and `RY.TO`.
 Bare US tickers use Yahoo's returned exchange before requesting comparison quotes.
 
-Titles and chart legends follow this input.
-Editing it clears the previous stock's data and charts.
-The edit handler makes no external requests; the refresh menu downloads the new data.
-The formula examples can recalculate separately when their ticker input changes.
-A result from an earlier ticker is discarded if you change the ticker during a refresh.
+Titles, source formulas and charts follow this input.
+Cell headings update immediately. **Refresh selected ticker** updates chart titles before requesting fresh source data.
+If Google cannot update a chart title, a message beside the ticker asks you to refresh again after the data loads.
+Wait for source functions to finish before reading the results or recording a journal entry.
+Use **Sources** to inspect unavailable data and source timestamps.
 
 ## Tabs
 
 | Tab | Contents |
 |---|---|
+| Start here | A short walkthrough, formula trace and controls for learning from the workbook. |
 | Analysis | Current quote, indicator summary, provider comparison and three trend charts. |
-| Price history | Two-year daily OHLCV, adjusted close, moving averages, MACD, RSI14, drawdown and SPY/QQQ comparisons. |
+| Price history | A CFHISTORY source table, visible moving-average/RSI/MACD/return formulas, helpers and SPY/QQQ source tables. |
+| Quote data | CFQUOTE, CFQUOTECOMPARE, CFEXPIRATIONS and CFRSITARGETS source formulas used by other tabs. |
 | Fundamentals | Sourced valuation, financial, ownership and trading fields from the selected quote page. |
 | Earnings | Separate GAAP and adjusted EPS results, annual/quarterly financial data, estimates, earnings dates, dividends and splits when supplied. |
 | Options | Expiration selector, selected-expiration quotes, implied volatility, volume/open interest and an editable option calculator. |
 | Macro | FRED series levels, observation dates and histories. |
-| Sources | Request results, returned ticker identity, retrieval/quote times and brief calculation notes. |
+| Sources | Links to source formula cells, returned-data statuses, observation times and notes. This tab does not request providers again. |
 | Research | Earnings comparisons, financial growth, additional provider fields and up to 15 further charts. |
 | Strategies | Editable covered-call, cash-secured-put and call/put vertical calculations, source bids/asks and payoff chart. |
-| Watchlist | Up to 20 ticker inputs, quotes, returns, indicators, valuation and changes since the previous refresh. |
-| Journal | Public values and changes recorded by selected-stock and watchlist refreshes. |
-| Formulas | Function reference and live examples that follow the selected ticker. |
+| Watchlist | Up to 20 ticker inputs, quotes, returns, indicators, valuation and changes since the latest saved journal observation. |
+| Journal | Saved observations recorded explicitly after formulas finish, plus formulas for changes between entries. |
+| Formulas | Function reference, linked examples and FORMULATEXT examples that trace the existing source tables. |
+| Watchlist data | One CFWATCHROW source for each other ticker. The selected stock reuses Quote data. |
 | Chart links | Provider chart links and manual-copy guidance, created by **Provider chart links**. |
 
 The sample's optional **Notes** tab is for your own notes; the script leaves it unchanged during refresh.
 
 `N/A` means the source or calculation did not supply a value.
 A reported zero remains zero.
-Times display in the spreadsheet's time zone.
+Provider timestamps ending in `Z` remain in UTC.
+Saved Journal observation times display in the spreadsheet's time zone.
 
 ## Charts and images
 
@@ -80,7 +112,8 @@ The overview and option calculator create four native Google Sheets charts:
 
 The research tab adds volume, MACD, EPS actual/estimate, revenue/net-income, IV-by-strike, open-interest and IV-by-expiration charts.
 It also adds separate charts for the four FRED series.
-Each chart requires accepted data, so the chart count varies by ticker and provider access.
+Charts use numeric formula results. Missing results create gaps.
+FRED charts remain empty until your copy can access FRED with your own key.
 GAAP and adjusted results have separate charts.
 Annual and quarterly financial periods also stay separate.
 
@@ -94,15 +127,15 @@ StockCharts' [reprint policy](https://help.stockcharts.com/learning-more/policie
 
 The current quote combines matching Yahoo Chart metadata and Yahoo quote-page session fields.
 The overview selects an accepted newer pre-market or after-hours quote for the provider's reported session.
-It shows the selected session, its timestamp and its published change.
+It shows the selected session and its quote timestamp.
 The comparison table also shows separate regular, pre-market and after-hours rows.
 The quote timestamp can precede the latest retrieval time.
 Yahoo can publish a current-day bar whose closing price is still missing.
 The overview shows **Indicators through** separately and uses the latest published close for indicator summaries.
 The unfinished bar remains in the history with missing close values.
 
-SMA, EMA, MACD and Wilder RSI14 use Yahoo closing prices.
-Adjusted returns, log-return volatility and drawdown use adjusted close.
+Visible formulas in **Price history** calculate SMA, EMA, MACD and Wilder RSI14 from Yahoo closing prices.
+Other formulas calculate adjusted returns, log-return volatility and drawdown from adjusted close.
 Annualized volatility uses 252 trading sessions.
 SPY/QQQ charts align available dates and index adjusted prices to 100.
 They compare each instrument's local-currency return; the script does not convert foreign prices to USD.
@@ -116,10 +149,13 @@ The parser checks the underlying ticker, expiration, option type, strike and sta
 Nonstandard or mismatched contracts are excluded.
 
 Choose an available date in **Options!B4**, then refresh the selected ticker.
-The full chain covers that expiration. Changing the date clears the old chain before the next refresh.
+The full chain covers that expiration. Its source formula depends on the selected date.
+The generated option calculations cover up to 1,000 returned contracts and show a warning for a larger chain.
 The research comparison also requests up to four additional published dates through the same anonymous Yahoo session.
 It targets approximately 30, 90, 180 and 365 calendar days, plus the selected expiration.
-The table retains each leg's strike, bid, ask, midpoint, IV, volume and open interest.
+The source tables retain each leg's strike, bid, ask, midpoint, IV, volume and open interest.
+Research formulas select the nearest common call/put strike. Ties use the lower strike.
+If no common strike exists, the table retains the nearest individual legs and leaves mean ATM IV unavailable.
 Mean ATM IV requires a call and put at the same strike.
 The overview and maturity comparison use the same rule.
 Both legs require positive IV and an ordered bid/ask pair with a positive ask.
@@ -157,10 +193,14 @@ Provider fiscal EPS labels and provider financial-period labels remain unchanged
 
 Enter up to 20 tickers in the yellow cells on **Watchlist**.
 Choose **Stock analysis → Refresh watchlist** to load the table.
-Ticker edits clear the affected row before the next refresh.
+Ticker edits update the corresponding source formula. Wait for its result before reading the row.
 The watchlist uses Yahoo history and fundamentals, with no option-chain request for every stock.
+The selected stock's watchlist row references its existing source data.
+Other tickers use `CFWATCHROW`; that function calculates their compact indicator summaries in Apps Script.
 
-Selected-stock and watchlist refreshes append public values to **Journal**.
+After the source formulas finish, choose **Stock analysis → Record journal snapshot** to append displayed values to **Journal**.
+Refresh requests do not append journal rows automatically.
+The saved observation columns deliberately contain fixed values; the change columns contain formulas.
 The journal compares the previous row for the same underlying symbol and currency.
 It records price, RSI, earnings dates, EPS, analyst targets and available ATM IV.
 Missing values remain unavailable and do not create zero changes.
@@ -168,18 +208,39 @@ Watchlist tickers remain separate from the single-stock ticker input.
 
 ## Reusable functions
 
-`CFQUOTE`, `CFHISTORY`, `CFFUNDAMENTALS`, `CFOPTIONS`, `CFEXPIRATIONS`, `CFFRED`, `CFFREDVALUE`, `CFRSITARGETS` and `CFFIELD` work in user worksheets.
+`CFQUOTE`, `CFHISTORY`, `CFFUNDAMENTALS`, `CFEARNINGS`, `CFQUOTECOMPARE`, `CFOPTIONS`, `CFEXPIRATIONS`, `CFFRED`, `CFFREDVALUE`, `CFRSITARGETS`, `CFFIELD` and `CFWATCHROW` work in user worksheets.
 The formula tab includes RSI2 targets, exact-date FRED examples and separate regular-session and after-hours quotes.
 The [build-your-own guide](BUILD-YOUR-OWN.md) gives recipes for separate custom tabs.
 `CFDATASTATUS` returns source times and cache status for the corresponding dataset.
 `CFOPTIONMODEL` and `CFSTRATEGY` calculate from their entered assumptions.
 The original `CACHEFINANCE` and `CACHEFINANCES` functions remain available.
 
-The formula examples include an editable refresh number.
-Incrementing that number requests a new result without a volatile `NOW()` argument.
+The generated workbook uses **Analysis!E4** as its editable refresh number.
+The other refresh-number cells reference it.
+Incrementing the number requests new results without a volatile `NOW()` argument.
+The examples reference the same source tables as the dashboard.
 The formula cache stores public parsed data and retrieval times.
 It excludes API keys, anonymous Yahoo cookies, crumbs and raw provider pages.
 The function reference lists cache periods and text missing-data results.
+
+The main source formulas occupy these cells:
+
+| Source table | Formula cell |
+|---|---|
+| Selected quote and sessions | Quote data!A7 — `CFQUOTE` |
+| Provider/session comparison | Quote data!D7 — `CFQUOTECOMPARE` |
+| Published option expirations | Quote data!O7 — `CFEXPIRATIONS` |
+| RSI2 trigger targets | Quote data!A70 — `CFRSITARGETS` |
+| Daily prices and volume | Price history!A7 — `CFHISTORY` |
+| SPY and QQQ history | Price history!AA7 and AI7 — `CFHISTORY` |
+| Fundamental fields | Fundamentals!A7 — `CFFUNDAMENTALS` |
+| EPS, financials, estimates, dividends, splits, calendar | Earnings!A7, L7, U7, AF7, AK7 and AP7 — `CFEARNINGS` |
+| Selected-expiration contracts | Options!A7 — `CFOPTIONS` |
+| Additional provider fields | Research!A190, G190 and A230 — `CFFIELD` for Finviz, GuruFocus and Zacks |
+| Four economic histories | Macro!A15, G15, M15 and S15 — `CFFRED`, 400 observations each |
+
+Changing a source formula can affect several tabs that reference its table.
+The refresh menu preserves this layout. **Build analysis sheets** regenerates its managed tabs.
 
 ## FRED key
 
@@ -214,11 +275,12 @@ FRED observation dates identify periods, not publication times. A `.` observatio
 The analysis uses Yahoo Chart history, Yahoo quote-page details and the existing Google/Globe comparison adapters.
 The additional adapters cover 32 Finviz fields, the Zacks average price target and two GuruFocus dividend-yield fields.
 Each field keeps its source and units.
-The source table reports blocked or missing provider results without replacing them with another provider's value.
+The source tables retain blocked or missing provider results.
+**Sources** links to those tables and reads their existing results without additional provider requests.
 Stock dividend yields can use different provider definitions, including forward and trailing yield.
 The source columns retain the provider field and EPS basis.
 Availability in one ticker does not establish every ticker or data field.
 The [provider guide](PROVIDERS.md#providers) records the dated checks and remaining gaps.
 
 The **Check provider data** menu fetches a safe count/status summary without writing the analysis tabs.
-**Check analysis sheets** reads the rendered tables and chart titles without making provider requests.
+**Check formula workbook** reads the source cells, formulas and charts without making provider requests.

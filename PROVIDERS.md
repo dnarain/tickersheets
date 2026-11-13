@@ -78,6 +78,57 @@ Local tests check parsers, calculations, caching and worksheet behavior with con
 A run inside Google Apps Script checks access from Google's network.
 A successful request from a local computer cannot replace a failed Google Sheets result.
 
+### Check the formula workbook
+
+The generated workbook uses source functions for provider tables and spreadsheet formulas for its displayed calculations.
+Normal refreshes increment **Analysis!E4** and reset calculator assumptions.
+The dashboard and examples read the same source tables.
+The **Sources** tab reads those existing cells and makes no provider requests.
+The separate **Check provider data** command deliberately requests provider diagnostics.
+
+1. Open **Start here** and follow its price trace.
+2. Inspect **Analysis!B9**, **Formulas!B23** and **Quote data!A7** in the formula bar.
+3. Check that the displayed price equals the `price` row in the quote table.
+4. Inspect the visible indicator formulas and their labeled helpers in **Price history**.
+5. Change **Analysis!B4**, refresh, and wait for all source formulas to finish.
+6. Check **Sources** for source errors, missing rows and observation times.
+7. Choose **Stock analysis → Check formula workbook** for a read-only inspection.
+8. After formulas finish, choose **Record journal snapshot** to save the displayed observations.
+
+**Formulas!E4** and **Watchlist!E4** must reference **Analysis!E4**.
+Changing the shared number must recalculate the generated source tables.
+Normal refreshes must not call `CFAnalysisService.collect` or append journal rows.
+The selected stock's watchlist row must reference its existing source tables.
+Other watchlist tickers use one `CFWATCHROW` table each.
+
+Use these additional assertions for controlled data and native spreadsheet checks:
+
+| Area | Assertions |
+|---|---|
+| Technical indicators | Compare SMA, EMA, Wilder RSI14, MACD, returns and volatility with controlled history. Include short, flat and missing-price series. Preserve valid zeros. |
+| Earnings | Keep GAAP/adjusted EPS and annual/quarterly financial periods separate. Require matching currencies and consecutive periods for growth. Reject conflicting duplicate periods. |
+| Options | Check nearest common strikes and lower-strike ties. Preserve partial legs and missing IV. **Options!Y4** must equal **Research!Q25**. |
+| Option capacity | Verify that a chain with more than 1,000 contracts produces a visible calculation-range warning. |
+| FRED | Check all four 400-observation sources, published units, missing dates and numeric zero. A missing key must remain unavailable. |
+| Journal | Record after calculations finish. Preserve old observations and compare entries for the same symbol and currency. |
+| Formula errors | Report unexpected `#REF!`, `#VALUE!` and circular-reference errors. Chart helper formulas deliberately use `#N/A` for unavailable points. |
+
+Local tests inspect formula text and controlled results.
+A native Google Sheets run must separately check calculation results, expanded tables, chart ranges and loading behavior.
+The dated results in this file describe their stated runs. They do not establish a pass for a later formula-layout change.
+
+The **November 12, 2026 formula-workbook checks** included:
+
+- AAPL: **5,534 checks passed**, including **5,102 numerical comparisons**, with no formula failures or pending calculations.
+- The public sample passed **5,534 checks** for AAPL and again after switching back to NVDA, with no formula failures or pending calculations. All five option tables waited for the expiration response for the current refresh number before requesting their chains.
+- **26 controlled worksheet cases passed** for conflicting and repeated earnings records, missing periods, zero denominators, same-strike option pairs, partial IV, and FRED gaps and zeros.
+- All five AAPL maturities returned quotes and IV after removing volatile date dependencies. Option prices and Greeks recalculated after changing the selected expiration.
+- All nine invalid-ticker assertions passed. Missing prices, RSI targets and expiration dates stayed unavailable, with no false zeros or 1899 dates.
+- The public template's five provider-key settings were all empty.
+
+These checks used public stock and option sources. This run checked FRED's worksheet calculations with controlled observations; it did not use a live FRED key.
+The sample uses a written calculation date in **Analysis!K4** because custom functions must have deterministic inputs. See [Google's argument rules](https://developers.google.com/apps-script/guides/sheets/functions#arguments).
+
 ### Run the eight original adapter checks
 
 Use a **separate private spreadsheet** for the diagnostic bundle.
@@ -114,7 +165,7 @@ These historical results cover selected cases and have not established every pro
 5. Open **Extensions → Apps Script → Executions** to read those commands' sanitized summaries.
 6. Choose **Build lookup checks**, wait for formulas to finish, then choose **Inspect lookup checks**.
 7. Open **Lookup tests** and review each result. Missing keys and blocked requests remain **BLOCKED**.
-8. Choose **Check all research sheets** to inspect rendered tables and charts without fetching provider data.
+8. Choose **Check formula workbook** to inspect source cells, formulas and charts without fetching provider data.
 
 The lookup tab checks RSI2 outputs and exact-date FRED results.
 Its fixed dates describe the November 2026 snapshot.
@@ -161,8 +212,10 @@ npm run build:provider-tests:check
 Commit the relevant source, test and generated `dist/` changes together.
 The tests and public fixtures remain in [test/](test/).
 Use `npm run test:watch` while editing, or `npm run test:coverage` for the coverage report in `coverage/index.html`.
-The **November 12, 2026** local run passed **1,277 tests in 34 files**.
-Coverage was 96% of lines, 89.15% of branches and 96.74% of functions.
+The **November 12, 2026** local run passed **1,428 tests in 41 files**.
+Coverage was 93.38% of lines, 88.56% of branches and 94.41% of functions.
+The visible history formulas also passed 29,363 numerical comparisons against the existing indicator calculations.
+Those comparisons included missing prices, flat prices, moving-average warm-up periods, RSI, MACD, returns and volatility.
 Those numbers describe controlled local tests, separate from the dated Google Sheets results above.
 
 ### Read and share results
