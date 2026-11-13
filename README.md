@@ -6,8 +6,8 @@ TickerSheets is our Google Sheets application for researching one stock, its opt
 It creates analysis tabs, charts, earnings tables, a watchlist and reusable formulas in your spreadsheet's Apps Script project.
 It requires no hosted server.
 
-[View the sample spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
-The **Single Stock Analysis** sample demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
+[View TickerSheet Demo and Tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) or [make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
+The **TickerSheet Demo and Tutorial** workbook demonstrates one-ticker research tabs, charts, earnings, option chains and a watchlist.
 You can also create your own spreadsheet with the same functions.
 
 Open **Start here** in your copy to learn from the working formulas.

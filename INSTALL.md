@@ -10,7 +10,7 @@ The [build-your-own guide](BUILD-YOUR-OWN.md) gives cell locations and formulas 
 
 ## Option 1: Copy the template
 
-[Copy the Single Stock Analysis sample](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
+[Copy TickerSheet Demo and Tutorial](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy).
 
 1. Open the copy link while signed in to your chosen Google account.
 2. Click **Make a copy** in Google's copy dialog.

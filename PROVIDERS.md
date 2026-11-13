@@ -47,7 +47,7 @@ Inspect a mismatch and its source times before deciding whether the calculation 
 Worksheet/function agreement does not independently reconcile financial values against exchange data or company filings.
 
 We also verified the November 12 upgrade of 14 application tabs in the private workbook and 13 in the public sample.
-Both workbooks use the sample title **Single Stock Analysis**.
+Both workbooks used the title **Single Stock Analysis** during those checks. The maintained sample is now **TickerSheet Demo and Tutorial**.
 Ticker/expiration inputs, strategy assumptions, watchlist tickers and journal rows remained unchanged during the rename.
 Both workbook inspections reported zero formula errors and retained their charts and models.
 We have not verified installation and authorization from a new Google account.
