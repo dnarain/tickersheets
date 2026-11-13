@@ -6,10 +6,7 @@ TickerSheets started with [CacheFinance](https://github.com/demmings/cachefinanc
 We thank them for publishing code that we could learn from, run and extend.
 Their work showed us what was possible in Google Sheets and gave this project its starting point.
 
-CacheFinance supports providers beyond Google's `GOOGLEFINANCE` function.
-For our research, we found the data available through `GOOGLEFINANCE` too limited.
-We developed additional provider requests, calculations and worksheet functions, then moved to TickerSheets' own function API.
-TickerSheets is independently maintained.
+For our research, we found the data available through `GOOGLEFINANCE` too limited. We developed additional provider requests, calculations and worksheet functions.
 
 The current TickerSheets distribution contains its own function library and supported provider requests.
 The original project remains available at [demmings/cachefinance](https://github.com/demmings/cachefinance) for people who want to use it separately.
