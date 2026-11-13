@@ -2,47 +2,21 @@
 
 This reference covers sixteen `TICKERSHEETS_...` worksheet functions.
 All requests run in Google Apps Script. No hosted server is required.
-The [provider guide](PROVIDERS.md#providers) lists data sources, API key requirements and dated test results.
-
-See [INSTALL.md](INSTALL.md) for installation and API key settings.
-See [SAMPLE.md](SAMPLE.md) for the tutorial, stock analysis and options analysis.
-The [build-your-own guide](BUILD-YOUR-OWN.md) combines these functions into a spreadsheet with one ticker input.
-
-## Start with one cell formula
-
-After installation, enter `NVDA` in `A1` on your own tab.
-Enter this formula in another cell:
-
-```excel
-=TICKERSHEETS_QUOTE(A1,"price")
-```
-
-That cell contains the formula and shows the returned price.
-You can use the function in ordinary worksheet cells.
-Other individual fields use the same pattern:
-
-```excel
-=TICKERSHEETS_QUOTE(A1,"post_market_price")
-=TICKERSHEETS_FUNDAMENTALS(A1,"trailing_pe")
-=TICKERSHEETS_FUNDAMENTALS(A1,"eps_ttm")
-```
+The tables list each function's data source and API-key requirement.
+The [user guide](GUIDE.md) covers installation, the example spreadsheet and writing your own formulas.
 
 ## Refresh data
 
-Choose **TickerSheets → Refresh data** to request new results from the installed functions.
-Google Sheets recalculates the field functions, table functions and formulas that read their results.
-
-The demo has three tabs: **Start here**, **Stock analysis** and **Options analysis**.
-**Start here!B4** contains its ticker, and **B7** contains `=TICKERSHEETS_QUOTE($B$4,"price")`.
-**C7:C15** shows the formulas beside their results.
 The functions can reuse parsed provider data from their cache.
+Google Sheets does not automatically recalculate a formula when a cache entry expires.
+See the [user guide](GUIDE.md#use-the-example-spreadsheet) for the **Refresh data** command.
 Google requires each custom function to return within **30 seconds**.
 Google also rejects volatile arguments such as `NOW()` and `RAND()`.
 These limits come from [Google's custom function guide](https://developers.google.com/apps-script/guides/sheets/functions#guidelines_for_custom_functions).
 
 ## Tickers and missing values
 
-The research functions accept Yahoo symbols and supported exchange prefixes:
+The Yahoo functions accept symbols and supported exchange prefixes:
 
 | Input | Yahoo symbol |
 | --- | --- |
@@ -56,16 +30,13 @@ The research functions accept Yahoo symbols and supported exchange prefixes:
 Bare US tickers do not imply a particular exchange. The quote response identifies the exchange.
 The selected Finviz, Zacks and GuruFocus routes support US symbols only.
 
-For the detailed function examples that follow:
-
-1. Enter `NVDA` in cell `B1` on an empty worksheet.
-2. Put each example in a separate empty area.
-3. To request another result, re-enter its formula or change its ticker input.
+The examples use `NVDA` in `B1` unless they include a ticker directly.
+Each table formula needs its own empty output area.
 
 Do not put an API key in a formula or ticker cell.
 The functions can reuse recent cached results and do not stream continuously.
 
-Research functions return these values for unavailable data:
+The functions return these text values for unavailable data:
 
 | Result | Meaning |
 | --- | --- |
@@ -86,26 +57,48 @@ Your own spreadsheet formulas can calculate from the returned tables.
 
 ## Function list
 
-| Function | Result | Source |
-| --- | --- | --- |
-| `TICKERSHEETS_QUOTE` | Quote value or quote table | Yahoo Chart and quote page |
-| `TICKERSHEETS_PROVIDER_QUOTE` | Quote value or field table from one selected keyed provider | Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap |
-| `TICKERSHEETS_QUOTE_COMPARE` | Separate provider/session comparison rows | Yahoo, Finviz and GuruFocus |
-| `TICKERSHEETS_HISTORY` | Daily OHLCV table | Yahoo Chart |
-| `TICKERSHEETS_FUNDAMENTALS` | Fundamental value or field table | Yahoo quote page |
-| `TICKERSHEETS_EARNINGS` | Reported EPS, financials, estimates, events or earnings calendar | Yahoo quote-page details and Chart events |
-| `TICKERSHEETS_OPTIONS` | One expiration's option chain | Yahoo options |
-| `TICKERSHEETS_EXPIRATIONS` | Published option expiration dates | Yahoo options |
-| `TICKERSHEETS_FRED` | Economic series observations | FRED API, with your key |
-| `TICKERSHEETS_FRED_VALUE` | One exact-date economic observation | FRED API, with your key |
-| `TICKERSHEETS_RSI_TARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask |
-| `TICKERSHEETS_FIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus |
-| `TICKERSHEETS_DATA_STATUS` | Request status and timestamps | The selected request |
-| `TICKERSHEETS_WATCH_ROW` | Compact labeled fields for one watchlist ticker | Yahoo quote, history and fundamentals |
-| `TICKERSHEETS_OPTION_MODEL` | Theoretical option price or Greek | European Black–Scholes calculation |
-| `TICKERSHEETS_STRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions |
+| Function | Result | Source | Personal key |
+| --- | --- | --- | --- |
+| `TICKERSHEETS_QUOTE` | Quote value or quote table | Yahoo Chart and quote page | No |
+| `TICKERSHEETS_PROVIDER_QUOTE` | Quote value or field table from one selected provider | Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap | Matching provider key |
+| `TICKERSHEETS_QUOTE_COMPARE` | Separate provider/session comparison rows | Yahoo, Finviz and GuruFocus | No |
+| `TICKERSHEETS_HISTORY` | Daily OHLCV table | Yahoo Chart | No |
+| `TICKERSHEETS_FUNDAMENTALS` | Fundamental value or field table | Yahoo quote page | No |
+| `TICKERSHEETS_EARNINGS` | Reported EPS, financials, estimates, events or earnings calendar | Yahoo quote-page details and Chart events | No |
+| `TICKERSHEETS_OPTIONS` | One expiration's option chain | Yahoo options | No |
+| `TICKERSHEETS_EXPIRATIONS` | Published option expiration dates | Yahoo options | No |
+| `TICKERSHEETS_FRED` | Economic series observations | FRED API | FRED key |
+| `TICKERSHEETS_FRED_VALUE` | One exact-date economic observation | FRED API | FRED key |
+| `TICKERSHEETS_RSI_TARGETS` | RSI2, trigger targets and regular-session quote fields | Yahoo Chart / optional Yahoo bid/ask | No |
+| `TICKERSHEETS_FIELD` | Selected provider field or field table | Finviz, Zacks or GuruFocus | No |
+| `TICKERSHEETS_DATA_STATUS` | Request status and timestamps | The selected request | Required for a FRED dataset |
+| `TICKERSHEETS_WATCH_ROW` | Compact labeled fields for one watchlist ticker | Yahoo quote, history and fundamentals | No |
+| `TICKERSHEETS_OPTION_MODEL` | Theoretical option price or Greek | European Black–Scholes calculation | No provider request |
+| `TICKERSHEETS_STRATEGY` | Strategy result or expiration payoff | Calculation from your assumptions | No provider request |
 
-### Output size
+## Data sources
+
+| Provider | Data and access |
+|---|---|
+| Yahoo Finance | [Chart endpoint](https://query1.finance.yahoo.com/v8/finance/chart/NVDA), [quote pages](https://finance.yahoo.com/quote/NVDA/) and option endpoints supply stock and options data. Options use a temporary anonymous session. No personal Yahoo login is required. |
+| Finviz | [Quote pages](https://finviz.com/quote.ashx?t=NVDA&p=d) supply 32 selected public fields for US symbols. |
+| Zacks | [Price-target pages](https://www.zacks.com/stock/research/NVDA/price-target-stock-forecast) supply the average analyst target for US symbols. |
+| GuruFocus | [Dividend pages](https://www.gurufocus.com/stock/NVDA/dividend) supply public forward and trailing yields for US symbols. Premium datasets are outside this adapter. |
+| Finnhub | The [quote API](https://finnhub.io/docs/api/quote) supplies selected quote fields with your Finnhub key. |
+| Alpha Vantage | The [quote and exchange-rate APIs](https://www.alphavantage.co/documentation/) supply selected fields with your Alpha Vantage key. The default stock quote can be end-of-day. |
+| Twelve Data | The [quote API](https://twelvedata.com/docs/market-data/quote) supplies selected fields with your Twelve Data key. Bar-opening time and quote time remain separate fields. |
+| CoinMarketCap | The [cryptocurrency quotes API](https://coinmarketcap.com/api/documentation/pro-api-reference/cryptocurrency#quotes-latest) supplies selected cryptocurrency fields with your CoinMarketCap key. |
+| FRED | The official [series](https://fred.stlouisfed.org/docs/api/fred/series.html) and [observations](https://fred.stlouisfed.org/docs/api/fred/series_observations.html) APIs supply economic data with your FRED key. |
+
+A website subscription does not automatically grant API access.
+The Finviz, Zacks and GuruFocus functions use public pages and accept no subscription credentials.
+Keyed-provider plans control symbol access, request limits and quote delays.
+Provider pages can block requests, change format or omit individual fields.
+An accepted response can still contain unavailable values.
+A recent retrieval time does not establish a recent trade.
+The function sections describe each field's meaning, units and timestamps.
+
+## Output size
 
 These sizes apply to successful requests. An unavailable dataset can return one explanatory text value instead of a table.
 
@@ -133,6 +126,8 @@ These sizes apply to successful requests. An unavailable dataset can return one 
 Leave the entire output area empty before entering a table formula.
 
 ## TICKERSHEETS_QUOTE
+
+Source: Yahoo Chart and quote pages. No personal key is required.
 
 ```text
 TICKERSHEETS_QUOTE(ticker, field="price", refresh="")
@@ -210,6 +205,8 @@ On your own tab, change the ticker or re-enter the formula.
 
 ## TICKERSHEETS_PROVIDER_QUOTE
 
+Sources: Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap. The selected provider requires your key.
+
 ```text
 TICKERSHEETS_PROVIDER_QUOTE(ticker, provider, field="price", refresh="")
 ```
@@ -218,7 +215,7 @@ This function requests one selected provider directly and requires your own key 
 `TICKERSHEETS_QUOTE` continues to use Yahoo without a personal key.
 Saving keys does not change that default source.
 
-Choose **TickerSheets → API keys…** to save keys before you enter these formulas:
+Save the matching key with the [API-key instructions](GUIDE.md#save-api-keys) before using these formulas:
 
 ```excel
 =TICKERSHEETS_PROVIDER_QUOTE("NVDA","FINNHUB","price")
@@ -283,6 +280,8 @@ The **Refresh data** menu includes these formulas.
 
 ## TICKERSHEETS_HISTORY
 
+Source: Yahoo Chart. No personal key is required.
+
 ```text
 TICKERSHEETS_HISTORY(ticker, sessions=252, refresh="")
 ```
@@ -317,6 +316,8 @@ Use Adjusted close for returns that follow Yahoo's adjustments.
 Keep the calculation date separate from a newer current quote.
 
 ## TICKERSHEETS_FUNDAMENTALS
+
+Source: Yahoo quote pages. No personal key is required.
 
 ```text
 TICKERSHEETS_FUNDAMENTALS(ticker, field="all", refresh="")
@@ -369,6 +370,8 @@ An individual field call returns only its value.
 
 ## TICKERSHEETS_EARNINGS
 
+Sources: Yahoo quote pages and Chart events. No personal key is required.
+
 ```text
 TICKERSHEETS_EARNINGS(ticker, section="earnings", refresh="")
 ```
@@ -409,6 +412,8 @@ Match the financial period, frequency and currency before calculating growth.
 
 ## TICKERSHEETS_QUOTE_COMPARE
 
+Sources: Yahoo, Finviz and GuruFocus. No personal key is required.
+
 ```text
 TICKERSHEETS_QUOTE_COMPARE(ticker, refresh="")
 ```
@@ -435,14 +440,15 @@ The table does not rank the providers or replace a missing provider value with a
 
 ## TICKERSHEETS_EXPIRATIONS and TICKERSHEETS_OPTIONS
 
+Source: Yahoo options. No personal key is required.
+
 ```text
 TICKERSHEETS_EXPIRATIONS(ticker, refresh="", includeRefresh=FALSE)
 TICKERSHEETS_OPTIONS(ticker, expiration="", refresh="")
 ```
 
 `TICKERSHEETS_EXPIRATIONS` returns one column with the header `Expiration`.
-With `includeRefresh=TRUE`, it adds a `Refresh number` column. Existing two-argument calls keep their one-column output.
-This optional column supports existing formulas that track an explicit refresh argument.
+With `includeRefresh=TRUE`, it adds a `Refresh number` column for formulas that track an explicit refresh argument.
 Each date uses `YYYY-MM-DD` text.
 `TICKERSHEETS_OPTIONS` returns the chain for one published expiration.
 If `expiration` is empty, the function requests the provider's default expiration.
@@ -492,6 +498,8 @@ Provide enough empty rows and twelve empty columns for its returned table.
 
 ## TICKERSHEETS_FRED
 
+Source: FRED API. Your FRED key is required.
+
 ```text
 TICKERSHEETS_FRED(seriesId, observations=60, refresh="")
 ```
@@ -515,9 +523,8 @@ A missing observation, including FRED's `.` marker, returns `N/A`.
 Observation dates describe economic periods or sessions.
 They do not necessarily identify publication dates.
 
-The function reads your `FRED_API_KEY` from Script Properties.
-Choose **TickerSheets → API keys…**, enter the key in **FRED**, then click **Save keys**.
-FRED requires each user to [request their own API key](https://fred.stlouisfed.org/docs/api/api_key.html).
+The function requires your own FRED API key.
+The [user guide](GUIDE.md#save-api-keys) explains how to get and save it.
 The key is never a formula argument.
 
 The returned unit controls interpretation:
@@ -532,6 +539,8 @@ Do not apply ordinary percentage formatting to a FRED percent level such as `4.2
 Google Sheets shows `425%` with that formatting.
 
 ## TICKERSHEETS_FRED_VALUE
+
+Source: FRED API. Your FRED key is required.
 
 ```text
 TICKERSHEETS_FRED_VALUE(seriesId, date, refresh="")
@@ -565,6 +574,8 @@ Missing keys, provider failures and absent observations remain explanatory text 
 This function returns one observation value. It does not return series titles, releases or other metadata selectors.
 
 ## TICKERSHEETS_RSI_TARGETS
+
+Source: Yahoo Chart, with optional Yahoo bid/ask requests. No personal key is required.
 
 ```text
 TICKERSHEETS_RSI_TARGETS(ticker, lowTrigger=20, highTrigger=80, field="all", refresh="")
@@ -631,6 +642,8 @@ Choose **TickerSheets → Refresh data** to request another snapshot.
 On your own tab, re-enter the formula to recalculate it.
 
 ## TICKERSHEETS_FIELD
+
+Sources: public Finviz, Zacks and GuruFocus pages. No personal key is required.
 
 ```text
 TICKERSHEETS_FIELD(provider, ticker, field="all", refresh="")
@@ -709,6 +722,8 @@ A blocked page, changed page or unavailable field remains unavailable.
 
 ## TICKERSHEETS_DATA_STATUS
 
+Source: the selected dataset request. FRED requests require your FRED key.
+
 ```text
 TICKERSHEETS_DATA_STATUS(ticker, dataset="quote", argument="", refresh="")
 ```
@@ -781,6 +796,8 @@ These periods apply to the TickerSheets functions.
 
 ## TICKERSHEETS_WATCH_ROW
 
+Sources: Yahoo quotes, history and fundamentals. No personal key is required.
+
 ```text
 TICKERSHEETS_WATCH_ROW(ticker, refresh="")
 ```
@@ -811,6 +828,8 @@ You can use one `TICKERSHEETS_WATCH_ROW` call per ticker to build your own watch
 Leave two columns and enough rows empty for each returned summary.
 
 ## TICKERSHEETS_OPTION_MODEL
+
+The function uses European Black–Scholes calculations and makes no provider request.
 
 ```text
 TICKERSHEETS_OPTION_MODEL(spot, strike, days, iv, rate, dividendYield, type, metric="price")
@@ -855,6 +874,8 @@ The function returns `n.a.` for an invalid input or unavailable metric.
 At expiration, price equals intrinsic value and several Greeks are unavailable.
 
 ## TICKERSHEETS_STRATEGY
+
+The function calculates from your assumptions and makes no provider request.
 
 ```text
 TICKERSHEETS_STRATEGY(strategy, spot, longStrike, longPremium, shortStrike, shortPremium,
@@ -937,7 +958,7 @@ Use cell references for editable strategy assumptions in your own worksheet.
 
 ## Advanced: explicit refresh argument
 
-The request-function signatures retain an optional `refresh` argument for existing formulas and custom integrations.
+The request functions accept an optional `refresh` argument.
 Normal sample formulas omit this argument.
 An explicit value accepts a whole number from `0` through `2147483647`, or an empty value.
 A changed explicit value selects a different cache entry.
@@ -947,8 +968,8 @@ Volatile functions such as `NOW()`, `RAND()` and `RANDBETWEEN()` are not support
 
 ## Keys and sharing
 
-The **TickerSheets → API keys…** form supports Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED.
-The form stores keys in Script Properties, outside worksheet cells:
+FRED and the four keyed quote providers require your own keys.
+The attached script stores keys in these Script Properties:
 
 | Provider | Script Property |
 |---|---|
@@ -958,12 +979,6 @@ The form stores keys in Script Properties, outside worksheet cells:
 | CoinMarketCap | `COINMARKET_API_KEY` |
 | FRED | `FRED_API_KEY` |
 
-Leaving a field blank preserves its saved key.
-The sidebar deletes a key after you select **Remove saved key** and click **Save keys**.
-The sidebar shows saved-status flags without returning saved key values.
-
-Script Properties are accessible to editors of the bound Apps Script project.
-A private spreadsheet copy separates your settings from other users' copies.
-A public template must come from a separate, clean project with no saved credentials.
-The [installation guide](INSTALL.md) describes this setup.
-The [build-your-own guide](BUILD-YOUR-OWN.md) shows how to place scalar results and table formulas around one ticker input.
+Keys are not formula arguments or worksheet data.
+Spreadsheet editors can access the attached script and its properties.
+The [user guide](GUIDE.md#save-api-keys) covers key entry, saved-key indicators and sharing.

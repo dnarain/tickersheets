@@ -12,62 +12,35 @@ For example, this formula returns Apple's latest available price:
 
 ## Start with the example spreadsheet
 
-1. [Make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy). Google includes the required script with the spreadsheet.
-2. Open your copy and reload it to show the **TickerSheets** menu.
-3. Change the ticker in **Start here!B4**.
-4. Choose **TickerSheets → Refresh data**. If Google asks, authorize the script.
+[View the example spreadsheet](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/edit) to explore the saved stock and options analysis.
 
-That one ticker controls all three tabs:
+The public example is read-only and has no API keys.
+[Make your own copy](https://docs.google.com/spreadsheets/d/1HpA7L6hImHHaC7GECxYiBZpMvRiWTcMI5x1o10hDQ24/copy) to change the ticker, refresh data or add your own keys.
+Google includes the required script with the copy.
 
-| Tab | What it shows |
-|---|---|
-| **Start here** | Simple formulas beside their results, plus setup instructions |
-| **Stock analysis** | Company data, earnings, a price chart and technical indicators |
-| **Options analysis** | Expiration dates, option quotes, model Greeks, strategies and a payoff chart |
-
-Model Greeks and strategy results come from the assumptions you enter.
-See the [example guide](SAMPLE.md) for a walkthrough.
+To use TickerSheets in a spreadsheet you already have, follow [Add TickerSheets to an existing spreadsheet](GUIDE.md#add-tickersheets-to-an-existing-spreadsheet).
 
 ![Stock analysis in Google Sheets](img/tickersheets-stock-analysis.png)
 
-## Build your own spreadsheet
+## Documentation
 
-To add TickerSheets to a spreadsheet you already use, follow the [installation instructions](INSTALL.md#option-2-install-the-functions-in-your-spreadsheet).
+- [User guide](GUIDE.md) — setup, the example spreadsheet, formula recipes, API keys and troubleshooting.
+- [Function reference](FUNCTIONS.md) — every function, its arguments, data source, API-key requirement and limits.
 
-Put a ticker such as `NVDA` in `A1`, then enter these formulas in other cells:
+## API keys and data
 
-| Data | Formula |
-|---|---|
-| Latest available price | `=TICKERSHEETS_QUOTE(A1,"price")` |
-| After-hours price | `=TICKERSHEETS_QUOTE(A1,"post_market_price")` |
-| Trailing P/E | `=TICKERSHEETS_FUNDAMENTALS(A1,"trailing_pe")` |
-| Daily price history | `=TICKERSHEETS_HISTORY(A1,252)` |
-| Option expiration dates | `=TICKERSHEETS_EXPIRATIONS(A1)` |
-| Option chain | `=TICKERSHEETS_OPTIONS(A1)` |
+Yahoo stock and options data and selected Finviz, Zacks and GuruFocus fields need no personal API key.
+FRED and quotes from Finnhub, Alpha Vantage, Twelve Data and CoinMarketCap require your own keys.
+See [Save API keys](GUIDE.md#save-api-keys).
 
-Table results need empty cells beside and below the formula.
-The [function reference](FUNCTIONS.md) lists every function and field.
-The [build-your-own guide](BUILD-YOUR-OWN.md) gives more examples.
+Provider data can be delayed or unavailable. Prices do not stream continuously.
+See [data sources](FUNCTIONS.md#data-sources) for provider details.
 
-## Optional API keys
-
-- **No personal key required:** Yahoo stock quotes, fundamentals, earnings, history and option chains, plus selected Finviz, Zacks and GuruFocus fields.
-- **Your own key required:** FRED economic data and quotes from Finnhub, Alpha Vantage, Twelve Data or CoinMarketCap.
-
-Add keys through **TickerSheets → API keys…** in your private copy.
-The public example does not contain any API keys.
-Other spreadsheet editors can access saved keys, so keep a copy with keys private.
-See [API-key instructions](INSTALL.md#save-api-keys) for details.
-
-## Data and project status
-
-Prices do not stream continuously. Provider data can be delayed or unavailable.
-Use **TickerSheets → Refresh data** to request updated results.
-The [provider guide](PROVIDERS.md) describes the sources and their limits.
-
-This project is heavily vibe-coded. Wider testing and code review are welcome.
+## Credits
 
 TickerSheets started with [CacheFinance](https://github.com/demmings/cachefinance), which showed us what was possible in Google Sheets.
 [SMF](https://github.com/ClimberMel/SMF_Add-in) inspired many of the functions and examples.
 Thank you to both projects and their contributors.
 See [credits](CREDITS.md) and the [GPL v3 license](LICENSE).
+
+For code changes and tests, see [Contributing](CONTRIBUTING.md).

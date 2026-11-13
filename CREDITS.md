@@ -26,7 +26,6 @@ Renaming the project and its functions does not remove the original contribution
 
 ## Data providers
 
-Yahoo, Finviz, Zacks, GuruFocus and FRED supply the data requested by the supported functions.
+TickerSheets requests data from the providers listed in [data sources](FUNCTIONS.md#data-sources).
 These services do not maintain or endorse TickerSheets.
 Their data definitions, access restrictions and availability can change.
-See [PROVIDERS.md](PROVIDERS.md) for the sources this project uses.
