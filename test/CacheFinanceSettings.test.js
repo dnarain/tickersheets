@@ -26,7 +26,7 @@ beforeEach(() => {
     };
     lock = { tryLock: vi.fn(() => true), releaseLock: vi.fn() };
     menu = { addItem: vi.fn(() => menu), addToUi: vi.fn() };
-    ui = { createMenu: vi.fn(() => menu), showSidebar: vi.fn(), alert: vi.fn() };
+    ui = { createMenu: vi.fn(() => menu), showSidebar: vi.fn(), alert: vi.fn(), prompt: vi.fn() };
     output = { setTitle: vi.fn(() => output) };
     vi.stubGlobal("PropertiesService", { getScriptProperties: vi.fn(() => properties) });
     vi.stubGlobal("LockService", { getScriptLock: vi.fn(() => lock) });
@@ -61,22 +61,6 @@ describe("API key status", () => {
 });
 
 describe("API key saves", () => {
-    it("saves a FRED key through Google's native prompt without returning its value", () => {
-        const key = "a".repeat(32);
-        ui.Button = { OK: "OK" }; ui.ButtonSet = { OK_CANCEL: "OK_CANCEL" };
-        ui.prompt = vi.fn(() => ({ getSelectedButton: () => "OK", getResponseText: () => key }));
-        const result = CFEnterFredKey();
-        expect(result).toEqual({ ok: true }); expect(values.get("FRED_API_KEY")).toBe(key);
-        expect(JSON.stringify([result, ui.alert.mock.calls])).not.toContain(key);
-        expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: key }, false);
-    });
-    it.each([["CANCEL", "a".repeat(32)], ["OK", ""], ["OK", "bad-key"]])("keeps saved keys for cancelled, blank or invalid native entry (%s)", (button, value) => {
-        ui.Button = { OK: "OK" }; ui.ButtonSet = { OK_CANCEL: "OK_CANCEL" };
-        ui.prompt = vi.fn(() => ({ getSelectedButton: () => button, getResponseText: () => value }));
-        values.set("FRED_API_KEY", "existing"); CFEnterFredKey();
-        expect(values.get("FRED_API_KEY")).toBe("existing");
-        expect(properties.setProperties).not.toHaveBeenCalled(); expect(properties.deleteProperty).not.toHaveBeenCalled();
-    });
     it("keeps all keys for an empty update and reports no values", () => {
         values.set("FINNHUB_API_KEY", "saved-secret");
         const result = CFSaveApiKeys({ updates: [] });
@@ -216,11 +200,22 @@ function sidebar() {
 }
 
 describe("API key menu and sidebar", () => {
-    it("adds the public sidebar callback to the Data settings menu", () => {
+    it("adds exactly one API-key entry to the Data settings menu", () => {
         CFSettingsMenu_();
         expect(ui.createMenu).toHaveBeenCalledWith("Data settings");
+        expect(menu.addItem).toHaveBeenCalledOnce();
         expect(menu.addItem).toHaveBeenCalledWith("API keys…", "CFShowApiKeySettings");
         expect(menu.addToUi).toHaveBeenCalledOnce();
+    });
+
+    it("opens the unified form from the old FRED callback without prompting or touching saved keys", () => {
+        propertyNames.forEach((key, index) => values.set(key, `saved-synthetic-${index}`));
+        const before = [...values]; CFEnterFredKey();
+        expect(ui.showSidebar).toHaveBeenCalledOnce(); expect(ui.showSidebar).toHaveBeenCalledWith(output);
+        expect(output.setTitle).toHaveBeenCalledWith("TickerSheets: API keys"); expect(ui.prompt).not.toHaveBeenCalled();
+        expect(PropertiesService.getScriptProperties).not.toHaveBeenCalled();
+        expect(properties.getProperty).not.toHaveBeenCalled(); expect(properties.setProperties).not.toHaveBeenCalled(); expect(properties.deleteProperty).not.toHaveBeenCalled();
+        expect([...values]).toEqual(before); expect(html).not.toContain("saved-synthetic-");
     });
 
     it("opens static HTML without reading saved properties", () => {
@@ -278,6 +273,21 @@ describe("API key menu and sidebar", () => {
             expect(view.get(`status-${id}`).textContent).toBe("Not set");
         });
         expect(view.get("save").disabled).toBe(false);
+    });
+
+    it("saves FRED from its password field while preserving blank fields for all other saved providers", () => {
+        propertyNames.forEach((key, index) => values.set(key, `saved-synthetic-${index}`));
+        const before = new Map(values), view = sidebar(); view.calls[0].success(CFGetApiKeyStatus());
+        expect(view.get("key-FRED").type).toBe("password"); expect(view.get("key-FRED").value).toBe("");
+        view.get("key-FRED").value = "synthetic-fred-replacement"; view.get("settings").trigger("submit");
+        const call = view.calls[1];
+        expect(JSON.parse(JSON.stringify(call.request))).toEqual({ updates: [{ provider: "FRED", action: "replace", value: "synthetic-fred-replacement" }] });
+        const result = CFSaveApiKeys(call.request); call.success(result);
+        expect(result).toEqual(expectedStatus(true)); expect(values.get("FRED_API_KEY")).toBe("synthetic-fred-replacement");
+        propertyNames.filter(key => key !== "FRED_API_KEY").forEach(key => expect(values.get(key)).toBe(before.get(key)));
+        expect(properties.setProperties).toHaveBeenCalledWith({ FRED_API_KEY: "synthetic-fred-replacement" }, false); expect(properties.deleteProperty).not.toHaveBeenCalled();
+        expect(view.get("key-FRED").value).toBe(""); expect(view.get("status-FRED").textContent).toBe("Saved");
+        expect(JSON.stringify(result)).not.toContain("synthetic-"); expect(ui.prompt).not.toHaveBeenCalled();
     });
 
     it("sends an empty update when fields are blank", () => {

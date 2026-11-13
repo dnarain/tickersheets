@@ -15,22 +15,12 @@ const CF_KEY_PROVIDERS_ = Object.freeze([
 function CFSettingsMenu_() {
     SpreadsheetApp.getUi().createMenu("Data settings")
         .addItem("API keys…", "CFShowApiKeySettings")
-        .addItem("Enter FRED key…", "CFEnterFredKey").addToUi();
+        .addToUi();
 }
 
-/** Native Google prompt works without the embedded HTML sidebar. The user submits it. */
+/** Older cached menus open the same API-key form. */
 function CFEnterFredKey() {
-    const ui = SpreadsheetApp.getUi();
-    try {
-        const reply = ui.prompt("TickerSheets: FRED key", "Paste your existing FRED key. Google's standard prompt shows the text you type. The key is saved in this private script's properties, outside worksheet cells. Blank keeps the existing key.", ui.ButtonSet.OK_CANCEL);
-        if (reply.getSelectedButton() !== ui.Button.OK) return { ok: false, cancelled: true };
-        const value = reply.getResponseText().trim();
-        if (!value) { ui.alert("No key changed."); return { ok: true, changed: false }; }
-        if (!/^[a-z0-9]{32}$/.test(value)) { ui.alert("FRED keys contain 32 lowercase letters and digits. Check the key and try again."); return { ok: false, error: "Invalid FRED key format." }; }
-        const saved = CFSaveApiKeys({ updates: [{ provider: "FRED", action: "replace", value }] });
-        ui.alert(saved.ok ? "FRED key saved. Choose Stock analysis → Refresh selected ticker to load the economic series." : "Unable to save the FRED key. Try again.");
-        return { ok: saved.ok };
-    } catch (_error) { ui.alert("Unable to open or save FRED key settings. Try again."); return { ok: false, error: "Unable to save FRED key settings." }; }
+    return CFShowApiKeySettings();
 }
 
 /** Open a sidebar. Saved keys are never included in its HTML. */

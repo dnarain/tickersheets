@@ -242,7 +242,8 @@ A flat prior gain/loss history also leaves both targets unavailable.
 
 ## 6. Add FRED observations
 
-Save your own FRED key through **Data settings → API keys…** or **Data settings → Enter FRED key…**.
+Choose **Data settings → API keys…** and enter your own key in **FRED**.
+Click **Save keys**.
 Keep the key out of cells and formulas.
 The script stores saved keys in Script Properties.
 Spreadsheet editors can edit its bound script and read those keys.

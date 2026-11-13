@@ -256,10 +256,9 @@ The refresh menu preserves this layout. **Build analysis sheets** regenerates it
 
 ## FRED key
 
-Choose **Data settings → API keys…**, enter your existing FRED key in **FRED**, then save.
-If the sidebar is blank, use **Data settings → Enter FRED key…**.
-Google's standard dialog displays the text you enter.
-Blank entry preserves an existing key, and Cancel changes nothing.
+Choose **Data settings → API keys…**, enter your existing key in **FRED**, then click **Save keys**.
+Leave other provider fields blank to preserve their saved keys.
+If the sidebar is blank, follow the [browser-profile workaround](INSTALL.md#if-the-sidebar-is-blank), then open **API keys…** again.
 
 The key is stored as `FRED_API_KEY` in the private project's Script Properties.
 It belongs outside worksheet cells and Git commits.

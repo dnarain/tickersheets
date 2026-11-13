@@ -454,7 +454,7 @@ That observation can remain `N/A`.
 The Macro summary uses the latest numeric observation, which can have an earlier date.
 
 The function reads your `FRED_API_KEY` from Script Properties.
-Use **Data settings → API keys…** or **Data settings → Enter FRED key…** to save it.
+Choose **Data settings → API keys…**, enter the key in **FRED**, then click **Save keys**.
 FRED requires each user to [request their own API key](https://fred.stlouisfed.org/docs/api/api_key.html).
 The key is never a formula argument.
 

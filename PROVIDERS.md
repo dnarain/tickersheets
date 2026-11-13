@@ -218,8 +218,8 @@ npm run build:provider-tests:check
 Commit the relevant source, test and generated `dist/` changes together.
 The tests and public fixtures remain in [test/](test/).
 Use `npm run test:watch` while editing, or `npm run test:coverage` for the coverage report in `coverage/index.html`.
-The **November 12, 2026** local run passed **1,473 tests in 42 files**.
-Coverage was 92.92% of lines, 88.69% of branches and 94.16% of functions.
+The **November 12, 2026** local run passed **1,471 tests in 42 files**.
+Coverage was 92.84% of lines, 88.70% of branches and 94.16% of functions.
 The visible history formulas also passed 29,363 numerical comparisons against the existing indicator calculations.
 Those comparisons included missing prices, flat prices, moving-average warm-up periods, RSI, MACD, returns and volatility.
 Those numbers describe controlled local tests, separate from the dated Google Sheets results above.

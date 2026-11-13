@@ -178,8 +178,9 @@ It does not test the key or the provider connection.
 ### FRED
 
 1. Request your own key from [FRED's API key page](https://fred.stlouisfed.org/docs/api/api_key.html).
-2. Save the key in **Data settings → API keys…**.
-3. Choose **Stock analysis → Refresh selected ticker**.
+2. Choose **Data settings → API keys…**.
+3. Enter the key in **FRED** and click **Save keys**.
+4. Choose **Stock analysis → Refresh selected ticker**.
 
 The settings menu uses the Script Property `FRED_API_KEY`.
 A missing key leaves FRED values unavailable.
@@ -190,16 +191,13 @@ The script does not substitute zero values for missing economic data.
 Google documents [Apps Script problems with multiple signed-in accounts](https://developers.google.com/apps-script/guides/support/troubleshooting#issues_with_multiple_google_accounts).
 A browser profile with only the spreadsheet's account can resolve this problem.
 
-The FRED key also has a standard Google prompt:
+1. Open a browser profile or private window signed in only to the spreadsheet's Google account.
+2. Open your private spreadsheet copy in that profile or window.
+3. Choose **Data settings → API keys…** again.
+4. Enter the key in the matching provider field, including **FRED** for a FRED key.
+5. Click **Save keys**.
 
-1. Choose **Data settings → Enter FRED key…**.
-2. Paste your existing FRED key.
-3. Click **OK**.
-4. Choose **Stock analysis → Refresh selected ticker**.
-
-This standard prompt shows the text that you type.
-It saves the same `FRED_API_KEY` property as the sidebar.
-A blank entry preserves the existing key.
+All providers use this same API key form.
 
 ## Created tabs
 

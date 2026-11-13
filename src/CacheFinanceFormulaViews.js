@@ -187,6 +187,13 @@ class CFFormulaViews {
         const W = CFFormulaViews.core(), sheet = W.prepareSheet(book, "Start here", "TICKERSHEETS_GUIDE_V1");
         sheet.getRange("A1:F1").merge().setValue("Learn TickerSheets by following its formulas").setFontSize(18).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2:F2").merge().setValue("Click a price or fundamental value to see a custom formula you can use in your own spreadsheet. The public sample contains no saved API keys.").setWrap(true);
+        const setup = [
+            "1. Copy the sample: File → Make a copy includes its attached Apps Script. Reload your editable copy. The script's onOpen function adds the Data settings and Stock analysis menus.",
+            "2. Blank sheet: choose Extensions → Apps Script. Paste the contents of dist/TickerSheets.js into Code.gs, save, then reload the spreadsheet. See INSTALL.md for full instructions.",
+            "3. Choose Data settings → API keys… for Finnhub, Alpha Vantage, Twelve Data, CoinMarketCap and FRED. Enter your own keys, click Save keys and authorize if prompted. Keep copies with keys private."
+        ];
+        sheet.getRange("A3:F3").merge().setValue(setup.join("\n")).setWrap(true).setFontSize(10).setVerticalAlignment("middle");
+        sheet.setRowHeights(3, 1, 100);
         W.header(sheet, "A4:C4", ["Step", "What to do", "What you will learn"]);
         const steps = [[1, "Enter a stock in Analysis!B4. Choose Stock analysis → Refresh selected ticker.", "Choose the stock and request current data from the menu."],
             [2, "Click Analysis!B9. Copy its CFQUOTE formula to another sheet and point the ticker argument to your input cell.", "A price result can use one simple function. Quote data and Fundamentals show a formula beside each scalar result."],
