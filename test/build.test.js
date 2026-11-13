@@ -2,15 +2,20 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
     buildTickerSheetsBundle,
+    buildDemoGeneratorBundle,
+    DEMO_SOURCE_FILES,
     enableDebugExports,
     hashSections,
     isTickerSheetsBundleCurrent,
+    isDemoGeneratorBundleCurrent,
     paths,
     PUBLIC_FUNCTIONS,
     SOURCE_FILES,
     stripDebugBlocks,
     validateBundleContent,
-    writeTickerSheetsBundle
+    validateDemoGeneratorContent,
+    writeTickerSheetsBundle,
+    writeDemoGeneratorBundle
 } from "../scripts/gas-source.mjs";
 
 describe("gas-source transforms", () => {
@@ -66,7 +71,7 @@ describe("TickerSheets bundle", () => {
         expect(bundle).not.toMatch(/\b(?:CacheFinance|CACHEFINANCES?|CFQUOTE|CFHISTORY|StockAttributes|ThirdPartyFinance|GoogleWebSiteFinance|GlobeAndMail)\b/);
         expect(bundle).toContain("function TickerSheetsShowApiKeys");
         expect(bundle).toContain("function TICKERSHEETS_OPTION_MODEL");
-        expect(bundle).toContain("function TickerSheetsBuildDemo");
+        expect(bundle).not.toMatch(/TickerSheetsBuildDemo|TickerSheetsInspectDemo|TickerSheetsDemoGenerator|TickerSheetsShowcase|TickerSheetsOptionsShowcase/);
         expect(bundle).toContain("function TICKERSHEETS_QUOTE");
         expect(bundle).toContain("function TICKERSHEETS_STRATEGY");
         expect(bundle).toContain("function TickerSheetsRefreshData");
@@ -90,5 +95,42 @@ describe("TickerSheets bundle", () => {
         expect(fs.existsSync(paths.dist)).toBe(true);
         expect(first.bundle).toBe(second.bundle);
         expect(isTickerSheetsBundleCurrent()).toBe(true);
+    });
+
+    it("rejects demo code in the normal user installation", () => {
+        expect(() => validateBundleContent(valid + "\nfunction TickerSheetsBuildDemo() {}" )).toThrow(/optional demo generator/);
+    });
+});
+
+describe("optional demo generator bundle", () => {
+    it("builds only demo source files and explains its dependency", () => {
+        const { bundle, sourceHash, sectionCount } = buildDemoGeneratorBundle();
+        expect(sectionCount).toBe(DEMO_SOURCE_FILES.length);
+        expect(paths.demo).toMatch(/\/examples\/TickerSheetsDemoGenerator\.js$/);
+        expect(DEMO_SOURCE_FILES.every(file => file.startsWith("demo/"))).toBe(true);
+        expect(SOURCE_FILES.some(file => file.startsWith("demo/"))).toBe(false);
+        expect(bundle).toContain("optional demo generator. Developer use only.");
+        expect(bundle).toContain("Install dist/TickerSheets.js in the same Apps Script project first.");
+        expect(bundle).toContain("https://github.com/dnarain/tickersheets");
+        expect(bundle).toContain(`Source hash: ${sourceHash}`);
+        expect(bundle).toContain("class TickerSheetsDemoGenerator");
+        expect(bundle).toContain("function TickerSheetsBuildDemo(");
+        expect(bundle).toContain("function TickerSheetsInspectDemo(");
+        expect(bundle).not.toMatch(/function (?:TICKERSHEETS_|TickerSheetsRefreshData|onOpen)/);
+        expect(() => validateDemoGeneratorContent(bundle)).not.toThrow();
+    });
+
+    it("rejects copied core functions inside the optional tool", () => {
+        const { bundle } = buildDemoGeneratorBundle();
+        expect(() => validateDemoGeneratorContent(bundle + "\nfunction onOpen() {}" )).toThrow(/core library/);
+        expect(() => validateDemoGeneratorContent(bundle + "\nfunction TICKERSHEETS_QUOTE() {}" )).toThrow(/core library/);
+    });
+
+    it("writes and verifies the optional tool separately", () => {
+        const first = writeDemoGeneratorBundle(), second = writeDemoGeneratorBundle();
+        expect(fs.existsSync(paths.demo)).toBe(true);
+        expect(first.bundle).toBe(second.bundle);
+        expect(second.written).toBe(false);
+        expect(isDemoGeneratorBundleCurrent()).toBe(true);
     });
 });

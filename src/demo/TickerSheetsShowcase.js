@@ -44,6 +44,7 @@ class TickerSheetsShowcase {
         sheet.getRange("A1:N1").merge().setFormula('=UPPER(TRIM($B$4))&" — stock analysis"').setFontSize(18).setFontWeight("bold").setFontColor("#17365D");
         sheet.getRange("A2:N2").merge().setValue("Change the ticker on Start here. Click any result to read its formula. Tables and charts below show provider data; Options analysis contains the option quotes and calculators.").setWrap(true); sheet.setRowHeights(2, 1, 36);
         sheet.getRange("A4").setValue("Ticker: edit Start here!B4"); sheet.getRange("B4").setFormula("='Start here'!B4").setFontWeight("bold");
+        sheet.getRange("G4:N4").merge().setFormula('=HYPERLINK("https://github.com/dnarain/tickersheets","TickerSheets on GitHub")').setFontColor("#1155CC");
         sheet.getRange("D4").setValue("Calculation date"); sheet.getRange("E4").setNumberFormat("@").setValue(Utilities.formatDate(new Date(), book.getSpreadsheetTimeZone(), "yyyy-MM-dd"));
         TickerSheetsShowcase.section(sheet, 6, "Quote and fundamentals", "A", "C");
         const quotes = [["Latest price", "price"], ["Regular-session price", "regular_price"], ["After-hours price", "post_market_price"], ["Quote time (UTC)", "quote_time"], ["Currency", "currency"]];

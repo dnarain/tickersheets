@@ -27,10 +27,33 @@ npm run build:check
 npm run test:coverage
 ```
 
-Edit the files in [src/](src/).
-The build command generates [dist/TickerSheets.js](dist/TickerSheets.js).
-Commit source changes, tests and the generated bundle together.
-GitHub Actions checks the bundle and runs the unit tests with coverage.
+Edit the source files, then run the build command to combine them into the installation files:
+
+| Files | Purpose |
+|---|---|
+| [src/](src/) | Library source, including data functions, settings, menu and refresh |
+| [dist/TickerSheets.js](dist/TickerSheets.js) | The single script spreadsheet users copy and paste |
+| [src/demo/](src/demo/) | Source for the optional example generator and its checks |
+| [examples/TickerSheetsDemoGenerator.js](examples/TickerSheetsDemoGenerator.js) | Optional developer tool for creating or checking the example spreadsheet |
+
+The build command generates both scripts. Commit source changes, tests and generated scripts together.
+GitHub Actions checks both generated scripts and runs the unit tests with coverage.
+
+## Optional demo generator
+
+The public example already contains its tabs and formulas. Spreadsheet users install only `dist/TickerSheets.js`.
+
+To create or rebuild the example in a private spreadsheet:
+
+1. Install `dist/TickerSheets.js` with the [user guide](GUIDE.md#add-tickersheets-to-an-existing-spreadsheet).
+2. Add another Apps Script file named `TickerSheetsDemoGenerator` in the same project.
+3. Paste [examples/TickerSheetsDemoGenerator.js](examples/TickerSheetsDemoGenerator.js) into that file and save.
+4. Select `TickerSheetsBuildDemo` in the Apps Script editor and click **Run**.
+5. Run `TickerSheetsInspectDemo` to inspect the generated formulas and results.
+
+The generator builds **Start here**, **Stock analysis** and **Options analysis**.
+It preserves their editable inputs and checks tab ownership before rebuilding them.
+Those tabs continue to work with the library after you remove the optional generator file.
 
 ## Tests and fixtures
 

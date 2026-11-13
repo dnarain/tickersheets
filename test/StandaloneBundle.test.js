@@ -1,14 +1,16 @@
 import fs from "node:fs";
 import vm from "node:vm";
 import { describe, expect, it, vi } from "vitest";
-import { buildTickerSheetsBundle, PUBLIC_FUNCTIONS } from "../scripts/gas-source.mjs";
+import { buildDemoGeneratorBundle, buildTickerSheetsBundle, PUBLIC_FUNCTIONS } from "../scripts/gas-source.mjs";
+import { tutorialBook } from "./helpers/TickerSheetsDemoMock.js";
 
 const chart = fs.readFileSync(new URL("./fixtures/analysis-chart-nvda.json", import.meta.url), "utf8");
 const details = fs.readFileSync(new URL("./fixtures/analysis-details-nvda.html", import.meta.url), "utf8");
 const finviz = fs.readFileSync(new URL("./fixtures/smf-finviz-nvda.html", import.meta.url), "utf8");
 const fredKey = "b".repeat(32);
-function runtime() {
+function runtime({ includeDemo = false, demoFirst = false, existingBook = null } = {}) {
     const values = new Map(), menuItems = [], logs = [], requests = [];
+    const book = existingBook || tutorialBook(), flush = vi.fn();
     const cache = { get: key => values.get(key) ?? null, put: (key, value) => values.set(key, value) };
     const reply = (body, http = 200, headers = {}) => ({ getResponseCode: () => http, getContentText: () => body, getAllHeaders: () => headers });
     const expiry = Date.UTC(2026, 10, 20) / 1000, later = Date.UTC(2026, 11, 18) / 1000;
@@ -29,10 +31,14 @@ function runtime() {
     const menu = name => ({ addItem(label, callback) { menuItems.push({ menu: name, label, callback }); return this; }, addSeparator() { return this; }, addToUi() { return this; } });
     const globals = { console: { log: value => logs.push(value) }, Logger: { log: value => logs.push(value) }, CacheService: { getScriptCache: () => cache }, UrlFetchApp: { fetch },
         PropertiesService: { getScriptProperties: () => ({ getProperty: name => name === "FRED_API_KEY" ? fredKey : null }) },
-        SpreadsheetApp: { getUi: () => ({ createMenu: menu }) } };
+        SpreadsheetApp: { getUi: () => ({ createMenu: menu }), getActiveSpreadsheet: () => book, flush,
+            newDataValidation: () => ({ requireValueInRange() { return this; }, requireValueInList() { return this; }, setAllowInvalid() { return this; }, build() { return this; } }) },
+        Utilities: { formatDate: () => "2026-11-13" }, Charts: { ChartType: { LINE: "LINE", COLUMN: "COLUMN" } } };
     const { bundle } = buildTickerSheetsBundle();
-    const bindings = vm.runInNewContext(bundle + ";({ " + PUBLIC_FUNCTIONS.join(",") + ", TickerSheetsPublicData, TickerSheetsStrategies, TickerSheetsProviderFields, onOpen, hasCallback: name => typeof globalThis[name] === 'function' });", globals);
-    return { bindings, values, fetch, menuItems, logs, requests, bundle };
+    const demo = includeDemo ? buildDemoGeneratorBundle().bundle : "";
+    const source = includeDemo && demoFirst ? demo + "\n" + bundle : bundle + "\n" + demo;
+    const bindings = vm.runInNewContext(source + ";({ " + PUBLIC_FUNCTIONS.join(",") + ", TickerSheetsPublicData, TickerSheetsStrategies, TickerSheetsProviderFields, TickerSheetsRefreshData, onOpen, hasCallback: name => typeof globalThis[name] === 'function', demoBuild: typeof TickerSheetsBuildDemo === 'function' ? TickerSheetsBuildDemo : undefined, demoInspect: typeof TickerSheetsInspectDemo === 'function' ? TickerSheetsInspectDemo : undefined });", globals);
+    return { bindings, values, fetch, menuItems, logs, requests, bundle, book, flush };
 }
 
 describe("research features in the generated Apps Script bundle", () => {
@@ -46,6 +52,19 @@ describe("research features in the generated Apps Script bundle", () => {
             { menu: "TickerSheets", label: "Refresh data", callback: "TickerSheetsRefreshData" }
         ]);
         expect(run.menuItems.every(item => run.bindings.hasCallback(item.callback))).toBe(true);
+        expect(run.fetch).not.toHaveBeenCalled();
+    });
+    it("refreshes a user's own formulas without loading the optional demo tool", () => {
+        const run = runtime(), sheet = run.book.insertSheet("My research");
+        sheet.getRange("A1").setValue("NVDA");
+        const formula = '=TICKERSHEETS_QUOTE(A1,"price")'; sheet.getRange("B1").setFormula(formula);
+        sheet.getRange("C1").setFormula('=FORMULATEXT(B1)');
+        expect(run.bindings.TickerSheetsRefreshData()).toEqual({ ok: true, recalculated: 1 });
+        expect(sheet.getRange("B1").getFormula()).toBe(formula);
+        expect(sheet.getRange("A1").getValue()).toBe("NVDA");
+        expect(run.book.getSheets().map(tab => tab.getName())).toEqual(["My research"]);
+        expect(run.flush).toHaveBeenCalledOnce();
+        expect(run.bindings.demoBuild).toBeUndefined(); expect(run.bindings.demoInspect).toBeUndefined();
         expect(run.fetch).not.toHaveBeenCalled();
     });
     it("uses global quote, history, fundamentals and provider bindings with a shared public cache", () => {
@@ -88,5 +107,46 @@ describe("research features in the generated Apps Script bundle", () => {
         const { bindings: b, fetch } = runtime();
         expect(b.TICKERSHEETS_FIELD("FINVIZ", "NVDA", "unknown")).toMatch(/Unsupported provider field/); expect(b.TICKERSHEETS_QUOTE("NVDA", "price", 2147483648)).toMatch(/whole refresh number/); expect(fetch).not.toHaveBeenCalled();
         expect(b.TickerSheetsProviderFields.resolveField("ZACKS", 849)).toBe("target_price");
+    });
+});
+
+describe("optional demo generator with the core installation", () => {
+    it.each([false, true])("builds the example without provider requests when demoFirst=%s", demoFirst => {
+        const run = runtime({ includeDemo: true, demoFirst });
+        const result = run.bindings.demoBuild();
+        expect(result).toEqual({ ok: true, sheets: ["Start here", "Stock analysis", "Options analysis"], ticker: "NVDA" });
+        expect(run.book.getSheets().map(sheet => sheet.getName())).toEqual(result.sheets);
+        const guide = run.book.getSheetByName("Start here"), stock = run.book.getSheetByName("Stock analysis"), options = run.book.getSheetByName("Options analysis");
+        expect(guide.getRange("B7").getFormula()).toBe('=TICKERSHEETS_QUOTE($B$4,"price")');
+        expect(stock.getRange("B4").getFormula()).toBe("='Start here'!B4");
+        expect(options.getRange("B4").getFormula()).toBe("='Start here'!B4");
+        for (const [sheet, cell] of [[guide, "A3"], [stock, "G4"], [options, "G4"]]) expect(sheet.getRange(cell).getFormula()).toContain('https://github.com/dnarain/tickersheets');
+        expect(stock.getCharts()).toHaveLength(1); expect(options.getCharts()).toHaveLength(1);
+        expect(run.bindings.demoInspect().sheets).toEqual(result.sheets);
+        expect(run.fetch).not.toHaveBeenCalled();
+    });
+
+    it("keeps user inputs when optional generation is followed by the core refresh command", () => {
+        const run = runtime({ includeDemo: true }); run.bindings.demoBuild();
+        const options = run.book.getSheetByName("Options analysis");
+        options.getRange("B8").setValue("2027-01-15"); options.getRange("B101").setValue(.52);
+        run.bindings.demoBuild();
+        expect(run.bindings.TickerSheetsRefreshData().recalculated).toBeGreaterThan(30);
+        expect(options.getRange("B8").getValue()).toBe("2027-01-15"); expect(options.getRange("B101").getValue()).toBe(.52);
+        expect(run.book.getSheetByName("Stock analysis").getCharts()).toHaveLength(1);
+        expect(options.getCharts()).toHaveLength(1); expect(run.fetch).not.toHaveBeenCalled();
+    });
+
+    it("refreshes an existing example after the optional generator is removed", () => {
+        const generated = runtime({ includeDemo: true }); generated.bindings.demoBuild();
+        const options = generated.book.getSheetByName("Options analysis"); options.getRange("B101").setValue(.52);
+        const before = generated.book.getSheets().map(sheet => [sheet.getName(), [...sheet.formulas]]);
+        const coreOnly = runtime({ existingBook: generated.book });
+        expect(coreOnly.bindings.demoBuild).toBeUndefined(); expect(coreOnly.bindings.demoInspect).toBeUndefined();
+        expect(coreOnly.bindings.TickerSheetsRefreshData().recalculated).toBeGreaterThan(30);
+        expect(coreOnly.book.getSheets().map(sheet => [sheet.getName(), [...sheet.formulas]])).toEqual(before);
+        expect(options.getRange("B101").getValue()).toBe(.52);
+        expect(coreOnly.book.getSheetByName("Stock analysis").getCharts()).toHaveLength(1); expect(options.getCharts()).toHaveLength(1);
+        expect(coreOnly.fetch).not.toHaveBeenCalled(); expect(generated.fetch).not.toHaveBeenCalled();
     });
 });

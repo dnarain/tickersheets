@@ -3,9 +3,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
     isTickerSheetsBundleCurrent,
+    isDemoGeneratorBundleCurrent,
     paths,
     SOURCE_FILES,
-    writeTickerSheetsBundle
+    DEMO_SOURCE_FILES,
+    writeTickerSheetsBundle,
+    writeDemoGeneratorBundle
 } from "./gas-source.mjs";
 
 const args = new Set(process.argv.slice(2));
@@ -24,32 +27,25 @@ function formatBytes(bytes) {
  * Build or verify the Apps Script bundle from source modules.
  */
 function main() {
+    const outputs = [
+        { target: paths.dist, files: SOURCE_FILES, current: isTickerSheetsBundleCurrent, write: writeTickerSheetsBundle },
+        { target: paths.demo, files: DEMO_SOURCE_FILES, current: isDemoGeneratorBundleCurrent, write: writeDemoGeneratorBundle }
+    ];
     if (checkOnly) {
-        if (isTickerSheetsBundleCurrent()) {
-            // skipcq: JS-0002
-            console.log(`dist/TickerSheets.js is up to date (${SOURCE_FILES.length} source files)`);
-            return;
+        let stale = false;
+        for (const output of outputs) {
+            const name = path.relative(paths.root, output.target);
+            if (output.current()) console.log(`${name} is up to date (${output.files.length} source files)`);
+            else { console.error(`${name} is out of date. Run: npm run build`); stale = true; }
         }
-
-        console.error("dist/TickerSheets.js is out of date. Run: npm run build");
-        process.exit(1);
-    }
-
-    const result = writeTickerSheetsBundle();
-
-    if (result.written) {
-        // skipcq: JS-0002
-        console.log(
-            `Built ${paths.dist} (${formatBytes(result.bytes)}, ` +
-            `${result.sectionCount} files, hash ${result.sourceHash})`
-        );
+        if (stale) process.exitCode = 1;
         return;
     }
 
-    // skipcq: JS-0002
-    console.log(
-        `dist/TickerSheets.js is up to date (${formatBytes(result.bytes)}, hash ${result.sourceHash})`
-    );
+    for (const output of outputs) {
+        const result = output.write(), name = path.relative(paths.root, output.target);
+        console.log(`${result.written ? "Built " : "Unchanged "}${name} (${formatBytes(result.bytes)}, ${result.sectionCount} source files, hash ${result.sourceHash})`);
+    }
 }
 
 const scriptPath = path.resolve(fileURLToPath(import.meta.url));

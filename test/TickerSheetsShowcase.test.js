@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TickerSheetsOptionsShowcase } from "../src/TickerSheetsOptionsShowcase.js";
-import { TickerSheetsShowcase } from "../src/TickerSheetsShowcase.js";
-import { TickerSheetsTutorial, TickerSheetsBuildDemo, TickerSheetsRefreshData, TickerSheetsInspectDemo } from "../src/TickerSheetsTutorial.js";
+import { TickerSheetsOptionsShowcase } from "../src/demo/TickerSheetsOptionsShowcase.js";
+import { TickerSheetsShowcase } from "../src/demo/TickerSheetsShowcase.js";
+import { TickerSheetsDemoGenerator, TickerSheetsBuildDemo, TickerSheetsInspectDemo } from "../src/demo/TickerSheetsDemoGenerator.js";
+import { TickerSheetsRefreshData } from "../src/TickerSheetsMenu.js";
 import { tutorialBook } from "./helpers/TickerSheetsDemoMock.js";
 let book, fetch, keyRead;
 beforeEach(() => {
@@ -60,7 +61,7 @@ describe("Stock analysis and Options analysis showcases", () => {
     });
     it("checks both reserved tab names before changing any user sheet", () => {
         const user = book.insertSheet("Stock analysis"); user.getRange("A1").setValue("My research");
-        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsTutorial.marker); guide.getRange("B4").setValue("AAPL");
+        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsDemoGenerator.marker); guide.getRange("B4").setValue("AAPL");
         const events = [user.events.length, guide.events.length];
         expect(() => TickerSheetsBuildDemo()).toThrow(/Stock analysis.*not managed/);
         expect(user.getRange("A1").getValue()).toBe("My research"); expect(guide.getRange("B4").getValue()).toBe("AAPL");
@@ -102,7 +103,7 @@ describe("Stock analysis and Options analysis showcases", () => {
     it("reports missing installations and includes all three tab reports", () => {
         expect(TickerSheetsShowcase.inspect(book)).toEqual({ ok: false, error: "Stock analysis is not installed." });
         expect(TickerSheetsOptionsShowcase.inspect(book)).toEqual({ ok: false, error: "Options analysis is not installed." });
-        expect(TickerSheetsTutorial.inspect(book)).toEqual({ ok: false, error: "The tutorial is not installed." });
+        expect(TickerSheetsDemoGenerator.inspect(book)).toEqual({ ok: false, error: "The demo is not installed." });
         build(); const report = TickerSheetsInspectDemo();
         expect(report.sheets).toEqual(["Start here", "Stock analysis", "Options analysis"]); expect(report.showcase.charts).toBe(1); expect(report.options.charts).toBe(1); expect(report.ok).toBe(false); noRequests();
     });
@@ -178,7 +179,7 @@ describe("Stock analysis and Options analysis showcases", () => {
         noRequests();
     });
     it("rejects an unrelated Options analysis tab before changing the tutorial or stock", () => {
-        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsTutorial.marker);
+        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsDemoGenerator.marker);
         const stock = book.insertSheet("Stock analysis"); stock.getRange("Z1").setValue(TickerSheetsShowcase.marker);
         const options = book.insertSheet("Options analysis"); options.getRange("A1").setValue("My own options");
         const before = book.getSheets().map(sheet => [sheet, [...sheet.cells], sheet.events.length]);
@@ -208,7 +209,7 @@ describe("Stock analysis and Options analysis showcases", () => {
         const notes = book.insertSheet("Notes"); notes.getRange("A1").setValue("Keep me");
         const stock = book.insertSheet("Stock analysis"); stock.getRange("Z1").setValue(TickerSheetsShowcase.marker);
         const personal = book.insertSheet("Portfolio"); personal.getRange("B1").setFormula("=42");
-        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsTutorial.marker);
+        const guide = book.insertSheet("Start here"); guide.getRange("Z1").setValue(TickerSheetsDemoGenerator.marker);
         TickerSheetsBuildDemo();
         expect(book.getSheets().map(sheet => sheet.getName())).toEqual(["Start here", "Stock analysis", "Options analysis", "Notes", "Portfolio"]);
         expect(notes.getRange("A1").getValue()).toBe("Keep me"); expect(personal.getRange("B1").getFormula()).toBe("=42");

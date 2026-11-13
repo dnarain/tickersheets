@@ -40,11 +40,12 @@ Model Greeks and strategy results come from these assumptions. Bid, ask and last
 ## Add TickerSheets to an existing spreadsheet
 
 These steps add the functions and menu to a spreadsheet you already use.
+You copy one file: **dist/TickerSheets.js**. It contains all the code needed to use TickerSheets.
 If TickerSheets is already installed, [update its existing code](#updates).
 
 1. Open your spreadsheet and choose **Extensions → Apps Script**.
 2. Click **+ → Script** and name the file `TickerSheets`.
-3. Open [TickerSheets.js](https://github.com/dnarain/tickersheets/blob/main/dist/TickerSheets.js) and click **Copy raw file**.
+3. Open [dist/TickerSheets.js](https://github.com/dnarain/tickersheets/blob/main/dist/TickerSheets.js) and click **Copy raw file**.
 4. Replace the default contents of the new `TickerSheets.gs` file with that code.
 5. Save the project and reload your spreadsheet.
 6. Enter `NVDA` in `A1` and `=TICKERSHEETS_QUOTE(A1,"price")` in `B1`.

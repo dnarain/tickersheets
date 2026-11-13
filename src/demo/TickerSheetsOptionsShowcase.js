@@ -43,6 +43,7 @@ class TickerSheetsOptionsShowcase {
         sheet.getRange("A2:N2").merge().setValue("Change the ticker on Start here. Quotes below come from the provider; yellow cells are editable model and strategy assumptions. Click any result to read its formula.").setWrap(true); sheet.setRowHeights(2, 1, 36);
         sheet.getRange("A3:N3").merge().setFormula('=HYPERLINK("#gid=' + sheet.getSheetId() + '&range=A96","Jump to option model, strategies and payoff chart ↓")').setFontColor("#1155CC");
         sheet.getRange("A4").setValue("Ticker: edit Start here!B4"); sheet.getRange("B4").setFormula("='Start here'!B4").setFontWeight("bold");
+        sheet.getRange("G4:N4").merge().setFormula('=HYPERLINK("https://github.com/dnarain/tickersheets","TickerSheets on GitHub")').setFontColor("#1155CC");
         TickerSheetsShowcase.section(sheet, 6, "Options: published dates, up to 40 calls and 40 puts");
         sheet.getRange("A8").setValue("Expiration (optional)");
         sheet.getRange("B8").setNumberFormat("@").setValue(typeof saved.B8 === "string" && /^\d{4}-\d{2}-\d{2}$/.test(saved.B8) ? saved.B8 : "").setBackground("#FFF2CC");

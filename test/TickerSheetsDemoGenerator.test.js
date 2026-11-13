@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TickerSheetsTutorial, TickerSheetsBuildDemo, TickerSheetsRefreshData } from "../src/TickerSheetsTutorial.js";
-import { onOpen } from "../src/TickerSheetsMenu.js";
+import { TickerSheetsDemoGenerator, TickerSheetsBuildDemo } from "../src/demo/TickerSheetsDemoGenerator.js";
+import { onOpen, TickerSheetsRefreshData } from "../src/TickerSheetsMenu.js";
 import { TickerSheetsMenu } from "../src/TickerSheetsSettings.js";
 import { tutorialBook } from "./helpers/TickerSheetsDemoMock.js";
 
@@ -8,8 +8,8 @@ import { tutorialBook } from "./helpers/TickerSheetsDemoMock.js";
 let book, api, fetch, keyRead, menus, flush;
 beforeEach(() => {
     book = tutorialBook(); menus = [];
-    fetch = vi.fn(() => { throw new Error("Tutorial code attempted a provider request"); });
-    keyRead = vi.fn(() => { throw new Error("Tutorial code attempted to read private keys"); });
+    fetch = vi.fn(() => { throw new Error("Demo code attempted a provider request"); });
+    keyRead = vi.fn(() => { throw new Error("Demo code attempted to read private keys"); });
     flush = vi.fn();
     const ui = { createMenu: name => {
         const menu = { name, items: [], addItem(label, callback) { this.items.push([label, callback]); return this; }, addToUi() { menus.push(this); return this; } };
@@ -26,7 +26,7 @@ beforeEach(() => {
     };
     Object.entries(context).forEach(([key, value]) => vi.stubGlobal(key, value));
     vi.stubGlobal("TickerSheetsMenu", TickerSheetsMenu);
-    api = { T: TickerSheetsTutorial, TickerSheetsBuildDemo, TickerSheetsRefreshData, onOpen,
+    api = { T: TickerSheetsDemoGenerator, TickerSheetsBuildDemo, TickerSheetsRefreshData, onOpen,
         externalMarkers: () => ({ Analysis: "OTHER_ANALYSIS", Options: "OTHER_OPTIONS" }) };
 });
 
@@ -57,6 +57,23 @@ describe("three-tab demo, imported Apps Script source", () => {
         expect(sheet.getRange("C35").getValue()).toBe('\'=TICKERSHEETS_PROVIDER_QUOTE($B$4,"FINNHUB","price")');
         expect(sheet.getRange("C35").getFormula()).toBe("");
         expect(sheet.hideSheet).not.toHaveBeenCalled();
+        noProviderOrKeyAccess();
+    });
+
+    it("links every example tab to the repository and preserves those links during refresh", () => {
+        api.TickerSheetsBuildDemo();
+        const guide = book.getSheetByName("Start here"), stock = book.getSheetByName("Stock analysis"), options = book.getSheetByName("Options analysis");
+        const expected = [
+            [guide, "A3", '=HYPERLINK("https://github.com/dnarain/tickersheets","TickerSheets on GitHub — code, guide and updates")'],
+            [stock, "G4", '=HYPERLINK("https://github.com/dnarain/tickersheets","TickerSheets on GitHub")'],
+            [options, "G4", '=HYPERLINK("https://github.com/dnarain/tickersheets","TickerSheets on GitHub")']
+        ];
+        for (const [sheet, cell, formula] of expected) expect(sheet.getRange(cell).getFormula()).toBe(formula);
+        expect(stock.getRange("E4").getValue()).toBe("2026-11-12");
+        expect(stock.getRange("B4").getFormula()).toBe("='Start here'!B4");
+        expect(options.getRange("B4").getFormula()).toBe("='Start here'!B4");
+        api.TickerSheetsRefreshData();
+        for (const [sheet, cell, formula] of expected) expect(sheet.getRange(cell).getFormula()).toBe(formula);
         noProviderOrKeyAccess();
     });
 
