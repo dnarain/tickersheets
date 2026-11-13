@@ -1,17 +1,14 @@
 # TickerSheets
 
-Reusable stock and options functions for Google Sheets.
+Reusable stock and options functions for Google Sheets. Everything runs in the spreadsheet's attached Apps Script. There is no hosted server.
 
-Example:
+Simplest Example:
 
 ```excel
 =TICKERSHEETS_QUOTE("AAPL","price")
 ```
 
-Other functions return fundamentals, earnings, daily history, option chains, RSI2 targets and FRED observations.
-Everything runs in the spreadsheet's attached Apps Script. There is no hosted server.
-TickerSheets is an independently maintained project with its own function API and provider requests.
-The implementation was developed with substantial AI assistance and would benefit from wider testing and code review.
+Other functions return fundamentals, earnings, daily history, option chains, RSI2 targets and FRED observations. 
 
 ## Get started
 
