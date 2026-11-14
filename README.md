@@ -4,6 +4,10 @@ Stock and options research in Google Sheets, with formulas you can reuse in your
 Get quotes, company financials, earnings, price history and option chains.
 Everything runs in Apps Script in your Google account. There is no hosted server.
 
+`GOOGLEFINANCE` provides basic quotes and price history.
+We wanted option chains, expiration dates, earnings history and more detailed company data, so TickerSheets uses other providers.
+It also fetches history directly because [Google prevents Apps Script from reading `GOOGLEFINANCE` historical results](https://support.google.com/docs/answer/3093281?hl=en).
+
 For example, this formula returns Apple's latest available price:
 
 ```excel
